@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JobBoard - Trouvez votre prochain emploi</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <header class="navbar">
+        <div class="container navbar-content">
+            <a href="index.html" class="logo">JobBoard</a>
+
+            <nav class="nav-links">
+                <a href="#jobs">Offres</a>
+            </nav>
+
+            <div class="nav-actions">
+                <a href="#" class="btn btn-outline">Connexion</a>
+                <a href="#" class="btn btn-primary">Créer un compte</a>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="container hero-content">
+                <div class="hero-text">
+                    <span class="hero-label">JOB BOARD</span>
+
+                    <h1>
+                        Trouvez votre prochain
+                        <span>emploi</span>
+                    </h1>
+
+                    <p>
+                        Découvrez des opportunités professionnelles
+                        correspondant à votre profil et postulez simplement.
+                    </p>
+                </div>
+
+                <div class="search-box">
+                    <div class="search-field">
+                        <label for="search">Métier ou compétence</label>
+                        <input
+                            type="text"
+                            id="search"
+                            placeholder="Ex : Développeur web"
+                        >
+                    </div>
+
+                    <div class="search-field">
+                        <label for="location">Lieu</label>
+                        <input
+                            type="text"
+                            id="location"
+                            placeholder="Ex : Paris"
+                        >
+                    </div>
+
+                    <button class="btn btn-primary search-button" id="search-button">
+                        Rechercher
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <section class="jobs-section" id="jobs">
+            <div class="container">
+                <div class="section-header">
+                    <div>
+                        <span class="section-label">OPPORTUNITÉS</span>
+                        <h2>Offres d'emploi</h2>
+                    </div>
+
+                    <span class="jobs-count" id="jobs-count">6 offres</span>
+                </div>
+
+                <div class="jobs-layout">
+                    <aside class="filters">
+                        <div class="filter-header">
+                            <h3>Filtrer</h3>
+                            <button id="reset-filters">Réinitialiser</button>
+                        </div>
+
+                        <div class="filter-group">
+                            <h4>Type de contrat</h4>
+
+                            <label class="checkbox">
+                                <input type="checkbox" value="CDI" class="contract-filter">
+                                <span>CDI</span>
+                            </label>
+
+                            <label class="checkbox">
+                                <input type="checkbox" value="CDD" class="contract-filter">
+                                <span>CDD</span>
+                            </label>
+
+                            <label class="checkbox">
+                                <input type="checkbox" value="Stage" class="contract-filter">
+                                <span>Stage</span>
+                            </label>
+
+                            <label class="checkbox">
+                                <input type="checkbox" value="Alternance" class="contract-filter">
+                                <span>Alternance</span>
+                            </label>
+                        </div>
+
+                        <div class="filter-group">
+                            <h4>Lieu</h4>
+
+                            <label class="radio">
+                                <input type="radio" name="location-filter" value="all" checked>
+                                <span>Tous</span>
+                            </label>
+
+                            <label class="radio">
+                                <input type="radio" name="location-filter" value="Paris">
+                                <span>Paris</span>
+                            </label>
+
+                            <label class="radio">
+                                <input type="radio" name="location-filter" value="Lyon">
+                                <span>Lyon</span>
+                            </label>
+
+                            <label class="radio">
+                                <input type="radio" name="location-filter" value="Lille">
+                                <span>Lille</span>
+                            </label>
+                        </div>
+                    </aside>
+
+                    <div class="jobs-list" id="jobs-list">
+                        <article class="job-card" data-contract="CDI" data-location="Paris">
+                            <div class="job-card-top">
+                                <div class="company-logo">Tech</div>
+                                <span class="job-contract">CDI</span>
+                            </div>
+
+                            <div class="job-card-content">
+                                <h3>Développeur Web Full Stack</h3>
+                                <p class="company-name">Tech Solutions</p>
+                                <p class="job-location">📍 Paris</p>
+                                <p class="job-description">
+                                    Rejoignez notre équipe pour développer
+                                    des applications web modernes et performantes.
+                                </p>
+
+                                <div class="job-card-bottom">
+                                    <span class="job-salary">40k - 50k €</span>
+                                    <button class="btn btn-primary details-button" data-job="1">
+                                        Voir l'offre
+                                    </button>
+                                </div>
+                            </div>
+                        </article>
+
+                        <article class="job-card" data-contract="CDI" data-location="Lyon">
+                            <div class="job-card-top">
+                                <div class="company-logo">DS</div>
+                                <span class="job-contract">CDI</span>
+                            </div>
+
+                            <div class="job-card-content">
+                                <h3>Backend Developer PHP</h3>
+                                <p class="company-name">Digital Services</p>
+                                <p class="job-location">📍 Lyon</p>
+                                <p class="job-description">
+                                    Participez au développement de nos
+                                    applications backend avec PHP et MySQL.
+                                </p>
+
+                                <div class="job-card-bottom">
+                                    <span class="job-salary">38k - 48k €</span>
+                                    <button class="btn btn-primary details-button" data-job="2">
+                                        Voir l'offre
+                                    </button>
+                                </div>
+                            </div>
+                        </article>
+
+                        <article class="job-card" data-contract="Stage" data-location="Paris">
+                            <div class="job-card-top">
+                                <div class="company-logo">IA</div>
+                                <span class="job-contract">Stage</span>
+                            </div>
+
+                            <div class="job-card-content">
+                                <h3>Stage Développeur JavaScript</h3>
+                                <p class="company-name">Innovation Agency</p>
+                                <p class="job-location">📍 Paris</p>
+                                <p class="job-description">
+                                    Une opportunité pour découvrir le développement
+                                    frontend et JavaScript au sein d'une équipe dynamique.
+                                </p>
+
+                                <div class="job-card-bottom">
+                                    <span class="job-salary">800 - 1 000 €/mois</span>
+                                    <button class="btn btn-primary details-button" data-job="3">
+                                        Voir l'offre
+                                    </button>
+                                </div>
+                            </div>
+                        </article>
+
+                        <article class="job-card" data-contract="Alternance" data-location="Lille">
+                            <div class="job-card-top">
+                                <div class="company-logo">WB</div>
+                                <span class="job-contract">Alternance</span>
+                            </div>
+
+                            <div class="job-card-content">
+                                <h3>Développeur Frontend</h3>
+                                <p class="company-name">Web Business</p>
+                                <p class="job-location">📍 Lille</p>
+                                <p class="job-description">
+                                    Développez des interfaces web accessibles
+                                    et intuitives avec HTML, CSS et JavaScript.
+                                </p>
+
+                                <div class="job-card-bottom">
+                                    <span class="job-salary">1 200 €/mois</span>
+                                    <button class="btn btn-primary details-button" data-job="4">
+                                        Voir l'offre
+                                    </button>
+                                </div>
+                            </div>
+                        </article>
+
+                        <article class="job-card" data-contract="CDD" data-location="Paris">
+                            <div class="job-card-top">
+                                <div class="company-logo">FN</div>
+                                <span class="job-contract">CDD</span>
+                            </div>
+
+                            <div class="job-card-content">
+                                <h3>Intégrateur Web</h3>
+                                <p class="company-name">France Numérique</p>
+                                <p class="job-location">📍 Paris</p>
+                                <p class="job-description">
+                                    Intégrez des maquettes et participez à
+                                    l'amélioration de nos interfaces web.
+                                </p>
+
+                                <div class="job-card-bottom">
+                                    <span class="job-salary">32k - 38k €</span>
+                                    <button class="btn btn-primary details-button" data-job="5">
+                                        Voir l'offre
+                                    </button>
+                                </div>
+                            </div>
+                        </article>
+
+                        <article class="job-card" data-contract="CDI" data-location="Lyon">
+                            <div class="job-card-top">
+                                <div class="company-logo">FS</div>
+                                <span class="job-contract">CDI</span>
+                            </div>
+
+                            <div class="job-card-content">
+                                <h3>Ingénieur Logiciel</h3>
+                                <p class="company-name">Future Systems</p>
+                                <p class="job-location">📍 Lyon</p>
+                                <p class="job-description">
+                                    Travaillez sur des solutions logicielles
+                                    utilisées par plusieurs milliers d'utilisateurs.
+                                </p>
+
+                                <div class="job-card-bottom">
+                                    <span class="job-salary">45k - 55k €</span>
+                                    <button class="btn btn-primary details-button" data-job="6">
+                                        Voir l'offre
+                                    </button>
+                                </div>
+                            </div>
+                        </article>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="modal hidden" id="job-modal">
+            <div class="modal-overlay" id="modal-overlay"></div>
+
+            <div class="modal-content">
+                <button class="modal-close" id="modal-close">×</button>
+
+                <span class="section-label">DÉTAIL DE L'OFFRE</span>
+                <h2 id="modal-title">Titre de l'offre</h2>
+                <p class="company-name" id="modal-company">Entreprise</p>
+                <p class="job-location" id="modal-location">📍 Paris</p>
+
+                <div class="modal-divider"></div>
+
+                <h3>Description</h3>
+                <p id="modal-description">Description de l'offre.</p>
+
+                <div class="modal-actions">
+                    <button class="btn btn-primary" id="apply-button">Postuler</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container footer-content">
+            <div>
+                <strong>JobBoard</strong>
+                <p>Trouvez simplement votre prochaine opportunité.</p>
+            </div>
+
+            <p>© 2026 JobBoard</p>
+        </div>
+    </footer>
+
+    <script src="js/jobs.js"></script>
+</body>
+</html>
