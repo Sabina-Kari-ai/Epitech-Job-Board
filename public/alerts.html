@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Mes alertes - Job Board</title>
+
+    <link
+        rel="stylesheet"
+        href="css/style.css"
+    >
+</head>
+
+<body>
+
+<main>
+
+    <h1>Mes alertes</h1>
+
+    <p>
+        <a href="profile.html">
+            ← Retour au profil
+        </a>
+    </p>
+
+    <section>
+
+        <h2>Créer une alerte</h2>
+
+        <form id="alertForm">
+
+            <label for="keyword">
+                Mot-clé
+            </label>
+
+            <input
+                type="text"
+                id="keyword"
+                placeholder="Développeur PHP"
+            >
+
+            <label for="location">
+                Localisation
+            </label>
+
+            <input
+                type="text"
+                id="location"
+                placeholder="Nantes"
+            >
+
+            <label for="contractType">
+                Type de contrat
+            </label>
+
+            <select id="contractType">
+
+                <option value="">
+                    Tous
+                </option>
+
+                <option value="Alternance">
+                    Alternance
+                </option>
+
+                <option value="Stage">
+                    Stage
+                </option>
+
+                <option value="CDI">
+                    CDI
+                </option>
+
+                <option value="CDD">
+                    CDD
+                </option>
+
+            </select>
+
+            <button type="submit">
+                Créer l'alerte
+            </button>
+
+        </form>
+
+        <p id="message"></p>
+
+    </section>
+
+
+    <section>
+
+        <h2>Mes alertes enregistrées</h2>
+
+        <div id="alertsList">
+            Chargement...
+        </div>
+
+    </section>
+
+</main>
+
+
+<script>
+
+const alertForm =
+    document.getElementById('alertForm');
+
+const alertsList =
+    document.getElementById('alertsList');
+
+const message =
+    document.getElementById('message');
+
+
+async function loadAlerts() {
+
+    const response =
+        await fetch(
+            '/api/alerts/index.php'
+        );
+
+    if (response.status === 401) {
+        window.location.href =
+            'login.html';
+
+        return;
+    }
+
+    const result =
+        await response.json();
+
+    if (!response.ok) {
+        alertsList.textContent =
+            result.message;
+
+        return;
+    }
+
+    renderAlerts(result.alerts);
+}
+
+
+function renderAlerts(alerts) {
+
+    alertsList.innerHTML = '';
+
+    if (!alerts.length) {
+        alertsList.textContent =
+            'Aucune alerte enregistrée.';
+
+        return;
+    }
+
+    alerts.forEach((alert) => {
+
+        const article =
+            document.createElement('article');
+
+        const title =
+            document.createElement('h3');
+
+        title.textContent =
+            alert.keyword ||
+            'Alerte emploi';
+
+        article.appendChild(title);
+
+
+        const location =
+            document.createElement('p');
+
+        location.textContent =
+            'Localisation : ' +
+            (alert.location || 'Toutes');
+
+        article.appendChild(location);
+
+
+        const contract =
+            document.createElement('p');
+
+        contract.textContent =
+            'Contrat : ' +
+            (alert.contract_type || 'Tous');
+
+        article.appendChild(contract);
+
+
+        const status =
+            document.createElement('p');
+
+        status.textContent =
+            'Statut : ' +
+            (
+                Number(alert.active)
+                    ? 'Active'
+                    : 'Inactive'
+            );
+
+        article.appendChild(status);
+
+
+        const editButton =
+            document.createElement('button');
+
+        editButton.textContent =
+            'Modifier';
+
+        editButton.addEventListener(
+            'click',
+            () => editAlert(alert)
+        );
+
+        article.appendChild(editButton);
+
+
+        const toggleButton =
+            document.createElement('button');
+
+        toggleButton.textContent =
+            Number(alert.active)
+                ? 'Désactiver'
+                : 'Activer';
+
+        toggleButton.addEventListener(
+            'click',
+            () => toggleAlert(alert)
+        );
+
+        article.appendChild(toggleButton);
+
+
+        const deleteButton =
+            document.createElement('button');
+
+        deleteButton.textContent =
+            'Supprimer';
+
+        deleteButton.classList.add(
+            'danger'
+        );
+
+        deleteButton.addEventListener(
+            'click',
+            () => deleteAlert(alert.id)
+        );
+
+        article.appendChild(deleteButton);
+
+        alertsList.appendChild(article);
+    });
+}
+
+
+alertForm.addEventListener(
+    'submit',
+    async (event) => {
+
+        event.preventDefault();
+
+        const data = {
+            keyword:
+                document.getElementById(
+                    'keyword'
+                ).value,
+
+            location:
+                document.getElementById(
+                    'location'
+                ).value,
+
+            contract_type:
+                document.getElementById(
+                    'contractType'
+                ).value
+        };
+
+        const response =
+            await fetch(
+                '/api/alerts/index.php',
+                {
+                    method: 'POST',
+
+                    headers: {
+                        'Content-Type':
+                            'application/json'
+                    },
+
+                    body:
+                        JSON.stringify(data)
+                }
+            );
+
+        const result =
+            await response.json();
+
+        message.textContent =
+            result.message;
+
+        if (response.ok) {
+            alertForm.reset();
+            loadAlerts();
+        }
+    }
+);
+
+
+async function editAlert(alert) {
+
+    const keyword =
+        prompt(
+            'Mot-clé',
+            alert.keyword || ''
+        );
+
+    if (keyword === null) {
+        return;
+    }
+
+    const location =
+        prompt(
+            'Localisation',
+            alert.location || ''
+        );
+
+    if (location === null) {
+        return;
+    }
+
+    const contractType =
+        prompt(
+            'Type de contrat',
+            alert.contract_type || ''
+        );
+
+    if (contractType === null) {
+        return;
+    }
+
+    const data = {
+        keyword,
+        location,
+        contract_type:
+            contractType,
+        active:
+            Boolean(
+                Number(alert.active)
+            )
+    };
+
+    const response =
+        await fetch(
+            '/api/alerts/index.php?id='
+            + alert.id,
+            {
+                method: 'PATCH',
+
+                headers: {
+                    'Content-Type':
+                        'application/json'
+                },
+
+                body:
+                    JSON.stringify(data)
+            }
+        );
+
+    const result =
+        await response.json();
+
+    message.textContent =
+        result.message;
+
+    if (response.ok) {
+        loadAlerts();
+    }
+}
+
+
+async function toggleAlert(alert) {
+
+    const data = {
+        keyword:
+            alert.keyword || '',
+
+        location:
+            alert.location || '',
+
+        contract_type:
+            alert.contract_type || '',
+
+        active:
+            !Number(alert.active)
+    };
+
+    const response =
+        await fetch(
+            '/api/alerts/index.php?id='
+            + alert.id,
+            {
+                method: 'PATCH',
+
+                headers: {
+                    'Content-Type':
+                        'application/json'
+                },
+
+                body:
+                    JSON.stringify(data)
+            }
+        );
+
+    const result =
+        await response.json();
+
+    message.textContent =
+        result.message;
+
+    if (response.ok) {
+        loadAlerts();
+    }
+}
+
+
+async function deleteAlert(id) {
+
+    if (!confirm('Supprimer cette alerte ?')) {
+        return;
+    }
+
+    const response =
+        await fetch(
+            '/api/alerts/index.php?id=' + id,
+            {
+                method: 'DELETE'
+            }
+        );
+
+    const result =
+        await response.json();
+
+    message.textContent =
+        result.message;
+
+    if (response.ok) {
+        loadAlerts();
+    }
+}
+
+
+loadAlerts();
+
+</script>
+
+</body>
+</html>
