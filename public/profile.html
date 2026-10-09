@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Mon profil - Job Board</title>
+
+    <link
+        rel="stylesheet"
+        href="css/style.css"
+    >
+</head>
+
+<body>
+
+<main>
+
+    <h1>Mon profil</h1>
+
+    <!-- PROFILE -->
+    <section>
+
+        <h2>Mes informations</h2>
+
+        <form id="profileForm">
+
+            <label for="firstname">
+                Prénom
+            </label>
+
+            <input
+                type="text"
+                id="firstname"
+                required
+            >
+
+            <label for="lastname">
+                Nom
+            </label>
+
+            <input
+                type="text"
+                id="lastname"
+                required
+            >
+
+            <label for="email">
+                Email
+            </label>
+
+            <input
+                type="email"
+                id="email"
+                required
+            >
+
+            <label for="phone">
+                Téléphone
+            </label>
+
+            <input
+                type="tel"
+                id="phone"
+            >
+
+            <button type="submit">
+                Modifier le profil
+            </button>
+
+        </form>
+
+        <p id="profileMessage"></p>
+
+    </section>
+
+
+    <!-- PASSWORD -->
+    <section>
+
+        <h2>Changer le mot de passe</h2>
+
+        <form id="passwordForm">
+
+            <label for="currentPassword">
+                Mot de passe actuel
+            </label>
+
+            <input
+                type="password"
+                id="currentPassword"
+                required
+            >
+
+            <label for="newPassword">
+                Nouveau mot de passe
+            </label>
+
+            <input
+                type="password"
+                id="newPassword"
+                minlength="8"
+                required
+            >
+
+            <label for="newPasswordConfirmation">
+                Confirmer le nouveau mot de passe
+            </label>
+
+            <input
+                type="password"
+                id="newPasswordConfirmation"
+                minlength="8"
+                required
+            >
+
+            <button type="submit">
+                Modifier le mot de passe
+            </button>
+
+        </form>
+
+        <p id="passwordMessage"></p>
+
+    </section>
+
+
+    <!-- CV -->
+    <section>
+
+        <h2>Mon CV</h2>
+
+        <div id="currentCv">
+            Aucun CV enregistré.
+        </div>
+
+        <form id="cvForm">
+
+            <input
+                type="file"
+                id="cv"
+                accept="application/pdf"
+                required
+            >
+
+            <button type="submit">
+                Télécharger mon CV
+            </button>
+
+        </form>
+
+        <button
+            id="deleteCvButton"
+            type="button"
+        >
+            Supprimer mon CV
+        </button>
+
+        <p id="cvMessage"></p>
+
+    </section>
+
+
+    <!-- ALERTS -->
+    <section>
+
+        <h2>Mes alertes</h2>
+
+        <a
+            class="button-link"
+            href="alerts.html"
+        >
+            Gérer mes alertes
+        </a>
+
+    </section>
+
+
+    <!-- ACCOUNT ACTIONS -->
+    <section class="account-actions">
+
+        <button
+            id="logoutButton"
+            type="button"
+        >
+            Se déconnecter
+        </button>
+
+        <button
+            id="deleteAccountButton"
+            type="button"
+        >
+            Supprimer mon compte
+        </button>
+
+    </section>
+
+</main>
+
+
+<script>
+
+const profileForm =
+    document.getElementById('profileForm');
+
+const passwordForm =
+    document.getElementById('passwordForm');
+
+const cvForm =
+    document.getElementById('cvForm');
+
+const logoutButton =
+    document.getElementById('logoutButton');
+
+const deleteCvButton =
+    document.getElementById('deleteCvButton');
+
+const deleteAccountButton =
+    document.getElementById('deleteAccountButton');
+
+const profileMessage =
+    document.getElementById('profileMessage');
+
+const passwordMessage =
+    document.getElementById('passwordMessage');
+
+const cvMessage =
+    document.getElementById('cvMessage');
+
+const currentCv =
+    document.getElementById('currentCv');
+
+
+// ==============================
+// DISPLAY CV
+// ==============================
+
+function renderCv(path) {
+
+    currentCv.innerHTML = '';
+
+    if (!path) {
+
+        currentCv.textContent =
+            'Aucun CV enregistré.';
+
+        return;
+    }
+
+    const link =
+        document.createElement('a');
+
+    link.href =
+        '/' + path;
+
+    link.target =
+        '_blank';
+
+    link.textContent =
+        'Voir mon CV';
+
+    currentCv.appendChild(link);
+}
+
+
+// ==============================
+// LOAD PROFILE
+// ==============================
+
+async function loadProfile() {
+
+    try {
+
+        const response =
+            await fetch(
+                '/api/users/me.php'
+            );
+
+        if (response.status === 401) {
+
+            window.location.href =
+                'login.html';
+
+            return;
+        }
+
+        const result =
+            await response.json();
+
+        if (!response.ok) {
+
+            profileMessage.textContent =
+                result.message || 'Erreur.';
+
+            return;
+        }
+
+        const user =
+            result.user;
+
+        document.getElementById(
+            'firstname'
+        ).value =
+            user.firstname || '';
+
+        document.getElementById(
+            'lastname'
+        ).value =
+            user.lastname || '';
+
+        document.getElementById(
+            'email'
+        ).value =
+            user.email || '';
+
+        document.getElementById(
+            'phone'
+        ).value =
+            user.phone || '';
+
+        renderCv(
+            user.cv_path
+        );
+
+    } catch (error) {
+
+        profileMessage.textContent =
+            'Erreur de connexion au serveur.';
+    }
+}
+
+
+// ==============================
+// UPDATE PROFILE
+// ==============================
+
+profileForm.addEventListener(
+    'submit',
+    async (event) => {
+
+        event.preventDefault();
+
+        profileMessage.textContent = '';
+
+        const data = {
+
+            firstname:
+                document.getElementById(
+                    'firstname'
+                ).value,
+
+            lastname:
+                document.getElementById(
+                    'lastname'
+                ).value,
+
+            email:
+                document.getElementById(
+                    'email'
+                ).value,
+
+            phone:
+                document.getElementById(
+                    'phone'
+                ).value
+        };
+
+        try {
+
+            const response =
+                await fetch(
+                    '/api/users/me.php',
+                    {
+                        method: 'PUT',
+
+                        headers: {
+                            'Content-Type':
+                                'application/json'
+                        },
+
+                        body:
+                            JSON.stringify(data)
+                    }
+                );
+
+            const result =
+                await response.json();
+
+            profileMessage.textContent =
+                result.message;
+
+        } catch (error) {
+
+            profileMessage.textContent =
+                'Erreur de connexion au serveur.';
+        }
+    }
+);
+
+
+// ==============================
+// CHANGE PASSWORD
+// ==============================
+
+passwordForm.addEventListener(
+    'submit',
+    async (event) => {
+
+        event.preventDefault();
+
+        passwordMessage.textContent = '';
+
+        const data = {
+
+            current_password:
+                document.getElementById(
+                    'currentPassword'
+                ).value,
+
+            new_password:
+                document.getElementById(
+                    'newPassword'
+                ).value,
+
+            new_password_confirmation:
+                document.getElementById(
+                    'newPasswordConfirmation'
+                ).value
+        };
+
+        try {
+
+            const response =
+                await fetch(
+                    '/api/users/password.php',
+                    {
+                        method: 'POST',
+
+                        headers: {
+                            'Content-Type':
+                                'application/json'
+                        },
+
+                        body:
+                            JSON.stringify(data)
+                    }
+                );
+
+            const result =
+                await response.json();
+
+            passwordMessage.textContent =
+                result.message;
+
+            if (response.ok) {
+
+                passwordForm.reset();
+            }
+
+        } catch (error) {
+
+            passwordMessage.textContent =
+                'Erreur de connexion au serveur.';
+        }
+    }
+);
+
+
+// ==============================
+// UPLOAD CV
+// ==============================
+
+cvForm.addEventListener(
+    'submit',
+    async (event) => {
+
+        event.preventDefault();
+
+        cvMessage.textContent = '';
+
+        const fileInput =
+            document.getElementById('cv');
+
+        if (!fileInput.files.length) {
+
+            cvMessage.textContent =
+                'Veuillez sélectionner un fichier PDF.';
+
+            return;
+        }
+
+        const formData =
+            new FormData();
+
+        formData.append(
+            'cv',
+            fileInput.files[0]
+        );
+
+        try {
+
+            const response =
+                await fetch(
+                    '/api/cv/upload.php',
+                    {
+                        method: 'POST',
+                        body: formData
+                    }
+                );
+
+            const result =
+                await response.json();
+
+            cvMessage.textContent =
+                result.message;
+
+            if (response.ok) {
+
+                renderCv(
+                    result.cv_path
+                );
+
+                cvForm.reset();
+            }
+
+        } catch (error) {
+
+            cvMessage.textContent =
+                'Erreur pendant le téléchargement.';
+        }
+    }
+);
+
+
+// ==============================
+// DELETE CV
+// ==============================
+
+deleteCvButton.addEventListener(
+    'click',
+    async () => {
+
+        const confirmed =
+            confirm(
+                'Voulez-vous supprimer votre CV ?'
+            );
+
+        if (!confirmed) {
+            return;
+        }
+
+        try {
+
+            const response =
+                await fetch(
+                    '/api/cv/delete.php',
+                    {
+                        method: 'DELETE'
+                    }
+                );
+
+            const result =
+                await response.json();
+
+            cvMessage.textContent =
+                result.message;
+
+            if (response.ok) {
+
+                renderCv(null);
+
+                cvForm.reset();
+            }
+
+        } catch (error) {
+
+            cvMessage.textContent =
+                'Erreur de connexion au serveur.';
+        }
+    }
+);
+
+
+// ==============================
+// LOGOUT
+// ==============================
+
+logoutButton.addEventListener(
+    'click',
+    async () => {
+
+        try {
+
+            await fetch(
+                '/api/auth/logout.php',
+                {
+                    method: 'POST'
+                }
+            );
+
+        } finally {
+
+            window.location.href =
+                'login.html';
+        }
+    }
+);
+
+
+// ==============================
+// DELETE ACCOUNT
+// ==============================
+
+deleteAccountButton.addEventListener(
+    'click',
+    async () => {
+
+        const confirmed =
+            confirm(
+                'Voulez-vous vraiment supprimer votre compte ? Cette action est définitive.'
+            );
+
+        if (!confirmed) {
+            return;
+        }
+
+        try {
+
+            const response =
+                await fetch(
+                    '/api/users/me.php',
+                    {
+                        method: 'DELETE'
+                    }
+                );
+
+            const result =
+                await response.json();
+
+            if (!response.ok) {
+
+                alert(
+                    result.message ||
+                    'Erreur.'
+                );
+
+                return;
+            }
+
+            alert(
+                'Compte supprimé avec succès.'
+            );
+
+            window.location.href =
+                'register.html';
+
+        } catch (error) {
+
+            alert(
+                'Erreur de connexion au serveur.'
+            );
+        }
+    }
+);
+
+
+// ==============================
+// START
+// ==============================
+
+loadProfile();
+
+</script>
+
+</body>
+</html>

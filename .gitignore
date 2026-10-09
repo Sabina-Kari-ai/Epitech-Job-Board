@@ -1,0 +1,3 @@
+api/config/database.local.php
+uploads/
+.env
