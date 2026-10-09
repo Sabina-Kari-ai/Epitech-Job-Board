@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administration - Job Board</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<main>
+
+    <h1>Administration</h1>
+
+    <p id="message"></p>
+
+    <section>
+        <h2>Utilisateurs</h2>
+
+        <div id="usersList">
+            Chargement...
+        </div>
+    </section>
+
+    <button id="logoutButton" type="button">
+        Se déconnecter
+    </button>
+
+</main>
+
+<script>
+const usersList =
+    document.getElementById('usersList');
+
+const message =
+    document.getElementById('message');
+
+const logoutButton =
+    document.getElementById('logoutButton');
+
+
+// ==============================
+// LOAD USERS
+// ==============================
+
+async function loadUsers() {
+    try {
+        const response = await fetch(
+            '/api/users/admin.php'
+        );
+
+        if (response.status === 401) {
+            window.location.href =
+                'login.html';
+
+            return;
+        }
+
+        if (response.status === 403) {
+            message.textContent =
+                'Accès administrateur requis.';
+
+            usersList.textContent = '';
+
+            return;
+        }
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            usersList.textContent =
+                result.message || 'Erreur.';
+
+            return;
+        }
+
+        renderUsers(result.users);
+
+    } catch (error) {
+        usersList.textContent =
+            'Erreur de connexion au serveur.';
+    }
+}
+
+
+// ==============================
+// DISPLAY USERS
+// ==============================
+
+function renderUsers(users) {
+    usersList.innerHTML = '';
+
+    if (!users.length) {
+        usersList.textContent =
+            'Aucun utilisateur.';
+
+        return;
+    }
+
+    users.forEach((user) => {
+        const article =
+            document.createElement('article');
+
+        const name =
+            document.createElement('h3');
+
+        name.textContent =
+            user.firstname + ' ' + user.lastname;
+
+        article.appendChild(name);
+
+
+        const email =
+            document.createElement('p');
+
+        email.textContent =
+            'Email : ' + user.email;
+
+        article.appendChild(email);
+
+
+        const roleLabel =
+            document.createElement('label');
+
+        roleLabel.textContent =
+            'Rôle : ';
+
+        article.appendChild(roleLabel);
+
+
+        const roleSelect =
+            document.createElement('select');
+
+        const candidateOption =
+            document.createElement('option');
+
+        candidateOption.value =
+            'candidate';
+
+        candidateOption.textContent =
+            'Candidate';
+
+        const adminOption =
+            document.createElement('option');
+
+        adminOption.value =
+            'admin';
+
+        adminOption.textContent =
+            'Admin';
+
+        roleSelect.appendChild(
+            candidateOption
+        );
+
+        roleSelect.appendChild(
+            adminOption
+        );
+
+        roleSelect.value =
+            user.role;
+
+        article.appendChild(roleSelect);
+
+
+        const saveButton =
+            document.createElement('button');
+
+        saveButton.textContent =
+            'Modifier le rôle';
+
+        saveButton.addEventListener(
+            'click',
+            () => updateRole(
+                user.id,
+                roleSelect.value
+            )
+        );
+
+        article.appendChild(saveButton);
+
+
+        const deleteButton =
+            document.createElement('button');
+
+        deleteButton.textContent =
+            'Supprimer';
+
+        deleteButton.addEventListener(
+            'click',
+            () => deleteUser(
+                user.id,
+                user.email
+            )
+        );
+
+        article.appendChild(deleteButton);
+
+        usersList.appendChild(article);
+    });
+}
+
+
+// ==============================
+// UPDATE ROLE
+// ==============================
+
+async function updateRole(id, role) {
+    try {
+        const response = await fetch(
+            '/api/users/admin.php?id=' + id,
+            {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type':
+                        'application/json'
+                },
+                body: JSON.stringify({
+                    role: role
+                })
+            }
+        );
+
+        const result =
+            await response.json();
+
+        message.textContent =
+            result.message;
+
+        if (response.ok) {
+            loadUsers();
+        }
+
+    } catch (error) {
+        message.textContent =
+            'Erreur de connexion au serveur.';
+    }
+}
+
+
+// ==============================
+// DELETE USER
+// ==============================
+
+async function deleteUser(id, email) {
+    const confirmed = confirm(
+        'Supprimer l’utilisateur ' +
+        email +
+        ' ?'
+    );
+
+    if (!confirmed) {
+        return;
+    }
+
+    try {
+        const response = await fetch(
+            '/api/users/admin.php?id=' + id,
+            {
+                method: 'DELETE'
+            }
+        );
+
+        const result =
+            await response.json();
+
+        message.textContent =
+            result.message;
+
+        if (response.ok) {
+            loadUsers();
+        }
+
+    } catch (error) {
+        message.textContent =
+            'Erreur de connexion au serveur.';
+    }
+}
+
+
+// ==============================
+// LOGOUT
+// ==============================
+
+logoutButton.addEventListener(
+    'click',
+    async () => {
+        try {
+            await fetch(
+                '/api/auth/logout.php',
+                {
+                    method: 'POST'
+                }
+            );
+        } finally {
+            window.location.href =
+                'login.html';
+        }
+    }
+);
+
+
+loadUsers();
+</script>
+
+</body>
+</html>
