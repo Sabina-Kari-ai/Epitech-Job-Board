@@ -1,3 +1,4 @@
+
 <?php
 
 header("Content-Type: application/json; charset=UTF-8");
@@ -28,16 +29,19 @@ function sendJson(array $data, int $statusCode = 200): void
 }
 
 /**
- * Récupère et valide les données JSON envoyées dans la requête.
+ * Récupère et valide les données JSON envoyées.
  */
+
 function getRequestData(): array
 {
-    $rawData = file_get_contents("php://input");
-    $data = json_decode($rawData, true);
+    $raw = file_get_contents("php://input");
+    $data = json_decode($raw, true);
 
-    if (!is_array($data)) {
+    if (json_last_error() !== JSON_ERROR_NONE || !is_array($data)) {
         sendJson([
-            "error" => "Les données JSON sont invalides."
+            "error" => "Les données JSON sont invalides.",
+            "json_error" => json_last_error_msg(),
+            "received_body" => $raw
         ], 400);
     }
 
@@ -45,7 +49,7 @@ function getRequestData(): array
 }
 
 /**
- * Recherche une entreprise à partir de son identifiant ou de son nom.
+ * Recherche une entreprise par son identifiant ou son nom.
  */
 function findCompanyId(PDO $pdo, array $data): int
 {
@@ -88,7 +92,7 @@ function findCompanyId(PDO $pdo, array $data): int
     );
     $statement->execute([$companyName]);
 
-    $company = $statement->fetch();
+    $company = $statement->fetch(PDO::FETCH_ASSOC);
 
     if (!$company) {
         sendJson([
@@ -124,11 +128,11 @@ function validateJobData(array $data): array
     $description = trim((string) ($data["description"] ?? ""));
 
     if (
-        $title === ""
-        || $location === ""
-        || $contractType === ""
-        || $shortDescription === ""
-        || $description === ""
+        $title === "" ||
+        $location === "" ||
+        $contractType === "" ||
+        $shortDescription === "" ||
+        $description === ""
     ) {
         sendJson([
             "error" => "Veuillez remplir tous les champs obligatoires."
@@ -142,8 +146,10 @@ function validateJobData(array $data): array
         "salary" => $salary !== "" ? $salary : null,
         "short_description" => $shortDescription,
         "description" => $description,
-        "cover_letter_required" =>
-            !empty($data["cover_letter_required"]) ? 1 : 0
+        "cover_letter_required" => filter_var(
+            $data["cover_letter_required"] ?? false,
+            FILTER_VALIDATE_BOOLEAN
+        ) ? 1 : 0
     ];
 }
 
@@ -151,7 +157,15 @@ try {
     $method = $_SERVER["REQUEST_METHOD"];
 
     /*
-     * GET : récupérer toutes les offres.
+     * GET : liste, recherche, filtres ou détail d'une offre.
+     *
+     * Exemples :
+     * /api/jobs/
+     * /api/jobs/?id=1
+     * /api/jobs/?q=developpeur
+     * /api/jobs/?location=Nantes
+     * /api/jobs/?type=CDI
+     * /api/jobs/?company=Entreprise
      */
     if ($method === "GET") {
         $sql = "
@@ -170,12 +184,97 @@ try {
             FROM jobs
             INNER JOIN companies
                 ON jobs.company_id = companies.id
-            ORDER BY jobs.created_at DESC
         ";
 
-        $statement = $pdo->query($sql);
+        $conditions = [];
+        $params = [];
 
-        sendJson($statement->fetchAll());
+        // Recherche par mot-clé.
+        $search = trim(
+            (string) ($_GET["q"] ?? $_GET["search"] ?? "")
+        );
+
+        if ($search !== "") {
+            $conditions[] = "(
+                jobs.title LIKE :search_title
+                OR jobs.short_description LIKE :search_short
+                OR jobs.description LIKE :search_description
+                OR companies.name LIKE :search_company
+            )";
+
+            $term = "%" . $search . "%";
+
+            $params[":search_title"] = $term;
+            $params[":search_short"] = $term;
+            $params[":search_description"] = $term;
+            $params[":search_company"] = $term;
+        }
+
+        // Filtre par lieu.
+        $location = trim((string) ($_GET["location"] ?? ""));
+
+        if ($location !== "") {
+            $conditions[] = "jobs.location LIKE :location";
+            $params[":location"] = "%" . $location . "%";
+        }
+
+        // Filtre par type de contrat.
+        $contractType = trim(
+            (string) ($_GET["contract_type"] ?? $_GET["type"] ?? "")
+        );
+
+        if ($contractType !== "") {
+            $conditions[] = "jobs.contract_type = :contract_type";
+            $params[":contract_type"] = $contractType;
+        }
+
+        // Filtre par entreprise.
+        $company = trim((string) ($_GET["company"] ?? ""));
+
+        if ($company !== "") {
+            $conditions[] = "companies.name LIKE :company";
+            $params[":company"] = "%" . $company . "%";
+        }
+
+        // Consultation par identifiant.
+        if (isset($_GET["id"])) {
+            $id = filter_var(
+                $_GET["id"],
+                FILTER_VALIDATE_INT
+            );
+
+            if ($id === false || $id < 1) {
+                sendJson([
+                    "error" => "Identifiant d'offre invalide."
+                ], 400);
+            }
+
+            $conditions[] = "jobs.id = :id";
+            $params[":id"] = $id;
+        }
+
+        if (!empty($conditions)) {
+            $sql .= " WHERE " . implode(" AND ", $conditions);
+        }
+
+        $sql .= " ORDER BY jobs.created_at DESC";
+
+        $statement = $pdo->prepare($sql);
+        $statement->execute($params);
+
+        $jobs = $statement->fetchAll(PDO::FETCH_ASSOC);
+
+        if (isset($_GET["id"])) {
+            if (empty($jobs)) {
+                sendJson([
+                    "error" => "Offre introuvable."
+                ], 404);
+            }
+
+            sendJson($jobs[0]);
+        }
+
+        sendJson($jobs);
     }
 
     /*
