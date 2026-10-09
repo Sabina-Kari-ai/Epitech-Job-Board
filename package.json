@@ -1,0 +1,19 @@
+{
+"name": "epitech-job-board",
+"version": "1.0.0",
+"private": true,
+"description": "Job Board project for Epitech",
+"repository": {
+"type": "git",
+"url": "https://github.com/Sabina-Kari-ai/Epitech-Job-Board.git"
+},
+"scripts": {
+"dev": "vite --host 127.0.0.1",
+"build": "vite build",
+"preview": "vite preview --host 127.0.0.1",
+"api": "C:\\wamp64\\bin\\php\\php8.3.28\\php.exe -S 127.0.0.1:8001 -t ."
+},
+"devDependencies": {
+"vite": "^8.3.4"
+}
+}

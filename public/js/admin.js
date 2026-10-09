@@ -1,80 +1,10 @@
-const adminJobs = [
-{
-id: 1,
-title: "Développeur Web Full Stack",
-company: "Tech Solutions",
-location: "Paris",
-type: "CDI",
-salary: "40k - 50k",
-shortDescription: "Développement d'applications web modernes.",
-description: "Nous recherchons un développeur Full Stack pour rejoindre notre équipe."
-},
-{
-id: 2,
-title: "Backend Developer PHP",
-company: "Digital Services",
-location: "Lyon",
-type: "CDI",
-salary: "38k - 48k",
-shortDescription: "Développement et maintenance d'API PHP.",
-description: "Vous travaillerez sur nos applications backend et nos API REST."
-},
-{
-id: 3,
-title: "Stage Développeur JavaScript",
-company: "Innovation Agency",
-location: "Paris",
-type: "Stage",
-salary: "800 - 1000 €/mois",
-shortDescription: "Participation au développement de projets web.",
-description: "Stage destiné à un étudiant souhaitant découvrir le développement web."
-}
-];
+const API_URL = "http://127.0.0.1:8001/api/jobs/";
+const COMPANIES_API_URL = "http://127.0.0.1:8001/api/companies/";
+const APPLICATIONS_API_URL = "http://127.0.0.1:8001/api/app/";
 
-const adminCompanies = [
-{
-id: 1,
-name: "Tech Solutions",
-location: "Paris",
-description: "Entreprise spécialisée dans le développement de solutions numériques."
-},
-{
-id: 2,
-name: "Digital Services",
-location: "Lyon",
-description: "Entreprise spécialisée dans les services numériques et les API."
-},
-{
-id: 3,
-name: "Innovation Agency",
-location: "Paris",
-description: "Agence spécialisée dans les projets web et les nouvelles technologies."
-}
-];
-
-const adminApplications = [
-{
-id: 1,
-candidate: "Jean Dupont",
-job: "Développeur Web Full Stack",
-email: "jean.dupont@example.com",
-status: "pending"
-},
-{
-id: 2,
-candidate: "Marie Martin",
-job: "Backend Developer PHP",
-email: "marie.martin@example.com",
-status: "reviewing"
-},
-{
-id: 3,
-candidate: "Lucas Bernard",
-job: "Stage Développeur JavaScript",
-email: "lucas.bernard@example.com",
-status: "accepted"
-}
-];
+let adminJobs = [];
+let adminCompanies = [];
+let adminApplications = [];
 
 const statusLabels = {
 pending: "En attente",
@@ -98,28 +28,246 @@ const jobForm = document.getElementById("job-form");
 const companyForm = document.getElementById("company-form");
 const applicationForm = document.getElementById("application-form");
 
+let isSavingJob = false;
+let isSavingCompany = false;
+
+/* --------------------------------------------------
+OUTILS
+-------------------------------------------------- */
+
+function showTableMessage(list, message, columnCount) {
+if (!list) return;
+
+list.replaceChildren();
+
+const row = document.createElement("tr");
+const cell = document.createElement("td");
+
+cell.colSpan = columnCount;
+cell.textContent = message;
+
+row.appendChild(cell);
+list.appendChild(row);
+
+}
+
+function getFieldValue(id) {
+const field = document.getElementById(id);
+return field ? field.value.trim() : "";
+}
+
+function setFieldValue(id, value) {
+const field = document.getElementById(id);
+
+
+if (field) {
+    field.value = value == null ? "" : String(value);
+}
+
+}
+
+async function readApiResponse(response) {
+const text = await response.text();
+let data = {};
+
+if (text) {
+    try {
+        data = JSON.parse(text);
+    } catch (error) {
+        throw new Error("Le serveur a renvoyé une réponse invalide.");
+    }
+}
+
+if (!response.ok) {
+    throw new Error(
+        data.error || data.message || "Erreur HTTP " + response.status
+    );
+}
+
+return data;
+
+}
+
+async function apiRequest(url, options) {
+const response = await fetch(url, options);
+return await readApiResponse(response);
+}
+
+function normalizeJob(job) {
+return {
+id: Number(job.id),
+title: job.title || "",
+company: job.company || "",
+company_id: Number(job.company_id) || null,
+location: job.location || "",
+type: job.contract_type || job.type || "",
+salary: job.salary || "",
+shortDescription:
+job.short_description || job.shortDescription || "",
+description: job.description || "",
+cover_letter_required:
+Number(job.cover_letter_required) === 1,
+company_description: job.company_description || ""
+};
+}
+
+function normalizeApplication(application) {
+return {
+id: Number(application.id),
+job_id: Number(application.job_id),
+candidate_name: application.candidate_name || "",
+candidate_email: application.candidate_email || "",
+candidate_phone: application.candidate_phone || "",
+message: application.message || "",
+cover_letter: application.cover_letter || "",
+status: application.status || "pending",
+job_title: application.job_title || ""
+};
+}
+
+/* --------------------------------------------------
+CHARGEMENT DES DONNÉES
+-------------------------------------------------- */
+
+async function loadJobs() {
+if (!jobsList) return;
+
+showTableMessage(jobsList, "Chargement des offres...", 5);
+
+try {
+    const data = await apiRequest(API_URL);
+
+    if (!Array.isArray(data)) {
+        throw new Error("Le format des offres est invalide.");
+    }
+
+    adminJobs = data.map(normalizeJob);
+
+    displayJobs();
+} catch (error) {
+    console.error("Erreur de chargement des offres :", error);
+
+    showTableMessage(
+        jobsList,
+        "Impossible de charger les offres : " + error.message,
+        5
+    );
+}
+
+}
+
+async function loadCompanies() {
+if (!companiesList) return;
+
+showTableMessage(companiesList, "Chargement des entreprises...", 4);
+
+try {
+    const data = await apiRequest(COMPANIES_API_URL);
+
+    if (!Array.isArray(data)) {
+        throw new Error("Le format des entreprises est invalide.");
+    }
+
+    adminCompanies = data.map(function (company) {
+        return {
+            id: Number(company.id),
+            name: company.name || "",
+            location: company.location || "",
+            description: company.description || ""
+        };
+    });
+
+    displayCompanies();
+    updateCompanyOptions();
+} catch (error) {
+    console.error("Erreur de chargement des entreprises :", error);
+    showTableMessage(
+        companiesList,
+        "Impossible de charger les entreprises : " + error.message,
+        4
+    );
+}
+
+}
+
+async function loadApplications() {
+if (!applicationsList) return;
+
+showTableMessage(
+    applicationsList,
+    "Chargement des candidatures...",
+    5
+);
+
+try {
+    const data = await apiRequest(APPLICATIONS_API_URL);
+
+    if (!Array.isArray(data)) {
+        throw new Error("Le format des candidatures est invalide.");
+    }
+
+    adminApplications = data.map(normalizeApplication);
+    displayApplications();
+} catch (error) {
+    console.error("Erreur de chargement des candidatures :", error);
+
+    showTableMessage(
+        applicationsList,
+        "Impossible de charger les candidatures : " + error.message,
+        5
+    );
+}
+
+}
+
+/* --------------------------------------------------
+AFFICHAGE DES OFFRES
+-------------------------------------------------- */
+
 function displayJobs() {
-jobsList.innerHTML = "";
+if (!jobsList) return;
+
+jobsList.replaceChildren();
+
+if (adminJobs.length === 0) {
+    showTableMessage(jobsList, "Aucune offre disponible.", 5);
+    updateCompanyOptions();
+    return;
+}
 
 adminJobs.forEach(function (job) {
     const row = document.createElement("tr");
 
-    row.innerHTML = `
-        <td>${job.title}</td>
-        <td>${job.company}</td>
-        <td>${job.location}</td>
-        <td>${job.type}</td>
-        <td>
-            <div class="admin-actions">
-                <button class="admin-action edit" data-type="job" data-id="${job.id}">
-                    Modifier
-                </button>
-                <button class="admin-action delete" data-type="job" data-id="${job.id}">
-                    Supprimer
-                </button>
-            </div>
-        </td>
-    `;
+    const titleCell = document.createElement("td");
+    titleCell.textContent = job.title;
+
+    const companyCell = document.createElement("td");
+    companyCell.textContent = job.company;
+
+    const locationCell = document.createElement("td");
+    locationCell.textContent = job.location;
+
+    const contractCell = document.createElement("td");
+    contractCell.textContent = job.type;
+
+    const actionsCell = document.createElement("td");
+    const actions = document.createElement("div");
+    actions.className = "admin-actions";
+
+    actions.append(
+        createActionButton("Modifier", "job", job.id, "edit"),
+        createActionButton("Supprimer", "job", job.id, "delete")
+    );
+
+    actionsCell.appendChild(actions);
+
+    row.append(
+        titleCell,
+        companyCell,
+        locationCell,
+        contractCell,
+        actionsCell
+    );
 
     jobsList.appendChild(row);
 });
@@ -128,73 +276,175 @@ updateCompanyOptions();
 
 }
 
+/* --------------------------------------------------
+AFFICHAGE DES ENTREPRISES
+-------------------------------------------------- */
+
 function displayCompanies() {
-companiesList.innerHTML = "";
+if (!companiesList) return;
+
+companiesList.replaceChildren();
+
+if (adminCompanies.length === 0) {
+    showTableMessage(
+        companiesList,
+        "Aucune entreprise trouvée dans les offres.",
+        4
+    );
+    return;
+}
 
 adminCompanies.forEach(function (company) {
-    const jobsCount = adminJobs.filter(function (job) {
-        return job.company === company.name;
-    }).length;
-
     const row = document.createElement("tr");
 
-    row.innerHTML = `
-        <td>${company.name}</td>
-        <td>${company.location}</td>
-        <td>${jobsCount}</td>
-        <td>
-            <div class="admin-actions">
-                <button class="admin-action edit" data-type="company" data-id="${company.id}">
-                    Modifier
-                </button>
-                <button class="admin-action delete" data-type="company" data-id="${company.id}">
-                    Supprimer
-                </button>
-            </div>
-        </td>
-    `;
+    const nameCell = document.createElement("td");
+    nameCell.textContent = company.name;
+
+    const locationCell = document.createElement("td");
+    locationCell.textContent = company.location || "Non précisé";
+
+    const countCell = document.createElement("td");
+    const count = adminJobs.filter(function (job) {
+        return job.company_id === company.id ||
+            job.company === company.name;
+    }).length;
+
+    countCell.textContent = String(count);
+
+    const actionsCell = document.createElement("td");
+    const actions = document.createElement("div");
+    actions.className = "admin-actions";
+
+    actions.append(
+        createActionButton(
+            "Modifier",
+            "company",
+            company.id,
+            "edit"
+        ),
+        createActionButton(
+            "Supprimer",
+            "company",
+            company.id,
+            "delete"
+        )
+    );
+
+    actionsCell.appendChild(actions);
+    row.append(nameCell, locationCell, countCell, actionsCell);
 
     companiesList.appendChild(row);
 });
 
 }
 
+/* --------------------------------------------------
+AFFICHAGE DES CANDIDATURES
+-------------------------------------------------- */
+
 function displayApplications() {
-applicationsList.innerHTML = "";
+if (!applicationsList) return;
+
+applicationsList.replaceChildren();
+
+if (adminApplications.length === 0) {
+    showTableMessage(
+        applicationsList,
+        "Aucune candidature enregistrée.",
+        5
+    );
+    return;
+}
 
 adminApplications.forEach(function (application) {
     const row = document.createElement("tr");
 
-    row.innerHTML = `
-        <td>${application.candidate}</td>
-        <td>${application.job}</td>
-        <td>${application.email}</td>
-        <td>
-            <span class="status ${application.status}">
-                ${statusLabels[application.status]}
-            </span>
-        </td>
-        <td>
-            <div class="admin-actions">
-                <button class="admin-action edit" data-type="application" data-id="${application.id}">
-                    Modifier
-                </button>
-                <button class="admin-action delete" data-type="application" data-id="${application.id}">
-                    Supprimer
-                </button>
-            </div>
-        </td>
-    `;
+    const candidateCell = document.createElement("td");
+    candidateCell.textContent = application.candidate_name;
+
+    const jobCell = document.createElement("td");
+    jobCell.textContent =
+        application.job_title || "Offre #" + application.job_id;
+
+    const emailCell = document.createElement("td");
+    emailCell.textContent = application.candidate_email;
+
+    const statusCell = document.createElement("td");
+    const statusBadge = document.createElement("span");
+
+    statusBadge.className = "status " + application.status;
+    statusBadge.textContent =
+        statusLabels[application.status] || application.status;
+
+    statusCell.appendChild(statusBadge);
+
+    const actionsCell = document.createElement("td");
+    const actions = document.createElement("div");
+    actions.className = "admin-actions";
+
+    actions.append(
+        createActionButton(
+            "Modifier",
+            "application",
+            application.id,
+            "edit"
+        ),
+        createActionButton(
+            "Supprimer",
+            "application",
+            application.id,
+            "delete"
+        )
+    );
+
+    actionsCell.appendChild(actions);
+
+    row.append(
+        candidateCell,
+        jobCell,
+        emailCell,
+        statusCell,
+        actionsCell
+    );
 
     applicationsList.appendChild(row);
 });
 
 }
 
+/* --------------------------------------------------
+BOUTONS D'ACTION
+-------------------------------------------------- */
+
+function createActionButton(label, type, id, action) {
+const button = document.createElement("button");
+
+button.type = "button";
+button.className = "admin-action " + action;
+button.dataset.type = type;
+button.dataset.id = String(id);
+button.textContent = label;
+
+return button;
+
+}
+
 function updateCompanyOptions() {
 const companySelect = document.getElementById("job-company");
 
-companySelect.innerHTML = "";
+if (!companySelect) return;
+
+const previousValue = companySelect.value;
+companySelect.replaceChildren();
+
+const placeholder = document.createElement("option");
+placeholder.value = "";
+placeholder.textContent = adminCompanies.length
+    ? "Sélectionner une entreprise"
+    : "Ajoutez d'abord une entreprise";
+placeholder.disabled = true;
+placeholder.selected = true;
+companySelect.appendChild(placeholder);
 
 adminCompanies.forEach(function (company) {
     const option = document.createElement("option");
@@ -205,7 +455,15 @@ adminCompanies.forEach(function (company) {
     companySelect.appendChild(option);
 });
 
+if (previousValue) {
+    companySelect.value = previousValue;
 }
+
+}
+
+/* --------------------------------------------------
+ONGLETS
+-------------------------------------------------- */
 
 function changeTab(tabId) {
 tabs.forEach(function (tab) {
@@ -216,65 +474,353 @@ panels.forEach(function (panel) {
     panel.classList.toggle("active", panel.id === tabId);
 });
 
+if (tabId === "applications-panel") {
+    loadApplications();
 }
+
+if (tabId === "jobs-panel") {
+    loadJobs();
+}
+
+if (tabId === "companies-panel") {
+    loadCompanies();
+}
+
+}
+
+/* --------------------------------------------------
+MODALE DES OFFRES
+-------------------------------------------------- */
 
 function openJobModal(job) {
 updateCompanyOptions();
 
-document.getElementById("job-id").value = job ? job.id : "";
-document.getElementById("job-title").value = job ? job.title : "";
-document.getElementById("job-company").value = job ? job.company : "";
-document.getElementById("job-location").value = job ? job.location : "";
-document.getElementById("job-type").value = job ? job.type : "CDI";
-document.getElementById("job-salary").value = job ? job.salary : "";
-document.getElementById("job-short-description").value = job ? job.shortDescription : "";
-document.getElementById("job-description").value = job ? job.description : "";
+setFieldValue("job-id", job ? job.id : "");
+setFieldValue("job-title", job ? job.title : "");
+setFieldValue("job-company", job ? job.company : "");
+setFieldValue("job-location", job ? job.location : "");
+setFieldValue("job-type", job ? job.type : "CDI");
+setFieldValue("job-salary", job ? job.salary : "");
+setFieldValue(
+    "job-short-description",
+    job ? job.shortDescription : ""
+);
+setFieldValue("job-description", job ? job.description : "");
 
-document.getElementById("job-modal-title").textContent =
-    job ? "Modifier une offre" : "Ajouter une offre";
+const coverLetterField =
+    document.getElementById("job-cover-letter-required");
 
-jobModal.classList.add("active");
+if (coverLetterField) {
+    coverLetterField.checked =
+        job ? job.cover_letter_required : false;
+}
+
+const title = document.getElementById("job-modal-title");
+
+if (title) {
+    title.textContent = job ? "Modifier une offre" : "Ajouter une offre";
+}
+
+if (jobModal) {
+    jobModal.classList.add("active");
+}
 
 }
 
 function closeJobModal() {
+if (jobModal) {
 jobModal.classList.remove("active");
-jobForm.reset();
 }
 
+if (jobForm) {
+    jobForm.reset();
+}
+
+}
+
+/* --------------------------------------------------
+MODALE DES ENTREPRISES
+-------------------------------------------------- */
+
 function openCompanyModal(company) {
-document.getElementById("company-id").value = company ? company.id : "";
-document.getElementById("company-name").value = company ? company.name : "";
-document.getElementById("company-location").value = company ? company.location : "";
-document.getElementById("company-description").value = company ? company.description : "";
+setFieldValue("company-id", company ? company.id : "");
+setFieldValue("company-name", company ? company.name : "");
+setFieldValue("company-location", company ? company.location : "");
+setFieldValue(
+"company-description",
+company ? company.description : ""
+);
 
-document.getElementById("company-modal-title").textContent =
-    company ? "Modifier une entreprise" : "Ajouter une entreprise";
+const title = document.getElementById("company-modal-title");
 
-companyModal.classList.add("active");
+if (title) {
+    title.textContent = company
+        ? "Modifier une entreprise"
+        : "Ajouter une entreprise";
+}
+
+if (companyModal) {
+    companyModal.classList.add("active");
+}
 
 }
 
 function closeCompanyModal() {
+if (companyModal) {
 companyModal.classList.remove("active");
-companyForm.reset();
 }
 
-function openApplicationModal(application) {
-document.getElementById("application-id").value = application.id;
-document.getElementById("application-candidate").textContent = application.candidate;
-document.getElementById("application-job").textContent = application.job;
-document.getElementById("application-email").textContent = application.email;
-document.getElementById("application-status").value = application.status;
+if (companyForm) {
+    companyForm.reset();
+}
 
-applicationModal.classList.add("active");
+}
+
+/* --------------------------------------------------
+MODALE DES CANDIDATURES
+-------------------------------------------------- */
+
+function openApplicationModal(application) {
+if (!application) return;
+
+setFieldValue("application-id", application.id);
+
+const candidate = document.getElementById("application-candidate");
+const job = document.getElementById("application-job");
+const email = document.getElementById("application-email");
+
+if (candidate) {
+    candidate.textContent = application.candidate_name;
+}
+
+if (job) {
+    job.textContent =
+        application.job_title || "Offre #" + application.job_id;
+}
+
+if (email) {
+    email.textContent = application.candidate_email;
+}
+
+setFieldValue("application-status", application.status);
+
+if (applicationModal) {
+    applicationModal.classList.add("active");
+}
 
 }
 
 function closeApplicationModal() {
+if (applicationModal) {
 applicationModal.classList.remove("active");
-applicationForm.reset();
 }
+
+if (applicationForm) {
+    applicationForm.reset();
+}
+
+}
+
+/* --------------------------------------------------
+ENREGISTREMENT D'UNE OFFRE
+-------------------------------------------------- */
+
+async function saveJob(event) {
+event.preventDefault();
+
+if (isSavingJob) return;
+
+const id = getFieldValue("job-id");
+const title = getFieldValue("job-title");
+const company = getFieldValue("job-company");
+const location = getFieldValue("job-location");
+const type = getFieldValue("job-type");
+const salary = getFieldValue("job-salary");
+const shortDescription = getFieldValue("job-short-description");
+const description = getFieldValue("job-description");
+
+const coverLetterField =
+    document.getElementById("job-cover-letter-required");
+
+const coverLetterRequired = coverLetterField
+    ? coverLetterField.checked
+    : false;
+
+if (
+    !title ||
+    !company ||
+    !location ||
+    !type ||
+    !shortDescription ||
+    !description
+) {
+    alert("Veuillez remplir tous les champs obligatoires.");
+    return;
+}
+
+const jobData = {
+    title: title,
+    company: company,
+    location: location,
+    type: type,
+    salary: salary,
+    shortDescription: shortDescription,
+    description: description,
+    cover_letter_required: coverLetterRequired
+};
+
+const isEditing = id !== "";
+
+if (isEditing) {
+    jobData.id = Number(id);
+}
+
+const submitButton = jobForm
+    ? jobForm.querySelector('[type="submit"]')
+    : null;
+
+isSavingJob = true;
+
+if (submitButton) {
+    submitButton.disabled = true;
+    submitButton.textContent = "Enregistrement...";
+}
+
+try {
+    const result = await apiRequest(API_URL, {
+        method: isEditing ? "PUT" : "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(jobData)
+    });
+
+    alert(
+        result.message ||
+        (isEditing
+            ? "Offre modifiée avec succès."
+            : "Offre créée avec succès.")
+    );
+
+    closeJobModal();
+    await loadJobs();
+} catch (error) {
+    console.error("Erreur d'enregistrement de l'offre :", error);
+    alert("Impossible d'enregistrer l'offre : " + error.message);
+} finally {
+    isSavingJob = false;
+
+    if (submitButton) {
+        submitButton.disabled = false;
+        submitButton.textContent = "Enregistrer";
+    }
+}
+
+}
+
+async function saveCompany(event) {
+event.preventDefault();
+
+if (isSavingCompany) return;
+
+const id = getFieldValue("company-id");
+const companyData = {
+    name: getFieldValue("company-name"),
+    location: getFieldValue("company-location"),
+    description: getFieldValue("company-description")
+};
+const isEditing = id !== "";
+
+if (isEditing) {
+    companyData.id = Number(id);
+}
+
+const submitButton = companyForm
+    ? companyForm.querySelector('[type="submit"]')
+    : null;
+
+isSavingCompany = true;
+
+if (submitButton) {
+    submitButton.disabled = true;
+    submitButton.textContent = "Enregistrement...";
+}
+
+try {
+    const result = await apiRequest(COMPANIES_API_URL, {
+        method: isEditing ? "PUT" : "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(companyData)
+    });
+
+    alert(
+        result.message ||
+        (isEditing
+            ? "Entreprise modifiée avec succès."
+            : "Entreprise créée avec succès.")
+    );
+
+    closeCompanyModal();
+    await loadCompanies();
+    updateCompanyOptions();
+} catch (error) {
+    console.error("Erreur d'enregistrement de l'entreprise :", error);
+    alert("Impossible d'enregistrer l'entreprise : " + error.message);
+} finally {
+    isSavingCompany = false;
+
+    if (submitButton) {
+        submitButton.disabled = false;
+        submitButton.textContent = "Enregistrer";
+    }
+}
+
+}
+
+/* --------------------------------------------------
+SUPPRESSION D'UNE OFFRE
+-------------------------------------------------- */
+
+async function deleteJob(id) {
+const job = adminJobs.find(function (item) {
+return item.id === id;
+});
+
+if (!job) return;
+
+const confirmed = window.confirm(
+    'Voulez-vous vraiment supprimer l’offre "' +
+    job.title +
+    '" ?'
+);
+
+if (!confirmed) return;
+
+try {
+    const result = await apiRequest(
+        API_URL + "?id=" + encodeURIComponent(id),
+        {
+            method: "DELETE"
+        }
+    );
+
+    alert(result.message || "Offre supprimée avec succès.");
+    await loadJobs();
+} catch (error) {
+    console.error("Erreur de suppression de l'offre :", error);
+
+    alert(
+        "Impossible de supprimer l'offre : " + error.message
+    );
+}
+
+}
+
+/* --------------------------------------------------
+ÉVÉNEMENTS DES ONGLETS ET DES MODALES
+-------------------------------------------------- */
 
 tabs.forEach(function (tab) {
 tab.addEventListener("click", function () {
@@ -282,29 +828,65 @@ changeTab(tab.dataset.tab);
 });
 });
 
-document.getElementById("add-job-button").addEventListener("click", function () {
+const addJobButton = document.getElementById("add-job-button");
+const addCompanyButton = document.getElementById("add-company-button");
+
+if (addJobButton) {
+addJobButton.addEventListener("click", function () {
 openJobModal();
 });
+}
 
-document.getElementById("add-company-button").addEventListener("click", function () {
+if (addCompanyButton) {
+addCompanyButton.addEventListener("click", function () {
 openCompanyModal();
 });
-
-document.getElementById("job-modal-close").addEventListener("click", closeJobModal);
-document.getElementById("job-cancel").addEventListener("click", closeJobModal);
-
-document.getElementById("company-modal-close").addEventListener("click", closeCompanyModal);
-document.getElementById("company-cancel").addEventListener("click", closeCompanyModal);
-
-document.getElementById("application-modal-close").addEventListener("click", closeApplicationModal);
-document.getElementById("application-cancel").addEventListener("click", closeApplicationModal);
-
-document.addEventListener("click", function (event) {
-const action = event.target.closest(".admin-action");
-
-if (!action) {
-    return;
 }
+
+const jobModalClose = document.getElementById("job-modal-close");
+const jobCancel = document.getElementById("job-cancel");
+const companyModalClose = document.getElementById("company-modal-close");
+const companyCancel = document.getElementById("company-cancel");
+const applicationModalClose =
+document.getElementById("application-modal-close");
+const applicationCancel = document.getElementById("application-cancel");
+
+if (jobModalClose) {
+jobModalClose.addEventListener("click", closeJobModal);
+}
+
+if (jobCancel) {
+jobCancel.addEventListener("click", closeJobModal);
+}
+
+if (companyModalClose) {
+companyModalClose.addEventListener("click", closeCompanyModal);
+}
+
+if (companyCancel) {
+companyCancel.addEventListener("click", closeCompanyModal);
+}
+
+if (applicationModalClose) {
+applicationModalClose.addEventListener("click", closeApplicationModal);
+}
+
+if (applicationCancel) {
+applicationCancel.addEventListener("click", closeApplicationModal);
+}
+
+/* --------------------------------------------------
+GESTION DES CLICS SUR LES ACTIONS
+-------------------------------------------------- */
+
+document.addEventListener("click", async function (event) {
+const target = event.target;
+
+if (!(target instanceof Element)) return;
+
+const action = target.closest(".admin-action");
+
+if (!action) return;
 
 const type = action.dataset.type;
 const id = Number(action.dataset.id);
@@ -314,29 +896,16 @@ if (type === "job") {
         return item.id === id;
     });
 
-    if (!job) {
-        return;
-    }
+    if (!job) return;
 
     if (action.classList.contains("edit")) {
         openJobModal(job);
+        return;
     }
 
     if (action.classList.contains("delete")) {
-        const confirmed = confirm("Voulez-vous vraiment supprimer cette offre ?");
-
-        if (!confirmed) {
-            return;
-        }
-
-        const index = adminJobs.findIndex(function (item) {
-            return item.id === id;
-        });
-
-        adminJobs.splice(index, 1);
-
-        displayJobs();
-        displayCompanies();
+        await deleteJob(id);
+        return;
     }
 }
 
@@ -345,38 +914,19 @@ if (type === "company") {
         return item.id === id;
     });
 
-    if (!company) {
-        return;
-    }
+    if (!company) return;
 
     if (action.classList.contains("edit")) {
         openCompanyModal(company);
+        return;
     }
 
     if (action.classList.contains("delete")) {
-        const hasJobs = adminJobs.some(function (job) {
-            return job.company === company.name;
-        });
-
-        if (hasJobs) {
-            alert("Cette entreprise possède encore des offres.");
-            return;
-        }
-
-        const confirmed = confirm("Voulez-vous vraiment supprimer cette entreprise ?");
-
-        if (!confirmed) {
-            return;
-        }
-
-        const index = adminCompanies.findIndex(function (item) {
-            return item.id === id;
-        });
-
-        adminCompanies.splice(index, 1);
-
-        displayCompanies();
-        displayJobs();
+        alert(
+            "La gestion des entreprises nécessite une API dédiée. " +
+            "Aucune suppression n'a été effectuée."
+        );
+        return;
     }
 }
 
@@ -385,139 +935,53 @@ if (type === "application") {
         return item.id === id;
     });
 
-    if (!application) {
-        return;
-    }
+    if (!application) return;
 
     if (action.classList.contains("edit")) {
         openApplicationModal(application);
+        return;
     }
 
     if (action.classList.contains("delete")) {
-        const confirmed = confirm("Voulez-vous vraiment supprimer cette candidature ?");
-
-        if (!confirmed) {
-            return;
-        }
-
-        const index = adminApplications.findIndex(function (item) {
-            return item.id === id;
-        });
-
-        adminApplications.splice(index, 1);
-
-        displayApplications();
+        alert(
+            "La suppression des candidatures nécessite une route " +
+            "DELETE dans l'API des candidatures."
+        );
     }
 }
 
 });
 
-jobForm.addEventListener("submit", function (event) {
-event.preventDefault();
+/* --------------------------------------------------
+SOUMISSION DES FORMULAIRES
+-------------------------------------------------- */
 
-const id = Number(document.getElementById("job-id").value);
-
-const jobData = {
-    title: document.getElementById("job-title").value,
-    company: document.getElementById("job-company").value,
-    location: document.getElementById("job-location").value,
-    type: document.getElementById("job-type").value,
-    salary: document.getElementById("job-salary").value,
-    shortDescription: document.getElementById("job-short-description").value,
-    description: document.getElementById("job-description").value
-};
-
-if (id) {
-    const job = adminJobs.find(function (item) {
-        return item.id === id;
-    });
-
-    Object.assign(job, jobData);
-} else {
-    const newId = adminJobs.length
-        ? Math.max(...adminJobs.map(function (job) {
-            return job.id;
-        })) + 1
-        : 1;
-
-    adminJobs.push({
-        id: newId,
-        ...jobData
-    });
+if (jobForm) {
+jobForm.addEventListener("submit", saveJob);
 }
 
-displayJobs();
-displayCompanies();
-closeJobModal();
-
-});
-
-companyForm.addEventListener("submit", function (event) {
-event.preventDefault();
-
-const id = Number(document.getElementById("company-id").value);
-
-const oldCompany = adminCompanies.find(function (company) {
-    return company.id === id;
-});
-
-const companyName = document.getElementById("company-name").value;
-
-const companyData = {
-    name: companyName,
-    location: document.getElementById("company-location").value,
-    description: document.getElementById("company-description").value
-};
-
-if (id) {
-    oldCompany.name = companyData.name;
-    oldCompany.location = companyData.location;
-    oldCompany.description = companyData.description;
-
-    adminJobs.forEach(function (job) {
-        if (job.company === oldCompany.name) {
-            job.company = companyName;
-        }
-    });
-} else {
-    const newId = adminCompanies.length
-        ? Math.max(...adminCompanies.map(function (company) {
-            return company.id;
-        })) + 1
-        : 1;
-
-    adminCompanies.push({
-        id: newId,
-        ...companyData
-    });
+if (companyForm) {
+companyForm.addEventListener("submit", saveCompany);
 }
 
-displayCompanies();
-displayJobs();
-closeCompanyModal();
-
-});
-
+if (applicationForm) {
 applicationForm.addEventListener("submit", function (event) {
 event.preventDefault();
 
-const id = Number(document.getElementById("application-id").value);
 
-const application = adminApplications.find(function (item) {
-    return item.id === id;
+    alert(
+        "La modification des candidatures nécessite une route PUT " +
+        "dans l'API des candidatures."
+    );
 });
 
-if (!application) {
-    return;
+
 }
 
-application.status = document.getElementById("application-status").value;
+/* --------------------------------------------------
+INITIALISATION
+-------------------------------------------------- */
 
-displayApplications();
-closeApplicationModal();
-
-});
-
-displayJobs();
-displayCompanies();
-displayApplications();
+loadJobs();
+loadCompanies();
+loadApplications();

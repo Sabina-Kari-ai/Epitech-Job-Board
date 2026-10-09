@@ -1,65 +1,6 @@
-const jobs = [
-    {
-        id: 1,
-        title: "Développeur Web Full Stack",
-        company: "Tech Solutions",
-        location: "Paris",
-        type: "CDI",
-        salary: "40k - 50k",
-        description: "Nous recherchons un développeur web full stack pour rejoindre notre équipe.",
-        fullDescription: "Vous participerez au développement d'applications web modernes, de la conception jusqu'à la mise en production."
-    },
-    {
-        id: 2,
-        title: "Backend Developer PHP",
-        company: "Digital Services",
-        location: "Lyon",
-        type: "CDI",
-        salary: "38k - 48k",
-        description: "Rejoignez notre équipe backend pour développer des applications PHP.",
-        fullDescription: "Vous développerez et maintiendrez des applications backend avec PHP, MySQL et les technologies web associées."
-    },
-    {
-        id: 3,
-        title: "Stage Développeur JavaScript",
-        company: "Innovation Agency",
-        location: "Paris",
-        type: "Stage",
-        salary: "800 - 1000 €/mois",
-        description: "Une opportunité de stage pour découvrir le développement JavaScript.",
-        fullDescription: "Vous participerez au développement d'interfaces web et découvrirez les bonnes pratiques du développement JavaScript."
-    },
-    {
-        id: 4,
-        title: "Développeur Frontend",
-        company: "Web Business",
-        location: "Lille",
-        type: "Alternance",
-        salary: "1200 €/mois",
-        description: "Nous recherchons un développeur frontend en alternance.",
-        fullDescription: "Vous travaillerez sur la création et l'amélioration d'interfaces web modernes et responsives."
-    },
-    {
-        id: 5,
-        title: "Intégrateur Web",
-        company: "France Numérique",
-        location: "Paris",
-        type: "CDD",
-        salary: "32k - 38k",
-        description: "Rejoignez notre équipe en tant qu'intégrateur web.",
-        fullDescription: "Vous intégrerez des maquettes et développerez des interfaces web accessibles et responsives."
-    },
-    {
-        id: 6,
-        title: "Ingénieur Logiciel",
-        company: "Future Systems",
-        location: "Lyon",
-        type: "CDI",
-        salary: "45k - 55k",
-        description: "Nous recherchons un ingénieur logiciel pour renforcer notre équipe.",
-        fullDescription: "Vous participerez à la conception, au développement et à l'amélioration de solutions logicielles."
-    }
-];
+const API_URL = "http://127.0.0.1:8001/api/jobs/";
+
+let jobs = [];
 
 const jobsList = document.getElementById("jobs-list");
 const searchInput = document.getElementById("search");
@@ -68,191 +9,336 @@ const searchButton = document.getElementById("search-button");
 const jobsCount = document.getElementById("jobs-count");
 const contractFilters = document.querySelectorAll(".contract-filter");
 const locationFilters = document.querySelectorAll('input[name="location-filter"]');
+const resetButton = document.getElementById("reset-filters");
+
+
+function displayMessage(titleText, descriptionText) {
+if (!jobsList) {
+return;
+}
+
+jobsList.innerHTML = "";
+
+const container = document.createElement("div");
+container.className = "empty-applications";
+
+const title = document.createElement("h2");
+title.textContent = titleText;
+container.appendChild(title);
+
+if (descriptionText) {
+    const paragraph = document.createElement("p");
+    paragraph.textContent = descriptionText;
+    container.appendChild(paragraph);
+}
+
+jobsList.appendChild(container);
+
+
+}
 
 function displayJobs(list) {
-    if (!jobsList) {
-        return;
-    }
+if (!jobsList) {
+return;
+}
 
-    jobsList.innerHTML = "";
 
-    if (jobsCount) {
-        jobsCount.textContent = list.length + (list.length > 1 ? " offres" : " offre");
-    }
+jobsList.innerHTML = "";
 
-    if (list.length === 0) {
-        jobsList.innerHTML = `
-            <div class="empty-applications">
-                <h2>Aucune offre trouvée</h2>
-                <p>Essayez de modifier vos critères de recherche.</p>
-            </div>
-        `;
-        return;
-    }
+if (jobsCount) {
+    jobsCount.textContent = list.length + (list.length > 1 ? " offres" : " offre");
+}
 
-    list.forEach(function (job) {
-        const card = document.createElement("article");
+if (list.length === 0) {
+    displayMessage(
+        "Aucune offre trouvée",
+        "Essayez de modifier vos critères de recherche."
+    );
+    return;
+}
 
-        card.className = "job-card";
+list.forEach(function (job) {
+    const card = document.createElement("article");
+    card.className = "job-card";
 
-        card.innerHTML = `
-            <div class="job-card-top">
-                <div class="company-logo">
-                    ${job.company.charAt(0)}
-                </div>
+    const logo = document.createElement("div");
+    logo.className = "company-logo";
+    logo.textContent = String(job.company || "?").charAt(0).toUpperCase();
 
-                <div class="job-card-content">
-                    <h3>${job.title}</h3>
-                    <p class="company-name">${job.company}</p>
-                    <span class="job-contract">${job.type}</span>
-                    <p class="job-salary">${job.salary}</p>
-                </div>
-            </div>
+    const content = document.createElement("div");
+    content.className = "job-card-content";
 
-            <div class="job-card-bottom">
-                <span class="job-card-location">${job.location}</span>
+    const title = document.createElement("h3");
+    title.textContent = job.title || "Titre non précisé";
 
-                <button class="details-button" data-id="${job.id}">
-                    Voir l'offre
-                </button>
-            </div>
-        `;
+    const company = document.createElement("p");
+    company.className = "company-name";
+    company.textContent = job.company || "Entreprise non précisée";
 
-        jobsList.appendChild(card);
+    const contract = document.createElement("span");
+    contract.className = "job-contract";
+    contract.textContent = job.contract_type || "Contrat non précisé";
+
+    const salary = document.createElement("p");
+    salary.className = "job-salary";
+    salary.textContent = job.salary || "Salaire non précisé";
+
+    content.append(title, company, contract, salary);
+
+    const top = document.createElement("div");
+    top.className = "job-card-top";
+    top.append(logo, content);
+
+    const location = document.createElement("span");
+    location.className = "job-card-location";
+    location.textContent = job.location || "Localisation non précisée";
+
+    const detailsButton = document.createElement("button");
+    detailsButton.className = "details-button";
+    detailsButton.type = "button";
+    detailsButton.dataset.id = job.id;
+    detailsButton.textContent = "Voir l'offre";
+
+    detailsButton.addEventListener("click", function () {
+        showJob(job.id);
     });
 
-    document.querySelectorAll(".details-button").forEach(function (button) {
-        button.addEventListener("click", function () {
-            const id = Number(button.dataset.id);
-            showJob(id);
-        });
-    });
+    const bottom = document.createElement("div");
+    bottom.className = "job-card-bottom";
+    bottom.append(location, detailsButton);
+
+    card.append(top, bottom);
+    jobsList.appendChild(card);
+});
+
+
 }
 
 function filterJobs() {
-    const search = searchInput
-        ? searchInput.value.toLowerCase().trim()
-        : "";
+const search = searchInput
+? searchInput.value.toLowerCase().trim()
+: "";
 
-    const locationSearch = locationInput
-        ? locationInput.value.toLowerCase().trim()
-        : "";
 
-    const selectedContracts = Array.from(contractFilters)
-        .filter(function (filter) {
-            return filter.checked;
-        })
-        .map(function (filter) {
-            return filter.value;
-        });
+const locationSearch = locationInput
+    ? locationInput.value.toLowerCase().trim()
+    : "";
 
-    const selectedLocation = Array.from(locationFilters)
-        .find(function (filter) {
-            return filter.checked;
-        });
-
-    const filteredJobs = jobs.filter(function (job) {
-        const matchesSearch =
-            search === "" ||
-            job.title.toLowerCase().includes(search) ||
-            job.company.toLowerCase().includes(search);
-
-        const matchesLocationSearch =
-            locationSearch === "" ||
-            job.location.toLowerCase().includes(locationSearch);
-
-        const matchesContract =
-            selectedContracts.length === 0 ||
-            selectedContracts.includes(job.type);
-
-        const matchesLocation =
-            !selectedLocation ||
-            selectedLocation.value === "all" ||
-            job.location === selectedLocation.value;
-
-        return (
-            matchesSearch &&
-            matchesLocationSearch &&
-            matchesContract &&
-            matchesLocation
-        );
+const selectedContracts = Array.from(contractFilters)
+    .filter(function (filter) {
+        return filter.checked;
+    })
+    .map(function (filter) {
+        return filter.value;
     });
 
-    displayJobs(filteredJobs);
+const selectedLocation = Array.from(locationFilters)
+    .find(function (filter) {
+        return filter.checked;
+    });
+
+const filteredJobs = jobs.filter(function (job) {
+    const title = String(job.title || "").toLowerCase();
+    const company = String(job.company || "").toLowerCase();
+    const location = String(job.location || "").toLowerCase();
+    const contract = String(job.contract_type || "");
+
+    const matchesSearch =
+        search === "" ||
+        title.includes(search) ||
+        company.includes(search);
+
+    const matchesLocationSearch =
+        locationSearch === "" ||
+        location.includes(locationSearch);
+
+    const matchesContract =
+        selectedContracts.length === 0 ||
+        selectedContracts.includes(contract);
+
+    const matchesLocation =
+        !selectedLocation ||
+        selectedLocation.value === "all" ||
+        location === selectedLocation.value.toLowerCase();
+
+    return (
+        matchesSearch &&
+        matchesLocationSearch &&
+        matchesContract &&
+        matchesLocation
+    );
+});
+
+displayJobs(filteredJobs);
+
+
 }
 
 function showJob(id) {
-    const job = jobs.find(function (item) {
-        return item.id === id;
-    });
+const job = jobs.find(function (item) {
+return Number(item.id) === Number(id);
+});
 
-    if (!job) {
-        return;
-    }
 
-    const modal = document.getElementById("job-modal");
-    const modalTitle = document.getElementById("modal-title");
-    const modalCompany = document.getElementById("modal-company");
-    const modalLocation = document.getElementById("modal-location");
-    const modalDescription = document.getElementById("modal-description");
-    const applyButton = document.getElementById("apply-button");
+if (!job) {
+    return;
+}
 
-    if (!modal) {
-        window.location.href = "job.html?id=" + id;
-        return;
-    }
+const modal = document.getElementById("job-modal");
+const modalTitle = document.getElementById("modal-title");
+const modalCompany = document.getElementById("modal-company");
+const modalLocation = document.getElementById("modal-location");
+const modalDescription = document.getElementById("modal-description");
+const applyButton = document.getElementById("apply-button");
 
-    modalTitle.textContent = job.title;
-    modalCompany.textContent = job.company;
-    modalLocation.textContent = job.location + " · " + job.type;
-    modalDescription.textContent = job.fullDescription;
+if (!modal) {
+    window.location.href = "apply.html?id=" + encodeURIComponent(job.id);
+    return;
+}
 
-    if (applyButton) {
-        applyButton.onclick = function () {
-            window.location.href = "apply.html?id=" + job.id;
-        };
-    }
+if (modalTitle) {
+    modalTitle.textContent = job.title || "Titre non précisé";
+}
 
-    modal.classList.remove("hidden");
+if (modalCompany) {
+    modalCompany.textContent = job.company || "Entreprise non précisée";
+}
+
+if (modalLocation) {
+    modalLocation.textContent =
+        (job.location || "Localisation non précisée") +
+        " · " +
+        (job.contract_type || "Contrat non précisé");
+}
+
+if (modalDescription) {
+    modalDescription.textContent =
+        job.description || job.short_description || "Aucune description disponible.";
+}
+
+if (applyButton) {
+    applyButton.onclick = function () {
+        window.location.href = "apply.html?id=" + encodeURIComponent(job.id);
+    };
+}
+
+modal.classList.remove("hidden");
+
 }
 
 function closeModal() {
-    const modal = document.getElementById("job-modal");
+const modal = document.getElementById("job-modal");
 
-    if (modal) {
-        modal.classList.add("hidden");
+
+if (modal) {
+    modal.classList.add("hidden");
+}
+
+
+}
+
+async function loadJobs() {
+if (!jobsList) {
+console.error("Élément jobs-list introuvable dans la page.");
+return;
+}
+
+
+displayMessage("Chargement des offres...", "");
+
+try {
+    const response = await fetch(API_URL);
+
+    if (!response.ok) {
+        throw new Error("Erreur HTTP " + response.status);
     }
+
+    const data = await response.json();
+
+    if (!Array.isArray(data)) {
+        throw new Error("Le format des données reçues est invalide.");
+    }
+
+    jobs = data;
+    filterJobs();
+} catch (error) {
+    console.error("Impossible de charger les offres :", error);
+
+    displayMessage(
+        "Impossible de charger les offres",
+        "Vérifiez que le serveur PHP est démarré et que la base de données est accessible."
+    );
+
+    const retryButton = document.createElement("button");
+    retryButton.type = "button";
+    retryButton.id = "retry-jobs";
+    retryButton.textContent = "Réessayer";
+    retryButton.addEventListener("click", loadJobs);
+
+    jobsList.appendChild(retryButton);
+
+    if (jobsCount) {
+        jobsCount.textContent = "0 offre";
+    }
+}
+
+
 }
 
 const modalClose = document.getElementById("modal-close");
 const modalOverlay = document.getElementById("modal-overlay");
 
 if (searchInput) {
-    searchInput.addEventListener("input", filterJobs);
+searchInput.addEventListener("input", filterJobs);
 }
 
 if (locationInput) {
-    locationInput.addEventListener("input", filterJobs);
+locationInput.addEventListener("input", filterJobs);
 }
 
 if (searchButton) {
-    searchButton.addEventListener("click", filterJobs);
+searchButton.addEventListener("click", filterJobs);
 }
 
 contractFilters.forEach(function (filter) {
-    filter.addEventListener("change", filterJobs);
+filter.addEventListener("change", filterJobs);
 });
 
 locationFilters.forEach(function (filter) {
-    filter.addEventListener("change", filterJobs);
+filter.addEventListener("change", filterJobs);
 });
 
 if (modalClose) {
-    modalClose.addEventListener("click", closeModal);
+modalClose.addEventListener("click", closeModal);
 }
+
+if (resetButton) {
+resetButton.addEventListener("click", function () {
+if (searchInput) {
+searchInput.value = "";
+}
+
+
+    if (locationInput) {
+        locationInput.value = "";
+    }
+
+    contractFilters.forEach(function (filter) {
+        filter.checked = false;
+    });
+
+    locationFilters.forEach(function (filter) {
+        filter.checked = filter.value === "all";
+    });
+
+    filterJobs();
+});
+
+}
+
 
 if (modalOverlay) {
-    modalOverlay.addEventListener("click", closeModal);
+modalOverlay.addEventListener("click", closeModal);
 }
 
-displayJobs(jobs);
+loadJobs();

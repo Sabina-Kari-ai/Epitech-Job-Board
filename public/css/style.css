@@ -949,15 +949,15 @@ button {
     position: fixed;
     inset: 0;
     z-index: 1000;
-    display: flex;
+    display: none;
     align-items: center;
     justify-content: center;
     padding: 20px;
     background: rgba(0, 0, 0, 0.45);
 }
 
-.admin-modal.hidden {
-    display: none;
+.admin-modal.active {
+    display: flex;
 }
 
 .admin-modal-content {
@@ -1266,4 +1266,41 @@ button {
         flex-direction: column;
         align-items: flex-start;
     }
+}
+
+/* Bouton Réinitialiser des filtres */
+
+#reset-filters {
+display: inline-flex;
+align-items: center;
+justify-content: center;
+padding: 9px 15px;
+min-height: 38px;
+border: 1px solid #d5deeb;
+border-radius: 7px;
+background-color: #ffffff;
+color: #244f9e;
+font-family: inherit;
+font-size: 14px;
+font-weight: 600;
+line-height: 1.4;
+cursor: pointer;
+transition: background-color 0.2s ease,
+border-color 0.2s ease,
+color 0.2s ease;
+}
+
+#reset-filters:hover {
+background-color: #edf3ff;
+border-color: #244f9e;
+color: #183e80;
+}
+
+#reset-filters:focus-visible {
+outline: 3px solid rgba(36, 79, 158, 0.25);
+outline-offset: 2px;
+}
+
+#reset-filters:active {
+background-color: #e0eaff;
 }

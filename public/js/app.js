@@ -1,3 +1,5 @@
+const APPLICATIONS_API_URL = "http://127.0.0.1:8001/api/app/";
+
 const applicationsList = document.getElementById("applications-list");
 
 const applications =
