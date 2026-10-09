@@ -11,7 +11,7 @@
 "dev": "vite --host 127.0.0.1",
 "build": "vite build",
 "preview": "vite preview --host 127.0.0.1",
-"api": "C:\\wamp64\\bin\\php\\php8.3.28\\php.exe -S 127.0.0.1:8001 -t ."
+"api": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/start-api.ps1"
 },
 "devDependencies": {
 "vite": "^8.3.4"
