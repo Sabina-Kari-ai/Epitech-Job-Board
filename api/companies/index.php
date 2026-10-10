@@ -2,7 +2,7 @@
 
 header("Content-Type: application/json; charset=UTF-8");
 header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: GET, POST, PUT, OPTIONS");
+header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type");
 
 if ($_SERVER["REQUEST_METHOD"] === "OPTIONS") {
@@ -37,12 +37,55 @@ try {
         sendCompaniesJson($statement->fetchAll());
     }
 
-    if ($method !== "POST" && $method !== "PUT") {
-        header("Allow: GET, POST, PUT, OPTIONS");
+    if (!in_array($method, ["POST", "PUT", "DELETE"], true)) {
+    header("Allow: GET, POST, PUT, DELETE, OPTIONS");
+    sendCompaniesJson([
+        "error" => "Méthode non autorisée."
+    ], 405);
+}
+
+    
+if ($method === "DELETE") {
+    $id = filter_var($_GET["id"] ?? null, FILTER_VALIDATE_INT);
+
+    if ($id === false || $id === null || $id < 1) {
         sendCompaniesJson([
-            "error" => "Méthode non autorisée."
-        ], 405);
+            "error" => "Identifiant d'entreprise invalide."
+        ], 400);
     }
+
+    $check = $pdo->prepare(
+        "SELECT id FROM companies WHERE id = ?"
+    );
+    $check->execute([$id]);
+
+    if (!$check->fetch()) {
+        sendCompaniesJson([
+            "error" => "Entreprise introuvable."
+        ], 404);
+    }
+
+    $jobsCheck = $pdo->prepare(
+        "SELECT COUNT(*) FROM jobs WHERE company_id = ?"
+    );
+    $jobsCheck->execute([$id]);
+
+    if ((int) $jobsCheck->fetchColumn() > 0) {
+        sendCompaniesJson([
+            "error" => "Impossible de supprimer cette entreprise : des offres lui sont associées."
+        ], 409);
+    }
+
+    $delete = $pdo->prepare(
+        "DELETE FROM companies WHERE id = ?"
+    );
+    $delete->execute([$id]);
+
+    sendCompaniesJson([
+        "success" => true,
+        "message" => "Entreprise supprimée avec succès."
+    ]);
+}
 
     $data = json_decode(file_get_contents("php://input"), true);
 
