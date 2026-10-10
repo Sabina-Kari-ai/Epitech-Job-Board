@@ -13,9 +13,7 @@ if ($_SERVER["REQUEST_METHOD"] === "OPTIONS") {
 
 require_once __DIR__ . "/../config/database.php";
 
-/**
- * Envoie une réponse JSON et termine le script.
- */
+// Envoie une réponse JSON.
 function sendJson(array $data, int $statusCode = 200): void
 {
     http_response_code($statusCode);
@@ -28,10 +26,7 @@ function sendJson(array $data, int $statusCode = 200): void
     exit;
 }
 
-/**
- * Récupère et valide les données JSON envoyées.
- */
-
+// Lit le corps JSON.
 function getRequestData(): array
 {
     $raw = file_get_contents("php://input");
@@ -48,9 +43,7 @@ function getRequestData(): array
     return $data;
 }
 
-/**
- * Recherche une entreprise par son identifiant ou son nom.
- */
+// Résout une entreprise par ID ou nom.
 function findCompanyId(PDO $pdo, array $data): int
 {
     if (!empty($data["company_id"])) {
@@ -103,9 +96,7 @@ function findCompanyId(PDO $pdo, array $data): int
     return (int) $company["id"];
 }
 
-/**
- * Vérifie et prépare les données d'une offre.
- */
+// Valide et normalise une offre.
 function validateJobData(array $data): array
 {
     $title = trim((string) ($data["title"] ?? ""));
@@ -156,17 +147,7 @@ function validateJobData(array $data): array
 try {
     $method = $_SERVER["REQUEST_METHOD"];
 
-    /*
-     * GET : liste, recherche, filtres ou détail d'une offre.
-     *
-     * Exemples :
-     * /api/jobs/
-     * /api/jobs/?id=1
-     * /api/jobs/?q=developpeur
-     * /api/jobs/?location=Nantes
-     * /api/jobs/?type=CDI
-     * /api/jobs/?company=Entreprise
-     */
+    // Liste, filtre ou affiche une offre.
     if ($method === "GET") {
         $sql = "
             SELECT
@@ -277,9 +258,7 @@ try {
         sendJson($jobs);
     }
 
-    /*
-     * POST : créer une offre.
-     */
+    // Crée une offre.
     if ($method === "POST") {
         $data = getRequestData();
         $job = validateJobData($data);
@@ -327,9 +306,7 @@ try {
         ], 201);
     }
 
-    /*
-     * PUT : modifier une offre existante.
-     */
+    // Modifie une offre.
     if ($method === "PUT") {
         $data = getRequestData();
 
@@ -391,9 +368,7 @@ try {
         ]);
     }
 
-    /*
-     * DELETE : supprimer une offre sans candidature associée.
-     */
+    // Supprime une offre sans candidature associée.
     if ($method === "DELETE") {
         $id = filter_var(
             $_GET["id"] ?? null,

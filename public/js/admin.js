@@ -31,9 +31,7 @@ const applicationForm = document.getElementById("application-form");
 let isSavingJob = false;
 let isSavingCompany = false;
 
-/* --------------------------------------------------
-OUTILS
--------------------------------------------------- */
+// Outils.
 
 function showTableMessage(list, message, columnCount) {
 if (!list) return;
@@ -125,9 +123,7 @@ job_title: application.job_title || ""
 };
 }
 
-/* --------------------------------------------------
-CHARGEMENT DES DONNÉES
--------------------------------------------------- */
+// Chargement des données.
 
 async function loadJobs() {
 if (!jobsList) return;
@@ -220,9 +216,7 @@ try {
 
 }
 
-/* --------------------------------------------------
-AFFICHAGE DES OFFRES
--------------------------------------------------- */
+// Affichage des offres.
 
 function displayJobs() {
 if (!jobsList) return;
@@ -276,9 +270,7 @@ updateCompanyOptions();
 
 }
 
-/* --------------------------------------------------
-AFFICHAGE DES ENTREPRISES
--------------------------------------------------- */
+// Affichage des entreprises.
 
 function displayCompanies() {
 if (!companiesList) return;
@@ -338,9 +330,7 @@ adminCompanies.forEach(function (company) {
 
 }
 
-/* --------------------------------------------------
-AFFICHAGE DES CANDIDATURES
--------------------------------------------------- */
+// Affichage des candidatures.
 
 function displayApplications() {
 if (!applicationsList) return;
@@ -412,9 +402,7 @@ adminApplications.forEach(function (application) {
 
 }
 
-/* --------------------------------------------------
-BOUTONS D'ACTION
--------------------------------------------------- */
+// Boutons d'action.
 
 function createActionButton(label, type, id, action) {
 const button = document.createElement("button");
@@ -461,9 +449,7 @@ if (previousValue) {
 
 }
 
-/* --------------------------------------------------
-ONGLETS
--------------------------------------------------- */
+// Navigation entre les onglets.
 
 function changeTab(tabId) {
 tabs.forEach(function (tab) {
@@ -488,9 +474,7 @@ if (tabId === "companies-panel") {
 
 }
 
-/* --------------------------------------------------
-MODALE DES OFFRES
--------------------------------------------------- */
+// Modale des offres.
 
 function openJobModal(job) {
 updateCompanyOptions();
@@ -538,9 +522,7 @@ if (jobForm) {
 
 }
 
-/* --------------------------------------------------
-MODALE DES ENTREPRISES
--------------------------------------------------- */
+// Modale des entreprises.
 
 function openCompanyModal(company) {
 setFieldValue("company-id", company ? company.id : "");
@@ -576,9 +558,7 @@ if (companyForm) {
 
 }
 
-/* --------------------------------------------------
-MODALE DES CANDIDATURES
--------------------------------------------------- */
+// Modale des candidatures.
 
 function openApplicationModal(application) {
 if (!application) return;
@@ -621,9 +601,7 @@ if (applicationForm) {
 
 }
 
-/* --------------------------------------------------
-ENREGISTREMENT D'UNE OFFRE
--------------------------------------------------- */
+// Enregistrement d'une offre.
 
 async function saveJob(event) {
 event.preventDefault();
@@ -779,9 +757,7 @@ try {
 
 }
 
-/* --------------------------------------------------
-SUPPRESSION D'UNE OFFRE
--------------------------------------------------- */
+// Suppression d'une offre.
 
 async function deleteJob(id) {
 const job = adminJobs.find(function (item) {
@@ -818,9 +794,7 @@ try {
 
 }
 
-/* --------------------------------------------------
-ÉVÉNEMENTS DES ONGLETS ET DES MODALES
--------------------------------------------------- */
+// Événements des onglets et des modales.
 
 tabs.forEach(function (tab) {
 tab.addEventListener("click", function () {
@@ -875,9 +849,7 @@ if (applicationCancel) {
 applicationCancel.addEventListener("click", closeApplicationModal);
 }
 
-/* --------------------------------------------------
-GESTION DES CLICS SUR LES ACTIONS
--------------------------------------------------- */
+// Actions sur les lignes.
 
 document.addEventListener("click", async function (event) {
 const target = event.target;
@@ -923,8 +895,7 @@ if (type === "company") {
 
     if (action.classList.contains("delete")) {
         alert(
-            "La gestion des entreprises nécessite une API dédiée. " +
-            "Aucune suppression n'a été effectuée."
+            "La suppression depuis l'administration reste à connecter."
         );
         return;
     }
@@ -943,6 +914,7 @@ if (type === "application") {
     }
 
     if (action.classList.contains("delete")) {
+        // TODO: Ajouter une route DELETE avant d'activer cette action.
         alert(
             "La suppression des candidatures nécessite une route " +
             "DELETE dans l'API des candidatures."
@@ -952,9 +924,7 @@ if (type === "application") {
 
 });
 
-/* --------------------------------------------------
-SOUMISSION DES FORMULAIRES
--------------------------------------------------- */
+// Soumission des formulaires.
 
 if (jobForm) {
 jobForm.addEventListener("submit", saveJob);
@@ -969,18 +939,16 @@ applicationForm.addEventListener("submit", function (event) {
 event.preventDefault();
 
 
+    // TODO: Connecter ce formulaire à la route PUT des candidatures.
     alert(
-        "La modification des candidatures nécessite une route PUT " +
-        "dans l'API des candidatures."
+        "La modification du statut depuis l'administration reste à connecter."
     );
 });
 
 
 }
 
-/* --------------------------------------------------
-INITIALISATION
--------------------------------------------------- */
+// Initialisation.
 
 loadJobs();
 loadCompanies();

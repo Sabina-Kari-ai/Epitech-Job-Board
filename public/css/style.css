@@ -1268,7 +1268,7 @@ button {
     }
 }
 
-/* Bouton Réinitialiser des filtres */
+/* Réinitialisation des filtres. */
 
 #reset-filters {
 display: inline-flex;

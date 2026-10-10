@@ -34,7 +34,7 @@ function readJson(): array
 try {
     $method = $_SERVER["REQUEST_METHOD"];
 
-    // CRÉER UNE CANDIDATURE
+    // Crée une candidature.
     if ($method === "POST") {
         $data = readJson();
 
@@ -61,7 +61,7 @@ try {
             sendJson(400, ["error" => "L'adresse email est invalide."]);
         }
 
-        // Vérifier que l'offre existe et si la lettre est obligatoire.
+        // Vérifie l'offre et la lettre requise.
         $checkJob = $pdo->prepare(
             "SELECT id, cover_letter_required
              FROM jobs
@@ -115,7 +115,7 @@ try {
         ]);
     }
 
-    // CONSULTER TOUTES LES CANDIDATURES OU UNE SEULE
+    // Liste les candidatures ou affiche un détail.
     if ($method === "GET") {
         $id = filter_var($_GET["id"] ?? null, FILTER_VALIDATE_INT);
 
@@ -152,7 +152,7 @@ try {
         sendJson(200, $statement->fetchAll(PDO::FETCH_ASSOC));
     }
 
-    // MODIFIER LE STATUT D'UNE CANDIDATURE
+    // Met à jour le statut.
     if ($method === "PUT") {
         $data = readJson();
 
