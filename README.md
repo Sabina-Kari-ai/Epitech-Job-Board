@@ -22,50 +22,36 @@ Epitech Job Board est une application web pour consulter des offres d'emploi, d�
 
 1. Clone le dépôt et entre dans le dossier du projet :
 
-   ```sh
-   git clone https://github.com/Sabina-Kari-ai/Epitech-Job-Board.git
-   cd Epitech-Job-Board
-   ```
+   `git clone https://github.com/Sabina-Kari-ai/Epitech-Job-Board.git`
+   `cd Epitech-Job-Board`
 
 2. Installe les dépendances du frontend :
 
-   ```sh
-   npm install
-   ```
+   `npm install`
 
 3. Configure les identifiants MySQL dans [`api/config/database.php`](api/config/database.php).
 
 4. Crée les tables en exécutant `database/schema.sql` dans MySQL Workbench ou depuis un terminal :
 
-   ```sh
-   mysql -u root -p < database/schema.sql
-   ```
+   `mysql -u root -p < database/schema.sql`
 
 5. Pour ajouter les données de démonstration, exécute `database/seed.sql` une seule fois, après le schéma, sur une base vide :
 
-   ```sh
-   mysql -u root -p job_board < database/seed.sql
-   ```
+   `mysql -u root -p job_board < database/seed.sql`
 
 ## Lancer le projet
 
 Depuis la racine du dépôt, démarre l'API dans un terminal :
 
-```sh
-npm run api
-```
+`npm run api`
 
 Cette commande utilise PHP et lance l'API sur `http://127.0.0.1:8001`. Le script de démarrage automatique du dépôt utilise PowerShell ; si nécessaire, tu peux lancer le serveur PHP directement depuis la racine :
 
-```sh
-php -S 127.0.0.1:8001 -t .
-```
+`php -S 127.0.0.1:8001 -t .`
 
 Dans un autre terminal, démarre le frontend :
 
-```sh
-npm run dev
-```
+`npm run dev`
 
 Ouvre l'adresse locale affichée par Vite, généralement `http://127.0.0.1:5173`.
 
@@ -106,9 +92,7 @@ Les requêtes `POST` et `PUT` attendent un corps JSON. Remplace `1` par l'identi
 
 Pour générer les fichiers frontend de production :
 
-```sh
-npm run build
-```
+`npm run build`
 
 Les fichiers générés sont placés dans `dist/`.
 
