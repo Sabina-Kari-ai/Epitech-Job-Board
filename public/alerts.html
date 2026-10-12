@@ -2,31 +2,50 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+    <title>Mes alertes - JobBoard</title>
 
-    <title>Mes alertes - Job Board</title>
-
-    <link
-        rel="stylesheet"
-        href="css/style.css"
-    >
+    <link rel="stylesheet" href="css/style.css">
 </head>
 
 <body>
 
+<header class="jobboard-brand">
+    <a href="index.html" class="jobboard-logo">
+        JobBoard
+    </a>
+
+    <nav class="jobboard-nav">
+        <a href="index.html">Offres</a>
+        <a href="alerts.html">Mes alertes</a>
+        <a href="profile.html">Mon profil</a>
+    </nav>
+</header>
+
+
 <main>
 
-    <h1>Mes alertes</h1>
+    <div class="page-header">
+        <span class="page-label">
+            ESPACE CANDIDAT
+        </span>
+
+        <h1>Mes alertes emploi</h1>
+
+        <p>
+            Créez des alertes selon vos critères
+            et gérez-les depuis votre espace candidat.
+        </p>
+    </div>
+
 
     <p>
         <a href="profile.html">
             ← Retour au profil
         </a>
     </p>
+
 
     <section>
 
@@ -41,7 +60,7 @@
             <input
                 type="text"
                 id="keyword"
-                placeholder="Développeur PHP"
+                placeholder="Ex. Développeur PHP"
             >
 
             <label for="location">
@@ -51,7 +70,7 @@
             <input
                 type="text"
                 id="location"
-                placeholder="Nantes"
+                placeholder="Ex. Nantes"
             >
 
             <label for="contractType">
@@ -61,7 +80,7 @@
             <select id="contractType">
 
                 <option value="">
-                    Tous
+                    Tous les contrats
                 </option>
 
                 <option value="Alternance">
@@ -118,39 +137,58 @@ const message =
     document.getElementById('message');
 
 
+// ==============================
+// LOAD ALERTS
+// ==============================
+
 async function loadAlerts() {
 
-    const response =
-        await fetch(
-            '/api/alerts/index.php'
-        );
+    try {
 
-    if (response.status === 401) {
-        window.location.href =
-            'login.html';
+        const response =
+            await fetch(
+                '/api/alerts/index.php'
+            );
 
-        return;
-    }
+        if (response.status === 401) {
 
-    const result =
-        await response.json();
+            window.location.href =
+                'login.html';
 
-    if (!response.ok) {
+            return;
+        }
+
+        const result =
+            await response.json();
+
+        if (!response.ok) {
+
+            alertsList.textContent =
+                result.message || 'Erreur.';
+
+            return;
+        }
+
+        renderAlerts(result.alerts);
+
+    } catch (error) {
+
         alertsList.textContent =
-            result.message;
-
-        return;
+            'Erreur de connexion au serveur.';
     }
-
-    renderAlerts(result.alerts);
 }
 
+
+// ==============================
+// DISPLAY ALERTS
+// ==============================
 
 function renderAlerts(alerts) {
 
     alertsList.innerHTML = '';
 
     if (!alerts.length) {
+
         alertsList.textContent =
             'Aucune alerte enregistrée.';
 
@@ -258,13 +296,20 @@ function renderAlerts(alerts) {
 }
 
 
+// ==============================
+// CREATE ALERT
+// ==============================
+
 alertForm.addEventListener(
     'submit',
     async (event) => {
 
         event.preventDefault();
 
+        message.textContent = '';
+
         const data = {
+
             keyword:
                 document.getElementById(
                     'keyword'
@@ -281,35 +326,49 @@ alertForm.addEventListener(
                 ).value
         };
 
-        const response =
-            await fetch(
-                '/api/alerts/index.php',
-                {
-                    method: 'POST',
+        try {
 
-                    headers: {
-                        'Content-Type':
-                            'application/json'
-                    },
+            const response =
+                await fetch(
+                    '/api/alerts/index.php',
+                    {
+                        method: 'POST',
 
-                    body:
-                        JSON.stringify(data)
-                }
-            );
+                        headers: {
+                            'Content-Type':
+                                'application/json'
+                        },
 
-        const result =
-            await response.json();
+                        body:
+                            JSON.stringify(data)
+                    }
+                );
 
-        message.textContent =
-            result.message;
+            const result =
+                await response.json();
 
-        if (response.ok) {
-            alertForm.reset();
-            loadAlerts();
+            message.textContent =
+                result.message;
+
+            if (response.ok) {
+
+                alertForm.reset();
+
+                loadAlerts();
+            }
+
+        } catch (error) {
+
+            message.textContent =
+                'Erreur de connexion au serveur.';
         }
     }
 );
 
+
+// ==============================
+// EDIT ALERT
+// ==============================
 
 async function editAlert(alert) {
 
@@ -344,48 +403,66 @@ async function editAlert(alert) {
     }
 
     const data = {
+
         keyword,
+
         location,
+
         contract_type:
             contractType,
+
         active:
             Boolean(
                 Number(alert.active)
             )
     };
 
-    const response =
-        await fetch(
-            '/api/alerts/index.php?id='
-            + alert.id,
-            {
-                method: 'PATCH',
+    try {
 
-                headers: {
-                    'Content-Type':
-                        'application/json'
-                },
+        const response =
+            await fetch(
+                '/api/alerts/index.php?id='
+                + alert.id,
+                {
+                    method: 'PATCH',
 
-                body:
-                    JSON.stringify(data)
-            }
-        );
+                    headers: {
+                        'Content-Type':
+                            'application/json'
+                    },
 
-    const result =
-        await response.json();
+                    body:
+                        JSON.stringify(data)
+                }
+            );
 
-    message.textContent =
-        result.message;
+        const result =
+            await response.json();
 
-    if (response.ok) {
-        loadAlerts();
+        message.textContent =
+            result.message;
+
+        if (response.ok) {
+
+            loadAlerts();
+        }
+
+    } catch (error) {
+
+        message.textContent =
+            'Erreur de connexion au serveur.';
     }
 }
 
 
+// ==============================
+// TOGGLE ALERT
+// ==============================
+
 async function toggleAlert(alert) {
 
     const data = {
+
         keyword:
             alert.keyword || '',
 
@@ -399,34 +476,47 @@ async function toggleAlert(alert) {
             !Number(alert.active)
     };
 
-    const response =
-        await fetch(
-            '/api/alerts/index.php?id='
-            + alert.id,
-            {
-                method: 'PATCH',
+    try {
 
-                headers: {
-                    'Content-Type':
-                        'application/json'
-                },
+        const response =
+            await fetch(
+                '/api/alerts/index.php?id='
+                + alert.id,
+                {
+                    method: 'PATCH',
 
-                body:
-                    JSON.stringify(data)
-            }
-        );
+                    headers: {
+                        'Content-Type':
+                            'application/json'
+                    },
 
-    const result =
-        await response.json();
+                    body:
+                        JSON.stringify(data)
+                }
+            );
 
-    message.textContent =
-        result.message;
+        const result =
+            await response.json();
 
-    if (response.ok) {
-        loadAlerts();
+        message.textContent =
+            result.message;
+
+        if (response.ok) {
+
+            loadAlerts();
+        }
+
+    } catch (error) {
+
+        message.textContent =
+            'Erreur de connexion au serveur.';
     }
 }
 
+
+// ==============================
+// DELETE ALERT
+// ==============================
 
 async function deleteAlert(id) {
 
@@ -434,25 +524,38 @@ async function deleteAlert(id) {
         return;
     }
 
-    const response =
-        await fetch(
-            '/api/alerts/index.php?id=' + id,
-            {
-                method: 'DELETE'
-            }
-        );
+    try {
 
-    const result =
-        await response.json();
+        const response =
+            await fetch(
+                '/api/alerts/index.php?id=' + id,
+                {
+                    method: 'DELETE'
+                }
+            );
 
-    message.textContent =
-        result.message;
+        const result =
+            await response.json();
 
-    if (response.ok) {
-        loadAlerts();
+        message.textContent =
+            result.message;
+
+        if (response.ok) {
+
+            loadAlerts();
+        }
+
+    } catch (error) {
+
+        message.textContent =
+            'Erreur de connexion au serveur.';
     }
 }
 
+
+// ==============================
+// START
+// ==============================
 
 loadAlerts();
 

@@ -2,202 +2,253 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+    <title>Mon profil - JobBoard</title>
 
-    <title>Mon profil - Job Board</title>
-
-    <link
-        rel="stylesheet"
-        href="css/style.css"
-    >
+    <link rel="stylesheet" href="css/style.css">
 </head>
 
 <body>
 
+<header class="jobboard-brand">
+    <a href="index.html" class="jobboard-logo">
+        JobBoard
+    </a>
+
+    <nav class="jobboard-nav">
+        <a href="index.html">Offres</a>
+        <a href="alerts.html">Mes alertes</a>
+        <a href="profile.html">Mon profil</a>
+    </nav>
+</header>
+
+
 <main>
 
-    <h1>Mon profil</h1>
+    <div class="page-header">
+        <span class="page-label">
+            ESPACE CANDIDAT
+        </span>
 
-    <!-- PROFILE -->
-    <section>
+        <h1>Mon profil</h1>
 
-        <h2>Mes informations</h2>
+        <p>
+            Gérez vos informations personnelles,
+            votre mot de passe, votre CV et vos alertes.
+        </p>
+    </div>
 
-        <form id="profileForm">
 
-            <label for="firstname">
-                Prénom
-            </label>
+    <div class="profile-grid">
 
-            <input
-                type="text"
-                id="firstname"
-                required
+        <!-- PROFILE -->
+        <section>
+
+            <h2>
+                Mes informations
+            </h2>
+
+            <form id="profileForm">
+
+                <label for="firstname">
+                    Prénom
+                </label>
+
+                <input
+                    type="text"
+                    id="firstname"
+                    autocomplete="given-name"
+                    required
+                >
+
+                <label for="lastname">
+                    Nom
+                </label>
+
+                <input
+                    type="text"
+                    id="lastname"
+                    autocomplete="family-name"
+                    required
+                >
+
+                <label for="email">
+                    Adresse email
+                </label>
+
+                <input
+                    type="email"
+                    id="email"
+                    autocomplete="email"
+                    required
+                >
+
+                <label for="phone">
+                    Téléphone
+                </label>
+
+                <input
+                    type="tel"
+                    id="phone"
+                    autocomplete="tel"
+                >
+
+                <button type="submit">
+                    Enregistrer les modifications
+                </button>
+
+            </form>
+
+            <p id="profileMessage"></p>
+
+        </section>
+
+
+        <!-- PASSWORD -->
+        <section>
+
+            <h2>
+                Sécurité
+            </h2>
+
+            <form id="passwordForm">
+
+                <label for="currentPassword">
+                    Mot de passe actuel
+                </label>
+
+                <input
+                    type="password"
+                    id="currentPassword"
+                    autocomplete="current-password"
+                    required
+                >
+
+                <label for="newPassword">
+                    Nouveau mot de passe
+                </label>
+
+                <input
+                    type="password"
+                    id="newPassword"
+                    minlength="8"
+                    autocomplete="new-password"
+                    required
+                >
+
+                <label for="newPasswordConfirmation">
+                    Confirmer le nouveau mot de passe
+                </label>
+
+                <input
+                    type="password"
+                    id="newPasswordConfirmation"
+                    minlength="8"
+                    autocomplete="new-password"
+                    required
+                >
+
+                <button type="submit">
+                    Modifier le mot de passe
+                </button>
+
+            </form>
+
+            <p id="passwordMessage"></p>
+
+        </section>
+
+
+        <!-- CV -->
+        <section>
+
+            <h2>
+                Mon CV
+            </h2>
+
+            <p>
+                Ajoutez votre CV au format PDF
+                pour faciliter vos candidatures.
+            </p>
+
+            <div id="currentCv">
+                Aucun CV enregistré.
+            </div>
+
+            <form id="cvForm">
+
+                <label for="cv">
+                    Fichier PDF
+                </label>
+
+                <input
+                    type="file"
+                    id="cv"
+                    accept="application/pdf"
+                    required
+                >
+
+                <button type="submit">
+                    Ajouter mon CV
+                </button>
+
+            </form>
+
+            <button
+                id="deleteCvButton"
+                type="button"
             >
-
-            <label for="lastname">
-                Nom
-            </label>
-
-            <input
-                type="text"
-                id="lastname"
-                required
-            >
-
-            <label for="email">
-                Email
-            </label>
-
-            <input
-                type="email"
-                id="email"
-                required
-            >
-
-            <label for="phone">
-                Téléphone
-            </label>
-
-            <input
-                type="tel"
-                id="phone"
-            >
-
-            <button type="submit">
-                Modifier le profil
+                Supprimer mon CV
             </button>
 
-        </form>
+            <p id="cvMessage"></p>
 
-        <p id="profileMessage"></p>
-
-    </section>
+        </section>
 
 
-    <!-- PASSWORD -->
-    <section>
+        <!-- ALERTS -->
+        <section>
 
-        <h2>Changer le mot de passe</h2>
+            <h2>
+                Mes alertes emploi
+            </h2>
 
-        <form id="passwordForm">
+            <p>
+                Créez et gérez vos alertes selon
+                vos critères de recherche.
+            </p>
 
-            <label for="currentPassword">
-                Mot de passe actuel
-            </label>
-
-            <input
-                type="password"
-                id="currentPassword"
-                required
+            <a
+                class="button-link"
+                href="alerts.html"
             >
+                Gérer mes alertes
+            </a>
 
-            <label for="newPassword">
-                Nouveau mot de passe
-            </label>
+        </section>
 
-            <input
-                type="password"
-                id="newPassword"
-                minlength="8"
-                required
+
+        <!-- ACCOUNT -->
+        <section class="account-actions full-width">
+
+            <button
+                id="logoutButton"
+                type="button"
             >
-
-            <label for="newPasswordConfirmation">
-                Confirmer le nouveau mot de passe
-            </label>
-
-            <input
-                type="password"
-                id="newPasswordConfirmation"
-                minlength="8"
-                required
-            >
-
-            <button type="submit">
-                Modifier le mot de passe
+                Se déconnecter
             </button>
 
-        </form>
-
-        <p id="passwordMessage"></p>
-
-    </section>
-
-
-    <!-- CV -->
-    <section>
-
-        <h2>Mon CV</h2>
-
-        <div id="currentCv">
-            Aucun CV enregistré.
-        </div>
-
-        <form id="cvForm">
-
-            <input
-                type="file"
-                id="cv"
-                accept="application/pdf"
-                required
+            <button
+                id="deleteAccountButton"
+                type="button"
             >
-
-            <button type="submit">
-                Télécharger mon CV
+                Supprimer mon compte
             </button>
 
-        </form>
+        </section>
 
-        <button
-            id="deleteCvButton"
-            type="button"
-        >
-            Supprimer mon CV
-        </button>
-
-        <p id="cvMessage"></p>
-
-    </section>
-
-
-    <!-- ALERTS -->
-    <section>
-
-        <h2>Mes alertes</h2>
-
-        <a
-            class="button-link"
-            href="alerts.html"
-        >
-            Gérer mes alertes
-        </a>
-
-    </section>
-
-
-    <!-- ACCOUNT ACTIONS -->
-    <section class="account-actions">
-
-        <button
-            id="logoutButton"
-            type="button"
-        >
-            Se déconnecter
-        </button>
-
-        <button
-            id="deleteAccountButton"
-            type="button"
-        >
-            Supprimer mon compte
-        </button>
-
-    </section>
+    </div>
 
 </main>
 
