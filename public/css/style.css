@@ -1,0 +1,607 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+:root {
+    --primary: #1f4b99;
+    --primary-dark: #163a78;
+    --primary-soft: #eef3fb;
+
+    --background: #f8f9fa;
+    --surface: #ffffff;
+
+    --text: #171717;
+    --text-secondary: #374151;
+    --muted: #6b7280;
+
+    --border: #e5e7eb;
+    --border-dark: #d1d5db;
+
+    --danger: #dc3545;
+    --danger-dark: #b42332;
+
+    --success: #15803d;
+
+    --radius: 8px;
+    --shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    min-height: 100vh;
+
+    background: var(--background);
+    color: var(--text);
+
+    font-family:
+        Inter,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        Roboto,
+        Arial,
+        sans-serif;
+
+    line-height: 1.6;
+}
+
+
+/* ==============================
+   MAIN LAYOUT
+============================== */
+
+main {
+    width: min(92%, 900px);
+    margin: 50px auto;
+}
+
+main > h1 {
+    margin-bottom: 30px;
+
+    color: var(--text);
+
+    font-size: 34px;
+    font-weight: 700;
+    line-height: 1.2;
+
+    text-align: center;
+}
+
+main > p {
+    margin-top: 16px;
+    text-align: center;
+}
+
+
+/* ==============================
+   SECTIONS / CARDS
+============================== */
+
+section,
+main > form {
+    margin-bottom: 24px;
+    padding: 28px;
+
+    background: var(--surface);
+
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+
+    box-shadow: var(--shadow);
+}
+
+section h2 {
+    margin-bottom: 18px;
+
+    color: var(--text);
+    font-size: 21px;
+    font-weight: 700;
+}
+
+h3 {
+    margin-bottom: 6px;
+
+    color: var(--text);
+    font-size: 18px;
+}
+
+
+/* ==============================
+   TEXT
+============================== */
+
+p {
+    color: var(--muted);
+}
+
+a {
+    color: var(--primary);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+a:hover {
+    color: var(--primary-dark);
+    text-decoration: underline;
+}
+
+
+/* ==============================
+   FORMS
+============================== */
+
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+label {
+    margin-top: 8px;
+    margin-bottom: 2px;
+
+    color: var(--text-secondary);
+
+    font-size: 14px;
+    font-weight: 600;
+}
+
+input,
+select,
+textarea {
+    width: 100%;
+    min-height: 44px;
+
+    padding: 11px 13px;
+
+    background: #ffffff;
+    color: var(--text);
+
+    border: 1px solid var(--border-dark);
+    border-radius: 6px;
+
+    font: inherit;
+
+    outline: none;
+
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    border-color: var(--primary);
+
+    box-shadow:
+        0 0 0 3px rgba(31, 75, 153, 0.12);
+}
+
+input::placeholder,
+textarea::placeholder {
+    color: #9ca3af;
+}
+
+input[type="file"] {
+    min-height: auto;
+
+    padding: 12px;
+
+    background: #f9fafb;
+}
+
+
+/* ==============================
+   BUTTONS
+============================== */
+
+button,
+.button-link {
+    display: inline-flex;
+
+    align-items: center;
+    justify-content: center;
+
+    min-height: 42px;
+
+    margin-top: 14px;
+    padding: 10px 18px;
+
+    background: var(--primary);
+    color: #ffffff;
+
+    border: 1px solid var(--primary);
+    border-radius: 6px;
+
+    font: inherit;
+    font-size: 14px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    text-decoration: none;
+
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease,
+        transform 0.1s ease;
+}
+
+button:hover,
+.button-link:hover {
+    background: var(--primary-dark);
+    border-color: var(--primary-dark);
+
+    color: #ffffff;
+
+    text-decoration: none;
+}
+
+button:active,
+.button-link:active {
+    transform: translateY(1px);
+}
+
+
+/* ==============================
+   SECONDARY BUTTONS
+============================== */
+
+#logoutButton,
+#deleteCvButton {
+    background: #ffffff;
+    color: var(--primary);
+
+    border-color: var(--primary);
+}
+
+#logoutButton:hover,
+#deleteCvButton:hover {
+    background: var(--primary-soft);
+    color: var(--primary-dark);
+
+    border-color: var(--primary-dark);
+}
+
+
+/* ==============================
+   DANGER BUTTONS
+============================== */
+
+.danger,
+#deleteAccountButton {
+    background: #ffffff;
+    color: var(--danger);
+
+    border-color: var(--danger);
+}
+
+.danger:hover,
+#deleteAccountButton:hover {
+    background: var(--danger);
+    color: #ffffff;
+
+    border-color: var(--danger);
+}
+
+
+/* ==============================
+   MESSAGES
+============================== */
+
+#message,
+#profileMessage,
+#passwordMessage,
+#cvMessage,
+#globalMessage {
+    min-height: 22px;
+
+    margin-top: 14px;
+
+    color: var(--text-secondary);
+
+    font-size: 14px;
+    font-weight: 600;
+}
+
+
+/* ==============================
+   PROFILE
+============================== */
+
+#currentCv {
+    margin: 8px 0 12px;
+
+    color: var(--muted);
+}
+
+.account-actions {
+    display: flex;
+
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 15px;
+}
+
+.account-actions button {
+    flex: 1;
+}
+
+
+/* ==============================
+   ALERTS + ADMIN USER CARDS
+============================== */
+
+#usersList,
+#alertsList {
+    margin-top: 12px;
+}
+
+article {
+    margin-top: 14px;
+    padding: 20px;
+
+    background: #ffffff;
+
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+}
+
+article:hover {
+    border-color: #cbd5e1;
+}
+
+article p {
+    margin-top: 5px;
+}
+
+article select {
+    margin-top: 8px;
+}
+
+article button {
+    margin-right: 8px;
+}
+
+
+/* ==============================
+   ADMIN
+============================== */
+
+#usersList article {
+    position: relative;
+
+    background: #ffffff;
+}
+
+#usersList article h3 {
+    color: var(--primary);
+}
+
+#usersList article label {
+    display: block;
+    margin-top: 14px;
+}
+
+
+/* ==============================
+   AUTH PAGES
+============================== */
+
+body:has(#loginForm) main,
+body:has(#registerForm) main,
+body:has(#forgotForm) main,
+body:has(#resetForm) main {
+    max-width: 520px;
+}
+
+body:has(#loginForm) main > h1,
+body:has(#registerForm) main > h1,
+body:has(#forgotForm) main > h1,
+body:has(#resetForm) main > h1 {
+    margin-bottom: 24px;
+}
+
+body:has(#loginForm) main > form,
+body:has(#registerForm) main > form,
+body:has(#forgotForm) main > form,
+body:has(#resetForm) main > form {
+    padding: 30px;
+}
+
+
+/* ==============================
+   TOP BRAND STYLE
+============================== */
+
+.jobboard-brand {
+    display: flex;
+
+    align-items: center;
+    justify-content: space-between;
+
+    width: 100%;
+
+    padding: 18px 5%;
+
+    background: #ffffff;
+
+    border-bottom: 1px solid var(--border);
+}
+
+.jobboard-logo {
+    color: var(--primary);
+
+    font-size: 22px;
+    font-weight: 700;
+
+    text-decoration: none;
+}
+
+.jobboard-logo:hover {
+    color: var(--primary-dark);
+    text-decoration: none;
+}
+
+.jobboard-nav {
+    display: flex;
+    align-items: center;
+
+    gap: 20px;
+}
+
+.jobboard-nav a {
+    color: var(--text-secondary);
+
+    font-size: 14px;
+}
+
+.jobboard-nav a:hover {
+    color: var(--primary);
+}
+
+
+/* ==============================
+   PAGE HEADER
+============================== */
+
+.page-header {
+    margin-bottom: 28px;
+}
+
+.page-label {
+    display: inline-block;
+
+    margin-bottom: 7px;
+
+    color: var(--primary);
+
+    font-size: 13px;
+    font-weight: 700;
+
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.page-header h1 {
+    margin-bottom: 7px;
+
+    font-size: 32px;
+    line-height: 1.2;
+}
+
+.page-header p {
+    color: var(--muted);
+}
+
+
+/* ==============================
+   SIMPLE GRID
+============================== */
+
+.profile-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+    gap: 22px;
+}
+
+.profile-grid section {
+    margin-bottom: 0;
+}
+
+.profile-grid .full-width {
+    grid-column: 1 / -1;
+}
+
+
+/* ==============================
+   RESPONSIVE
+============================== */
+
+@media (max-width: 768px) {
+
+    main {
+        width: min(94%, 900px);
+        margin: 30px auto;
+    }
+
+    main > h1 {
+        font-size: 29px;
+    }
+
+    section,
+    main > form {
+        padding: 22px;
+    }
+
+    .profile-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .profile-grid .full-width {
+        grid-column: auto;
+    }
+
+    .account-actions {
+        flex-direction: column;
+    }
+
+    .account-actions button {
+        width: 100%;
+    }
+
+    .jobboard-brand {
+        flex-direction: column;
+
+        gap: 12px;
+    }
+
+    .jobboard-nav {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+}
+
+
+@media (max-width: 520px) {
+
+    main {
+        width: calc(100% - 24px);
+        margin: 22px auto;
+    }
+
+    main > h1 {
+        font-size: 26px;
+    }
+
+    section,
+    main > form {
+        padding: 18px;
+    }
+
+    button,
+    .button-link {
+        width: 100%;
+    }
+
+    article button {
+        width: 100%;
+
+        margin-right: 0;
+    }
+}
