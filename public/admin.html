@@ -3,32 +3,107 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Administration - Job Board</title>
+
+    <title>Administration - JobBoard</title>
+
     <link rel="stylesheet" href="css/style.css">
 </head>
+
 <body>
+
+<header class="jobboard-brand">
+
+    <a
+        href="admin.html"
+        class="jobboard-logo"
+    >
+        JobBoard
+    </a>
+
+    <nav class="jobboard-nav">
+
+        <a href="admin.html">
+            Utilisateurs
+        </a>
+
+        <a href="index.html">
+            Retour au site
+        </a>
+
+        <a href="#" id="logoutLink">
+            Se déconnecter
+        </a>
+
+    </nav>
+
+</header>
+
 
 <main>
 
-    <h1>Administration</h1>
+    <div class="page-header">
+
+        <span class="page-label">
+            ADMINISTRATION
+        </span>
+
+        <h1>
+            Gestion des utilisateurs
+        </h1>
+
+        <p>
+            Consultez les comptes utilisateurs,
+            modifiez leurs rôles et gérez les accès
+            à la plateforme.
+        </p>
+
+    </div>
+
 
     <p id="message"></p>
 
+
     <section>
-        <h2>Utilisateurs</h2>
+
+        <h2>
+            Utilisateurs
+        </h2>
+
+        <p>
+            Les comptes enregistrés sur la plateforme
+            sont affichés ci-dessous.
+        </p>
 
         <div id="usersList">
             Chargement...
         </div>
+
     </section>
 
-    <button id="logoutButton" type="button">
-        Se déconnecter
-    </button>
+
+    <section class="account-actions">
+
+        <a
+            href="index.html"
+            class="button-link"
+        >
+            Retour au site
+        </a>
+
+        <button
+            id="logoutButton"
+            type="button"
+        >
+            Se déconnecter
+        </button>
+
+    </section>
 
 </main>
 
+
 <script>
+
 const usersList =
     document.getElementById('usersList');
 
@@ -38,18 +113,25 @@ const message =
 const logoutButton =
     document.getElementById('logoutButton');
 
+const logoutLink =
+    document.getElementById('logoutLink');
+
 
 // ==============================
 // LOAD USERS
 // ==============================
 
 async function loadUsers() {
+
     try {
-        const response = await fetch(
-            '/api/users/admin.php'
-        );
+
+        const response =
+            await fetch(
+                '/api/users/admin.php'
+            );
 
         if (response.status === 401) {
+
             window.location.href =
                 'login.html';
 
@@ -57,6 +139,7 @@ async function loadUsers() {
         }
 
         if (response.status === 403) {
+
             message.textContent =
                 'Accès administrateur requis.';
 
@@ -65,18 +148,23 @@ async function loadUsers() {
             return;
         }
 
-        const result = await response.json();
+        const result =
+            await response.json();
 
         if (!response.ok) {
+
             usersList.textContent =
                 result.message || 'Erreur.';
 
             return;
         }
 
-        renderUsers(result.users);
+        renderUsers(
+            result.users
+        );
 
     } catch (error) {
+
         usersList.textContent =
             'Erreur de connexion au serveur.';
     }
@@ -88,24 +176,30 @@ async function loadUsers() {
 // ==============================
 
 function renderUsers(users) {
+
     usersList.innerHTML = '';
 
     if (!users.length) {
+
         usersList.textContent =
-            'Aucun utilisateur.';
+            'Aucun utilisateur enregistré.';
 
         return;
     }
 
     users.forEach((user) => {
+
         const article =
             document.createElement('article');
+
 
         const name =
             document.createElement('h3');
 
         name.textContent =
-            user.firstname + ' ' + user.lastname;
+            user.firstname +
+            ' ' +
+            user.lastname;
 
         article.appendChild(name);
 
@@ -114,22 +208,51 @@ function renderUsers(users) {
             document.createElement('p');
 
         email.textContent =
-            'Email : ' + user.email;
+            'Email : ' +
+            user.email;
 
         article.appendChild(email);
+
+
+        if (user.phone) {
+
+            const phone =
+                document.createElement('p');
+
+            phone.textContent =
+                'Téléphone : ' +
+                user.phone;
+
+            article.appendChild(phone);
+        }
+
+
+        const roleInfo =
+            document.createElement('p');
+
+        roleInfo.textContent =
+            'Rôle actuel : ' +
+            (
+                user.role === 'admin'
+                    ? 'Administrateur'
+                    : 'Candidat'
+            );
+
+        article.appendChild(roleInfo);
 
 
         const roleLabel =
             document.createElement('label');
 
         roleLabel.textContent =
-            'Rôle : ';
+            'Modifier le rôle';
 
         article.appendChild(roleLabel);
 
 
         const roleSelect =
             document.createElement('select');
+
 
         const candidateOption =
             document.createElement('option');
@@ -138,7 +261,8 @@ function renderUsers(users) {
             'candidate';
 
         candidateOption.textContent =
-            'Candidate';
+            'Candidat';
+
 
         const adminOption =
             document.createElement('option');
@@ -147,7 +271,8 @@ function renderUsers(users) {
             'admin';
 
         adminOption.textContent =
-            'Admin';
+            'Administrateur';
+
 
         roleSelect.appendChild(
             candidateOption
@@ -160,7 +285,9 @@ function renderUsers(users) {
         roleSelect.value =
             user.role;
 
-        article.appendChild(roleSelect);
+        article.appendChild(
+            roleSelect
+        );
 
 
         const saveButton =
@@ -177,7 +304,9 @@ function renderUsers(users) {
             )
         );
 
-        article.appendChild(saveButton);
+        article.appendChild(
+            saveButton
+        );
 
 
         const deleteButton =
@@ -185,6 +314,10 @@ function renderUsers(users) {
 
         deleteButton.textContent =
             'Supprimer';
+
+        deleteButton.classList.add(
+            'danger'
+        );
 
         deleteButton.addEventListener(
             'click',
@@ -194,9 +327,14 @@ function renderUsers(users) {
             )
         );
 
-        article.appendChild(deleteButton);
+        article.appendChild(
+            deleteButton
+        );
 
-        usersList.appendChild(article);
+
+        usersList.appendChild(
+            article
+        );
     });
 }
 
@@ -205,21 +343,31 @@ function renderUsers(users) {
 // UPDATE ROLE
 // ==============================
 
-async function updateRole(id, role) {
+async function updateRole(
+    id,
+    role
+) {
+
     try {
-        const response = await fetch(
-            '/api/users/admin.php?id=' + id,
-            {
-                method: 'PATCH',
-                headers: {
-                    'Content-Type':
-                        'application/json'
-                },
-                body: JSON.stringify({
-                    role: role
-                })
-            }
-        );
+
+        const response =
+            await fetch(
+                '/api/users/admin.php?id='
+                + id,
+                {
+                    method: 'PATCH',
+
+                    headers: {
+                        'Content-Type':
+                            'application/json'
+                    },
+
+                    body:
+                        JSON.stringify({
+                            role: role
+                        })
+                }
+            );
 
         const result =
             await response.json();
@@ -228,10 +376,12 @@ async function updateRole(id, role) {
             result.message;
 
         if (response.ok) {
+
             loadUsers();
         }
 
     } catch (error) {
+
         message.textContent =
             'Erreur de connexion au serveur.';
     }
@@ -242,24 +392,32 @@ async function updateRole(id, role) {
 // DELETE USER
 // ==============================
 
-async function deleteUser(id, email) {
-    const confirmed = confirm(
-        'Supprimer l’utilisateur ' +
-        email +
-        ' ?'
-    );
+async function deleteUser(
+    id,
+    email
+) {
+
+    const confirmed =
+        confirm(
+            'Voulez-vous supprimer l’utilisateur '
+            + email +
+            ' ?'
+        );
 
     if (!confirmed) {
         return;
     }
 
     try {
-        const response = await fetch(
-            '/api/users/admin.php?id=' + id,
-            {
-                method: 'DELETE'
-            }
-        );
+
+        const response =
+            await fetch(
+                '/api/users/admin.php?id='
+                + id,
+                {
+                    method: 'DELETE'
+                }
+            );
 
         const result =
             await response.json();
@@ -268,10 +426,12 @@ async function deleteUser(id, email) {
             result.message;
 
         if (response.ok) {
+
             loadUsers();
         }
 
     } catch (error) {
+
         message.textContent =
             'Erreur de connexion au serveur.';
     }
@@ -282,25 +442,48 @@ async function deleteUser(id, email) {
 // LOGOUT
 // ==============================
 
+async function logout() {
+
+    try {
+
+        await fetch(
+            '/api/auth/logout.php',
+            {
+                method: 'POST'
+            }
+        );
+
+    } finally {
+
+        window.location.href =
+            'login.html';
+    }
+}
+
+
 logoutButton.addEventListener(
     'click',
-    async () => {
-        try {
-            await fetch(
-                '/api/auth/logout.php',
-                {
-                    method: 'POST'
-                }
-            );
-        } finally {
-            window.location.href =
-                'login.html';
-        }
+    logout
+);
+
+
+logoutLink.addEventListener(
+    'click',
+    (event) => {
+
+        event.preventDefault();
+
+        logout();
     }
 );
 
 
+// ==============================
+// START
+// ==============================
+
 loadUsers();
+
 </script>
 
 </body>
