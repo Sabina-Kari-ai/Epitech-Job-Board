@@ -7,11 +7,24 @@ const jobTitle = document.getElementById("jobTitle");
 const form = document.getElementById("applicationForm");
 const formMessage = document.getElementById("formMessage");
 const coverLetterField = document.getElementById("coverLetterText");
+const coverLetterFile = document.getElementById("cover-letter-file");
+const coverLetterLabel = document.getElementById("cover-letter-label");
+const coverLetterRequiredMessage = document.getElementById("cover-letter-required");
 let selectedJob = null;
+let coverLetterRequired = false;
 
 function showMessage(message, isError = false) {
+    if (!formMessage) return;
     formMessage.textContent = message;
     formMessage.className = isError ? "form-message error" : "form-message success";
+}
+
+function isAllowedPdf(file) {
+    return !file || (
+        file.size <= 5 * 1024 * 1024 &&
+        file.name.toLowerCase().endsWith(".pdf") &&
+        (!file.type || file.type === "application/pdf")
+    );
 }
 
 async function loadJob() {
@@ -42,12 +55,16 @@ async function loadJob() {
 
         jobTitle.textContent = `${selectedJob.title} chez ${selectedJob.company}`;
         if (coverLetterField) {
-            const required = Number(selectedJob.cover_letter_required) === 1 ||
+            coverLetterRequired = Number(selectedJob.cover_letter_required) === 1 ||
                 selectedJob.cover_letter_required === true;
-            coverLetterField.required = required;
-            coverLetterField.previousElementSibling.textContent = required
-                ? "Lettre de motivation (obligatoire)"
-                : "Lettre de motivation (facultatif)";
+            if (coverLetterRequiredMessage) {
+                coverLetterRequiredMessage.hidden = !coverLetterRequired;
+            }
+            if (coverLetterLabel) {
+                coverLetterLabel.textContent = coverLetterRequired
+                    ? "Lettre de motivation (obligatoire)"
+                    : "Lettre de motivation (facultative)";
+            }
         }
         form.style.display = "block";
 
@@ -70,6 +87,25 @@ if (form) {
             return;
         }
 
+        const selectedCv = document.getElementById("cv").files[0];
+        const selectedCoverLetter = coverLetterFile.files[0];
+        if (!isAllowedPdf(selectedCv) || !isAllowedPdf(selectedCoverLetter)) {
+            showMessage("Les documents doivent être des PDF valides de 5 Mo maximum.", true);
+            return;
+        }
+        if (
+            coverLetterRequired &&
+            !coverLetterField.value.trim() &&
+            !selectedCoverLetter
+        ) {
+            showMessage(
+                "Le recruteur exige une lettre : joins un PDF ou saisis le texte.",
+                true
+            );
+            coverLetterRequiredMessage.hidden = false;
+            return;
+        }
+
         const submitButton = form.querySelector('[type="submit"]');
         const application = new FormData();
         application.append("job_id", selectedJob.id);
@@ -79,8 +115,10 @@ if (form) {
         application.append("message", document.getElementById("message").value.trim());
         application.append("cover_letter", coverLetterField.value.trim());
 
-        const cvFile = document.getElementById("cv").files[0];
-        if (cvFile) application.append("cv", cvFile);
+        if (selectedCv) application.append("cv", selectedCv);
+        if (selectedCoverLetter) {
+            application.append("cover_letter_file", selectedCoverLetter);
+        }
 
         submitButton.disabled = true;
         submitButton.textContent = "Envoi en cours...";

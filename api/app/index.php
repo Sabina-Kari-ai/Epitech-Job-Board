@@ -31,6 +31,41 @@ function readJson(): array
     return $data;
 }
 
+function readPdfUpload(string $field, string $label): ?array
+{
+    $file = $_FILES[$field] ?? null;
+    if (!$file || $file["error"] === UPLOAD_ERR_NO_FILE) {
+        return null;
+    }
+
+    if ($file["error"] !== UPLOAD_ERR_OK) {
+        sendJson(400, ["error" => "Le téléversement de $label a échoué."]);
+    }
+
+    if ($file["size"] > 5 * 1024 * 1024) {
+        sendJson(400, ["error" => "$label ne peut pas dépasser 5 Mo."]);
+    }
+
+    $extension = strtolower(pathinfo($file["name"], PATHINFO_EXTENSION));
+    $fileInfo = new finfo(FILEINFO_MIME_TYPE);
+    if (
+        $extension !== "pdf" ||
+        $fileInfo->file($file["tmp_name"]) !== "application/pdf"
+    ) {
+        sendJson(400, ["error" => "$label doit être un fichier PDF valide."]);
+    }
+
+    $content = file_get_contents($file["tmp_name"]);
+    if ($content === false) {
+        sendJson(400, ["error" => "Impossible de lire le fichier $label envoyé."]);
+    }
+
+    $baseName = basename(str_replace("\\", "/", $file["name"]));
+    $name = substr(pathinfo($baseName, PATHINFO_FILENAME), 0, 250) . ".pdf";
+
+    return ["name" => $name, "content" => $content];
+}
+
 try {
     $method = $_SERVER["REQUEST_METHOD"];
 
@@ -83,40 +118,20 @@ try {
             sendJson(404, ["error" => "Cette offre n'existe pas."]);
         }
 
-        if ((bool) $job["cover_letter_required"] && $coverLetter === "") {
+        $cv = readPdfUpload("cv", "Le CV");
+        $uploadedCoverLetter = readPdfUpload(
+            "cover_letter_file",
+            "La lettre de motivation"
+        );
+
+        if (
+            (bool) $job["cover_letter_required"] &&
+            $coverLetter === "" &&
+            $uploadedCoverLetter === null
+        ) {
             sendJson(400, [
                 "error" => "Une lettre de motivation est obligatoire pour cette offre."
             ]);
-        }
-
-        $cvFile = $_FILES["cv"] ?? null;
-        $cvFileName = null;
-        $cvContent = null;
-        if ($cvFile && $cvFile["error"] !== UPLOAD_ERR_NO_FILE) {
-            if ($cvFile["error"] !== UPLOAD_ERR_OK) {
-                sendJson(400, ["error" => "Le téléversement du CV a échoué."]);
-            }
-
-            if ($cvFile["size"] > 5 * 1024 * 1024) {
-                sendJson(400, ["error" => "Le CV ne peut pas dépasser 5 Mo."]);
-            }
-
-            $extension = strtolower(pathinfo($cvFile["name"], PATHINFO_EXTENSION));
-            $fileInfo = new finfo(FILEINFO_MIME_TYPE);
-            if (
-                $extension !== "pdf" ||
-                $fileInfo->file($cvFile["tmp_name"]) !== "application/pdf"
-            ) {
-                sendJson(400, ["error" => "Le CV doit être un fichier PDF valide."]);
-            }
-
-            $cvContent = file_get_contents($cvFile["tmp_name"]);
-            if ($cvContent === false) {
-                sendJson(400, ["error" => "Impossible de lire le fichier CV envoyé."]);
-            }
-            $cvBaseName = basename(str_replace("\\", "/", $cvFile["name"]));
-            $cvFileName = substr(pathinfo($cvBaseName, PATHINFO_FILENAME), 0, 250) .
-                ".pdf";
         }
 
         $sql = "INSERT INTO applications (
@@ -129,6 +144,8 @@ try {
                     cover_letter,
                     cv_file_name,
                     cv_file,
+                    cover_letter_file_name,
+                    cover_letter_file,
                     status
                 ) VALUES (
                     :job_id,
@@ -140,6 +157,8 @@ try {
                     :cover_letter,
                     :cv_file_name,
                     :cv_file,
+                    :cover_letter_file_name,
+                    :cover_letter_file,
                     'pending'
                 )";
 
@@ -157,13 +176,23 @@ try {
         );
         $statement->bindValue(
             ":cv_file_name",
-            $cvFileName,
-            $cvFileName !== null ? PDO::PARAM_STR : PDO::PARAM_NULL
+            $cv["name"] ?? null,
+            $cv !== null ? PDO::PARAM_STR : PDO::PARAM_NULL
         );
         $statement->bindValue(
             ":cv_file",
-            $cvContent,
-            $cvContent !== null ? PDO::PARAM_LOB : PDO::PARAM_NULL
+            $cv["content"] ?? null,
+            $cv !== null ? PDO::PARAM_LOB : PDO::PARAM_NULL
+        );
+        $statement->bindValue(
+            ":cover_letter_file_name",
+            $uploadedCoverLetter["name"] ?? null,
+            $uploadedCoverLetter !== null ? PDO::PARAM_STR : PDO::PARAM_NULL
+        );
+        $statement->bindValue(
+            ":cover_letter_file",
+            $uploadedCoverLetter["content"] ?? null,
+            $uploadedCoverLetter !== null ? PDO::PARAM_LOB : PDO::PARAM_NULL
         );
         $statement->execute();
 
@@ -186,20 +215,26 @@ try {
         }
 
         if (isset($_GET["attachment"])) {
-            if ($_GET["attachment"] !== "cv" || !$id || $id < 1) {
+            $attachment = $_GET["attachment"];
+            $attachmentFields = [
+                "cv" => ["cv_file_name", "cv_file"],
+                "cover-letter" => ["cover_letter_file_name", "cover_letter_file"]
+            ];
+            if (!isset($attachmentFields[$attachment]) || !$id || $id < 1) {
                 sendJson(400, ["error" => "Pièce jointe ou identifiant invalide."]);
             }
+            [$nameColumn, $contentColumn] = $attachmentFields[$attachment];
 
             $statement = $pdo->prepare(
-                "SELECT user_id, cv_file_name, cv_file
+                "SELECT user_id, $nameColumn AS file_name, $contentColumn AS file_content
                  FROM applications
                  WHERE id = :id"
             );
             $statement->execute([":id" => $id]);
             $application = $statement->fetch(PDO::FETCH_ASSOC);
 
-            if (!$application || $application["cv_file"] === null) {
-                sendJson(404, ["error" => "CV introuvable."]);
+            if (!$application || $application["file_content"] === null) {
+                sendJson(404, ["error" => "Document introuvable."]);
             }
 
             if (!$isAdmin && (int) $application["user_id"] !== $userId) {
@@ -209,11 +244,13 @@ try {
             header("Content-Type: application/pdf");
             header(
                 "Content-Disposition: attachment; filename*=UTF-8''" .
-                rawurlencode($application["cv_file_name"])
+                rawurlencode($application["file_name"])
             );
             header("X-Content-Type-Options: nosniff");
-            $cvContent = $application["cv_file"];
-            echo is_resource($cvContent) ? stream_get_contents($cvContent) : $cvContent;
+            $fileContent = $application["file_content"];
+            echo is_resource($fileContent)
+                ? stream_get_contents($fileContent)
+                : $fileContent;
             exit;
         }
 
@@ -226,6 +263,7 @@ try {
                     applications.message,
                     applications.cover_letter,
                     applications.cv_file_name,
+                    applications.cover_letter_file_name,
                     applications.status,
                     applications.created_at,
                     applications.updated_at,

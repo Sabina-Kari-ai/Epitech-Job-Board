@@ -52,86 +52,82 @@
 <main class="apply-section">
     <div class="container">
 
-        <a href="index.html#jobs" class="back-link">
-            ← Retour aux offres
+        <a href="candidate-dashboard.html#jobs" class="apply-back-link"
+           aria-label="Retour aux offres" title="Retour aux offres">
+            <span aria-hidden="true">←</span>
         </a>
 
         <div class="apply-layout">
 
             <div class="apply-info">
+                <span class="section-label">CANDIDATURE</span>
                 <h1>Postuler à une offre</h1>
                 <p id="jobTitle"></p>
             </div>
 
             <form id="applicationForm" class="application-form">
+                <section class="apply-form-section">
+                    <h2>Vos informations</h2>
+                    <div class="apply-form-grid">
+                        <div class="form-group">
+                            <label for="name">Nom complet</label>
+                            <input type="text" id="name" name="name"
+                                   autocomplete="name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Adresse e-mail</label>
+                            <input type="email" id="email" name="email"
+                                   autocomplete="email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="phone">Téléphone</label>
+                            <input type="tel" id="phone" name="phone"
+                                   autocomplete="tel" required>
+                        </div>
+                    </div>
+                </section>
 
-                <div class="form-group">
-                    <label for="name">Nom complet</label>
-                    <input
-                        type="text"
-                        id="name"
-                        name="name"
-                        autocomplete="name"
-                        required
-                    >
-                </div>
+                <section class="apply-form-section">
+                    <h2>Vos documents</h2>
+                    <div class="form-group">
+                        <label for="cv">CV (PDF, facultatif)</label>
+                        <input type="file" id="cv" name="cv"
+                               accept=".pdf,application/pdf">
+                    </div>
+                    <p class="apply-file-note">PDF uniquement, 5 Mo maximum.</p>
+                    <div class="form-group">
+                        <label for="cover-letter-file" id="cover-letter-label">
+                            Lettre de motivation (facultative)
+                        </label>
+                        <input type="file" id="cover-letter-file" name="cover_letter_file"
+                               accept=".pdf,application/pdf">
+                    </div>
+                    <p class="apply-file-note">
+                        PDF uniquement, 5 Mo maximum. Tu peux aussi saisir ta lettre ci-dessous.
+                    </p>
+                    <div class="form-group">
+                        <label for="coverLetterText">Texte de la lettre de motivation</label>
+                        <textarea id="coverLetterText" name="cover_letter" rows="5"
+                                  placeholder="Présente ta motivation pour ce poste..."></textarea>
+                    </div>
+                    <p id="cover-letter-required" class="cover-letter-required" hidden>
+                        Le recruteur exige une lettre de motivation : joins un fichier ou saisis le texte.
+                    </p>
+                </section>
 
-                <div class="form-group">
-                    <label for="email">Adresse email</label>
-                    <input
-                        type="email"
-                        id="email"
-                        name="email"
-                        autocomplete="email"
-                        required
-                    >
-                </div>
+                <section class="apply-form-section">
+                    <h2>Message au recruteur</h2>
+                    <div class="form-group">
+                        <label for="message">Message de candidature</label>
+                        <textarea id="message" name="message" rows="5"
+                                  placeholder="Présente brièvement ta candidature..." required></textarea>
+                    </div>
+                </section>
 
-                <div class="form-group">
-                    <label for="phone">Téléphone</label>
-                    <input
-                        type="tel"
-                        id="phone"
-                        name="phone"
-                        autocomplete="tel"
-                        required
-                    >
-                </div>
-
-                <div class="form-group">
-                    <label for="cv">CV (PDF)</label>
-                    <input
-                        type="file"
-                        id="cv"
-                        name="cv"
-                        accept=".pdf,application/pdf"
-                    >
-                    <small>PDF uniquement, 5 Mo maximum.</small>
-                </div>
-
-                <div class="form-group">
-                    <label for="coverLetterText">Lettre de motivation</label>
-                    <textarea id="coverLetterText" name="cover_letter" rows="5"
-                              placeholder="Ajoutez votre lettre de motivation si l'offre la demande."></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label for="message">Message de candidature</label>
-                    <textarea
-                        id="message"
-                        name="message"
-                        rows="7"
-                        placeholder="Présentez votre candidature..."
-                        required
-                    ></textarea>
-                </div>
-
-                <button type="submit" class="details-button">
+                <button type="submit" class="apply-submit">
                     Envoyer ma candidature
                 </button>
-
                 <p id="formMessage" role="status" aria-live="polite"></p>
-
             </form>
 
         </div>

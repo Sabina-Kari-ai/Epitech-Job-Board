@@ -64,6 +64,13 @@ function renderApplications(applications) {
             cvLink.textContent = "Télécharger mon CV";
             info.appendChild(cvLink);
         }
+        if (application.cover_letter_file_name) {
+            const coverLetterLink = document.createElement("a");
+            coverLetterLink.href =
+                `http://127.0.0.1:8001/api/app/?id=${encodeURIComponent(application.id)}&attachment=cover-letter`;
+            coverLetterLink.textContent = "Télécharger ma lettre";
+            info.appendChild(coverLetterLink);
+        }
 
         const status = document.createElement("div");
         status.className = "application-status";

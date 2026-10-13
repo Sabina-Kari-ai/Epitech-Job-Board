@@ -31,15 +31,9 @@ Epitech Job Board est une application web pour consulter des offres d'emploi, d�
 
 3. Configure les identifiants MySQL dans [`api/config/database.php`](api/config/database.php).
 
-4. Crée les tables en exécutant `database/schema.sql` dans MySQL Workbench ou depuis un terminal :
+4. Dans phpMyAdmin, sélectionne la base `job_board` puis importe les fichiers SQL conservés dans cet ordre : `database/companies.sql`, `database/users.sql`, `database/jobs.sql`, `database/applications.sql` et `database/cv_views.sql`.
 
-   `mysql -u root -p < database/schema.sql`
-
-5. Pour ajouter les données de démonstration, exécute `database/seed.sql` une seule fois, après le schéma, sur une base vide :
-
-   `mysql -u root -p job_board < database/seed.sql`
-
-Pour une base déjà créée avec l'ancien schéma, exécute dans l'ordre `database/migrations/001_candidate_accounts.sql`, `database/migrations/002_application_cv_upload.sql` et `database/migrations/003_company_accounts.sql`, une seule fois chacune. Vérifie avant l'exécution que les colonnes et contraintes correspondantes ne sont pas déjà présentes.
+   Ces exports contiennent des instructions `DROP TABLE` et des données. Leur import remplace les tables correspondantes ; ne les importe pas sur une base dont tu veux conserver les données.
 
 Depuis l'accueil, les liens de connexion et d'inscription ouvrent les formulaires dédiés. Après authentification, les candidats arrivent sur leur tableau de bord candidat et les comptes entreprise sur leur tableau de bord entreprise.
 
@@ -102,9 +96,9 @@ Toutes les routes sont servies depuis `http://127.0.0.1:8001`.
 | `GET` | `/api/auth/` | Récupère la session et le profil connecté |
 | `POST` | `/api/auth/` | Crée un compte, ouvre/ferme une session ou met à jour le profil |
 
-Les candidatures nécessitent une session : un candidat ne voit que les siennes et le rôle administrateur peut consulter la liste complète et modifier les statuts. Le CV PDF joint à une candidature est conservé dans la base et son téléchargement est limité au candidat concerné ou à l'administration. Les alertes et les noms des documents sélectionnés depuis le profil restent dans le stockage local du navigateur.
+Les candidatures nécessitent une session : un candidat ne voit que les siennes et le rôle administrateur peut consulter la liste complète et modifier les statuts. Le CV et la lettre PDF joints à une candidature sont conservés dans la base et leur téléchargement est limité au candidat concerné ou à l'administration. Une offre peut rendre obligatoire la lettre, qui peut être saisie ou jointe en PDF. Les alertes et les noms des documents sélectionnés depuis le profil restent dans le stockage local du navigateur.
 
-La création d'une candidature utilise `multipart/form-data` pour joindre le CV PDF (5 Mo maximum). Les autres requêtes `POST` et `PUT` attendent un corps JSON. Remplace `1` par l'identifiant de l'enregistrement voulu.
+La création d'une candidature utilise `multipart/form-data` pour joindre un CV et une lettre en PDF (5 Mo maximum par fichier). Les autres requêtes `POST` et `PUT` attendent un corps JSON. Remplace `1` par l'identifiant de l'enregistrement voulu.
 
 ## Build
 
@@ -122,4 +116,3 @@ Les fichiers générés sont placés dans `dist/`.
 
 - Vérifie la configuration de la base de données avant de lancer l'API.
 - Une lettre de motivation est obligatoire pour les offres qui le demandent.
-- Le contenu de `database/seed.sql` est prévu pour une base vide et doit être importé une seule fois.

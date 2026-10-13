@@ -2,7 +2,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     const guestActions = document.getElementById("guest-actions");
     const authenticatedActions = document.getElementById("authenticated-actions");
     const logoutButton = document.getElementById("logout-button");
-    const greeting = document.getElementById("candidate-greeting");
     const userName = document.getElementById("user-first-name");
 
     try {
@@ -27,7 +26,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         if (user) {
             const name = `${user.first_name} ${user.last_name}`.trim();
-            if (greeting) greeting.textContent = `Bonjour ${user.first_name} !`;
             if (userName) userName.textContent = name;
         }
     } catch (error) {
