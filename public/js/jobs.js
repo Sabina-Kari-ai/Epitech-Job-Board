@@ -743,7 +743,13 @@ function closeModal() {
 // LOAD JOBS
 // ========================================
 
+let loadingController = null;
+
 async function loadJobs() {
+    if (loadingController) loadingController.abort();
+    const controller = new AbortController();
+    loadingController = controller;
+    const timer = setTimeout(() => controller.abort(), 10000);
 
     displayMessage(
         "Chargement des offres..."
@@ -754,7 +760,8 @@ async function loadJobs() {
 
         const response =
             await fetch(
-                API_URL + (new URLSearchParams(window.location.search).has('company') ? '?company=' + encodeURIComponent(new URLSearchParams(window.location.search).get('company')) : '')
+                API_URL + (new URLSearchParams(window.location.search).has('company') ? '?company=' + encodeURIComponent(new URLSearchParams(window.location.search).get('company')) : ''),
+                { signal: controller.signal }
             );
 
 
@@ -786,20 +793,24 @@ async function loadJobs() {
         filterJobs();
 
     } catch (error) {
-
-        console.error(
-            error
-        );
-
-
+        if (loadingController !== controller) return;
+        console.error(error);
+        jobs = [];
         displayMessage(
             "Impossible de charger les offres",
-            "Vérifiez que le serveur PHP et la base de données sont démarrés."
+            error.name === 'AbortError'
+                ? "Le serveur met trop de temps à répondre. Réessayez."
+                : "Vérifiez que le serveur PHP et la base de données sont démarrés."
         );
-
-
-        jobsCount.textContent =
-            "0 offre";
+        const retry = document.createElement('button');
+        retry.type = 'button'; retry.className = 'btn btn-primary'; retry.textContent = 'Réessayer';
+        retry.addEventListener('click', loadJobs);
+        jobsList.querySelector('.empty-state')?.appendChild(retry);
+        if (!retry.parentElement) jobsList.appendChild(retry);
+        jobsCount.textContent = '0 offre';
+    } finally {
+        clearTimeout(timer);
+        if (loadingController === controller) loadingController = null;
     }
 }
 
