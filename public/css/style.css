@@ -1911,3 +1911,23 @@ body.auth-page article button {
 .search-field label { display: block; margin-bottom: 6px; }
 .search-field input, .search-box .search-button { height: 54px; }
 .search-box .search-button { margin: 0; flex-shrink: 0; }
+
+/* Account controls and login card from the supplied UI references. */
+.account-icon { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; color: #1f4b99; border: 1px solid transparent; border-radius: 8px; background: transparent; cursor: pointer; }
+.account-icon:hover { background: #eef3fb; }
+.account-icon:focus-visible { outline: 3px solid #9cb6e7; outline-offset: 2px; }
+.account-dropdown { position: relative; }
+.account-dropdown summary { list-style: none; }
+.account-dropdown summary::-webkit-details-marker { display: none; }
+.account-dropdown[open] summary { background: #eef3fb; }
+.account-dropdown-panel { position: absolute; top: calc(100% + 10px); right: 0; width: 280px; max-width: calc(100vw - 32px); padding: 10px; background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; box-shadow: 0 10px 30px rgba(15,23,42,.14); z-index: 100; }
+.account-dropdown-name { padding: 10px 12px; font-weight: 700; color: #374151; border-bottom: 1px solid #e5e7eb; overflow-wrap: anywhere; }
+.account-menu-link { display: block; width: 100%; padding: 12px; border: 0; background: transparent; text-align: left; color: #374151; border-radius: 6px; font: inherit; cursor: pointer; }
+.account-menu-link:hover { background: #f3f6fb; color: #1f4b99; text-decoration: none; }
+.account-menu-logout { color: #b42332; }
+.account-menu-logout:hover { color: #b42332; background: #fff1f0; }
+body.auth-page .login-reference-card { max-width: 520px; padding: 32px; background: #fff; border: 1px solid #e5e7eb; border-radius: 14px; box-shadow: 0 12px 36px rgba(15,23,42,.08); }
+body.auth-page .login-reference-card .page-header h1 { font-size: 32px; }
+body.auth-page .login-reference-card #loginForm { border: 0; box-shadow: none; padding: 0; background: transparent; }
+body.auth-page .login-reference-card #loginForm button { width: 100%; }
+@media(max-width:520px) { body.auth-page .login-reference-card { padding: 24px; } .nav-actions { flex-wrap: wrap; } }

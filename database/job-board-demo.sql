@@ -57,6 +57,7 @@ CREATE TABLE users (
     ) NOT NULL DEFAULT 'candidate',
 
     cv_path VARCHAR(500) NULL,
+    cover_letter TEXT NULL,
 
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP

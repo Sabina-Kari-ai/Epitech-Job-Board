@@ -45,3 +45,5 @@ CREATE TABLE IF NOT EXISTS mail_outbox (
     status ENUM('demo','pending','sent','failed') NOT NULL DEFAULT 'demo',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+ALTER TABLE users ADD COLUMN IF NOT EXISTS cover_letter TEXT NULL;

@@ -130,6 +130,7 @@ async function loadCurrentUser() {
 
 
         currentUser = result.user;
+        if (coverLetter && !coverLetter.value) coverLetter.value = currentUser.cover_letter || "";
         if (currentUser.account_type !== 'candidate' || currentUser.role === 'admin') {
             window.location.href = 'index.html';
             return;

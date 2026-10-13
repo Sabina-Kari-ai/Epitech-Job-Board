@@ -223,7 +223,7 @@
 
         <!-- CV -->
 
-        <div class="apply-layout">
+        <div class="apply-layout" id="documents">
 
             <div class="apply-info">
 
@@ -232,7 +232,7 @@
                 </span>
 
                 <h1>
-                    Mon CV
+                    Mon CV et lettre de motivation
                 </h1>
 
                 <p>
@@ -292,6 +292,14 @@
                     </button>
 
                 </form>
+                <form id="letterForm" style="margin-top:24px">
+                    <div class="form-group"><label for="motivationLetter">Ma lettre de motivation</label>
+                    <textarea id="motivationLetter" rows="7" maxlength="20000" placeholder="Présentez votre motivation..."></textarea>
+                    <p>Ce texte préremplit vos candidatures. Vous pouvez l'adapter pour chaque offre.</p></div>
+                    <button class="btn btn-primary" type="submit">Enregistrer ma lettre</button>
+                    <p id="letterMessage" role="status"></p>
+                </form>
+
 
 
                 <p id="cvMessage"></p>
@@ -600,6 +608,7 @@ async function loadProfile() {
 
 
         const user = result.user;
+        document.getElementById("motivationLetter").value = user.cover_letter || "";
         if (user.account_type !== 'candidate' || user.role === 'admin') {
             window.location.href = user.role === 'admin' ? 'admin.html' : 'companies.html';
             return;
@@ -1067,6 +1076,15 @@ deleteAccountButton.addEventListener(
 // ========================================
 // START
 // ========================================
+
+document.getElementById("letterForm").addEventListener("submit", async event => {
+    event.preventDefault();
+    const message = document.getElementById("letterMessage");
+    try {
+        const response = await fetch("/api/users/me.php", {method:"PATCH", headers:{"Content-Type":"application/json"}, body:JSON.stringify({cover_letter:document.getElementById("motivationLetter").value})});
+        const result = await response.json(); message.textContent = result.message || "Impossible d’enregistrer la lettre.";
+    } catch { message.textContent = "Impossible de contacter le serveur."; }
+});
 
 loadProfile();
 

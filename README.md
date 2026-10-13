@@ -32,7 +32,7 @@ Les annonces et entreprises sont publiques en lecture ; leur création, modifica
 
 ## Vérification
 
-Syntaxe : vérifier les fichiers PHP sous api avec php -l. Production frontend : npm run build inclut les 13 pages. 113 contrôles API/migration ont réussi dans une instance MariaDB isolée et 162 contrôles statiques/frontend ont réussi. Le navigateur a confirmé l'inscription à deux formulaires, le login candidat, l'envoi d'une candidature, Mes candidatures, le logout et l'administration avec modification du statut. Les styles JobBoard d'origine ont été restaurés et les éléments HTML requis par chaque script ont été vérifiés.
+Syntaxe : vérifier les fichiers PHP sous api avec php -l. Production frontend : npm run build inclut les 13 pages. 118 contrôles API/migration ont réussi dans une instance MariaDB isolée et 170 contrôles statiques/frontend ont réussi. Le navigateur a confirmé l'inscription à deux formulaires, le login candidat, l'envoi d'une candidature, Mes candidatures, le logout et l'administration avec modification du statut. Les styles JobBoard d'origine ont été restaurés et les éléments HTML requis par chaque script ont été vérifiés.
 
 La migration conserve les comptes et les lignes existantes, transforme sent en pending et under_review/interview en reviewing. Les anciennes pièces jointes restent liées aux candidatures.
 
@@ -55,3 +55,9 @@ L'admin lit le téléphone, le message, la lettre de motivation et les pièces j
 Les réinitialisations et alertes génèrent des emails dans une boîte de réception locale réservée à l'admin : Emails (démo). Sans SMTP configuré, aucun email externe n'est envoyé. Le token de réinitialisation n'est jamais renvoyé par l'API publique. Les alertes actives sont filtrées par mot-clé, lieu et contrat ; plusieurs alertes correspondantes ne génèrent qu'un message par candidat/offre.
 
 Base déjà installée : importer database/migrate-completion.sql pour créer mail_outbox. Une installation complète via job-board-demo.sql inclut ce neuvième tableau. Configuration optionnelle : api/config/mail.local.example.php. Guide : docs/email-demo-az.md.
+
+## Accueil personnalisé
+
+Bonjour et le prénom après connexion, menu du compte avec nom complet, profil, documents, candidatures et déconnexion. La cloche ouvre les alertes candidat ou les emails admin. Le candidat peut enregistrer une lettre de motivation qui préremplit ses candidatures.
+
+Base déjà installée : importer database/migrate-profile-letter.sql. La migration complète et job-board-demo.sql incluent ce champ.
