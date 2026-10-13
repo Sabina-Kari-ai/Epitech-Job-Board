@@ -175,6 +175,7 @@
                         <option value="Stage">
                             Stage
                         </option>
+                    <option value="Intérim">Intérim</option>
 
                         <option value="CDI">
                             CDI
@@ -808,7 +809,7 @@ async function editAlert(alert) {
 
     const contractType =
         window.prompt(
-            "Type de contrat (Alternance, Stage, CDI, CDD) :",
+            "Type de contrat (Alternance, Stage, Intérim, CDI, CDD) :",
             alert.contract_type || ""
         );
 
