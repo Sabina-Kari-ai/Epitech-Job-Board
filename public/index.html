@@ -6,6 +6,10 @@
     <base href="/">
     <title>JobBoard - Trouvez votre prochain emploi</title>
     <link rel="stylesheet" href="css/style.css">
+    <script src="js/language.js" defer></script>
+    <script src="js/auth-client.js" defer></script>
+    <script src="js/alert-notifications.js" defer></script>
+    <script src="js/nav-auth.js" defer></script>
 </head>
 
 <body>
@@ -21,6 +25,28 @@
             <div class="nav-actions" id="guest-actions">
                 <a href="login.html" class="btn btn-outline">Connexion</a>
                 <a href="register.html" class="btn btn-primary">Créer un compte</a>
+            </div>
+            <div class="nav-actions authenticated-actions" id="authenticated-actions" hidden>
+                <a href="alerts.html" class="nav-icon-link" aria-label="Mes alertes emploi" title="Mes alertes">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"></path>
+                        <path d="M10 21h4"></path>
+                    </svg>
+                </a>
+                <details class="profile-menu">
+                    <summary class="nav-icon-link" aria-label="Ouvrir le menu du profil" title="Mon profil">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <circle cx="12" cy="8" r="4"></circle>
+                            <path d="M4 21a8 8 0 0 1 16 0"></path>
+                        </svg>
+                    </summary>
+                    <div class="profile-dropdown">
+                        <p class="profile-menu-name" id="user-first-name"></p>
+                        <a href="profile.html">Mon profil</a>
+                        <a href="app.html">Mes candidatures</a>
+                        <button type="button" id="logout-button">Déconnexion</button>
+                    </div>
+                </details>
             </div>
 
         </div>

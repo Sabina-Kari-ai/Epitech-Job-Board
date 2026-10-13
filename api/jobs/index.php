@@ -160,6 +160,7 @@ try {
                 jobs.description,
                 jobs.cover_letter_required,
                 jobs.company_id,
+                jobs.created_at,
                 companies.name AS company,
                 companies.description AS company_description
             FROM jobs

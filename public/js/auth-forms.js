@@ -58,14 +58,13 @@ document.addEventListener("DOMContentLoaded", () => {
             const userRole = result.user && result.user.role;
             let destination = userRole === "company"
                 ? "company-dashboard.html"
-                : "candidate-dashboard.html";
+                : "index.html";
             if (requestedReturn) {
                 const requestedUrl = new URL(requestedReturn, window.location.href);
                 const requestedPage = requestedUrl.pathname.split("/").pop();
                 const allowedPages = userRole === "company"
                     ? ["company-dashboard.html"]
                     : [
-                        "candidate-dashboard.html",
                         "profile.html",
                         "alerts.html",
                         "app.html",

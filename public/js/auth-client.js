@@ -1,31 +1,62 @@
 (() => {
     const API_URL = "http://127.0.0.1:8001/api/auth/";
+    const UNAUTHENTICATED_MESSAGES = [
+        "Vous devez être connecté.",
+        "La session n'est plus valide.",
+        "Session expirée.",
+        "Non autorisé.",
+        "Unauthorized",
+        "Unauthorized request",
+        "Connectez-vous pour consulter"
+    ];
 
-    async function request(options = {}) {
-        const response = await fetch(API_URL, {
-            ...options,
-            credentials: "include",
-            headers: {
-                "Content-Type": "application/json",
-                ...(options.headers || {})
+    function parseJsonSafely(response) {
+        return response.text().then((text) => {
+            if (!text) return {};
+
+            try {
+                return JSON.parse(text);
+            } catch (error) {
+                return { error: text.trim() || "Réponse serveur invalide." };
             }
         });
-        const data = await response.json().catch(() => ({}));
+    }
 
-        if (!response.ok) {
-            throw new Error(data.error || `Erreur HTTP ${response.status}`);
+    async function request(options = {}) {
+        try {
+            const response = await fetch(API_URL, {
+                ...options,
+                credentials: "include",
+                headers: {
+                    ...(options.method && options.method !== "GET" ? { "Content-Type": "application/json" } : {}),
+                    ...(options.headers || {})
+                }
+            });
+            const data = await parseJsonSafely(response);
+
+            if (!response.ok) {
+                throw new Error(data.error || data.message || `Erreur HTTP ${response.status}`);
+            }
+
+            return data;
+        } catch (error) {
+            if (error instanceof TypeError && error.message === "Failed to fetch") {
+                throw new Error("Le serveur d'authentification est indisponible.");
+            }
+            throw error;
         }
-
-        return data;
     }
 
     async function getUser() {
         try {
             const result = await request({ method: "GET" });
-            return result.user;
+            return result.user ?? null;
         } catch (error) {
-            if (error.message === "Vous devez être connecté." ||
-                error.message === "La session n'est plus valide.") {
+            const errorMessage = error.message || "";
+            if (
+                UNAUTHENTICATED_MESSAGES.some((message) => errorMessage.includes(message)) ||
+                errorMessage.includes("Le serveur d'authentification est indisponible.")
+            ) {
                 return null;
             }
             throw error;

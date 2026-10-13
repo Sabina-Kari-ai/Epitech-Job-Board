@@ -31,13 +31,13 @@ Epitech Job Board est une application web pour consulter des offres d'emploi, d�
 
 3. Configure les identifiants MySQL dans [`api/config/database.php`](api/config/database.php).
 
-4. Dans phpMyAdmin, sélectionne la base `job_board` puis importe les fichiers SQL conservés dans cet ordre : `database/companies.sql`, `database/users.sql`, `database/jobs.sql`, `database/applications.sql` et `database/cv_views.sql`.
+4. Dans phpMyAdmin, sélectionne la base `job_board` puis importe les fichiers SQL conservés dans cet ordre : `database/companies.sql`, `database/users.sql`, `database/user_documents.sql`, `database/jobs.sql`, `database/applications.sql` et `database/cv_views.sql`.
 
-   Ces exports contiennent des instructions `DROP TABLE` et des données. Leur import remplace les tables correspondantes ; ne les importe pas sur une base dont tu veux conserver les données.
+   Les exports des tables existantes contiennent des instructions `DROP TABLE` et des données. Leur import remplace les tables correspondantes ; ne les importe pas sur une base dont tu veux conserver les données. `database/user_documents.sql` est une migration additive et peut être importée seule sur une base existante.
 
-Depuis l'accueil, les liens de connexion et d'inscription ouvrent les formulaires dédiés. Après authentification, les candidats arrivent sur leur tableau de bord candidat et les comptes entreprise sur leur tableau de bord entreprise.
+Depuis l'accueil, les liens de connexion et d'inscription ouvrent les formulaires dédiés. Après authentification, les candidats arrivent sur les offres et les comptes entreprise sur leur tableau de bord entreprise.
 
-Les comptes se créent depuis `public/register.html` avec un mot de passe d'au moins 6 caractères. Après l'inscription, la session est ouverte automatiquement et l'utilisateur est dirigé vers le tableau de bord correspondant à son type de compte. Il pourra utiliser `public/login.html` lors de ses prochaines visites. Aucun compte utilisateur n'est créé par SQL.
+Les comptes se créent depuis `public/register.html` avec un mot de passe d'au moins 6 caractères. Après inscription ou connexion, les candidats arrivent sur les offres et les comptes entreprise sur leur tableau de bord. Il sera possible de se reconnecter depuis `public/login.html`. Aucun compte utilisateur n'est créé par SQL.
 
 ## Lancer le projet
 
@@ -66,7 +66,6 @@ Ouvre l'adresse locale affichée par Vite, généralement `http://127.0.0.1:5173
 | `public/app.html` | Candidatures du compte connecté |
 | `public/login.html` | Connexion candidat |
 | `public/register.html` | Création de compte candidat ou entreprise |
-| `public/candidate-dashboard.html` | Tableau de bord candidat et recherche d'offres |
 | `public/company-dashboard.html` | Tableau de bord entreprise |
 | `public/profile.html` | Profil candidat et documents |
 | `public/alerts.html` | Gestion des alertes emploi |
@@ -94,11 +93,12 @@ Toutes les routes sont servies depuis `http://127.0.0.1:8001`.
 | `POST` | `/api/app/` | Envoie une candidature connectée avec sa lettre et son CV PDF facultatif |
 | `PUT` | `/api/app/` | Modifie le statut ; `id` et `status` sont envoyés dans le JSON |
 | `GET` | `/api/auth/` | Récupère la session et le profil connecté |
-| `POST` | `/api/auth/` | Crée un compte, ouvre/ferme une session ou met à jour le profil |
+| `POST` | `/api/auth/` | Crée un compte, gère la session, met à jour le profil, change l'e-mail/le mot de passe ou supprime un compte candidat après confirmation du mot de passe |
+| `GET`, `POST`, `DELETE` | `/api/profile-documents/` | Liste, enregistre, prévisualise ou retire les documents du profil connecté |
 
-Les candidatures nécessitent une session : un candidat ne voit que les siennes et le rôle administrateur peut consulter la liste complète et modifier les statuts. Le CV et la lettre PDF joints à une candidature sont conservés dans la base et leur téléchargement est limité au candidat concerné ou à l'administration. Une offre peut rendre obligatoire la lettre, qui peut être saisie ou jointe en PDF. Les alertes et les noms des documents sélectionnés depuis le profil restent dans le stockage local du navigateur.
+Les candidatures nécessitent une session : un candidat ne voit que les siennes et le rôle administrateur peut consulter la liste complète et modifier les statuts. Les CV PDF et lettres joints à une candidature sont conservés dans la base et leur téléchargement est limité au candidat concerné ou à l'administration. Les documents du profil sont également stockés en base et accessibles uniquement à leur propriétaire. Une offre peut rendre obligatoire la lettre, qui peut être saisie ou jointe en PDF. Les alertes restent dans le stockage local du navigateur.
 
-La création d'une candidature utilise `multipart/form-data` pour joindre un CV et une lettre en PDF (5 Mo maximum par fichier). Les autres requêtes `POST` et `PUT` attendent un corps JSON. Remplace `1` par l'identifiant de l'enregistrement voulu.
+La création d'une candidature et l'enregistrement de documents de profil utilisent `multipart/form-data` (5 Mo maximum par fichier). Le CV du profil doit être un PDF afin d'être automatiquement prévisualisé dans le formulaire de candidature. Les autres requêtes `POST` et `PUT` attendent un corps JSON. Remplace `1` par l'identifiant de l'enregistrement voulu.
 
 ## Build
 

@@ -2,6 +2,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     const alertForm = document.getElementById("alert-form");
     const alertsList = document.getElementById("alerts-list");
     const feedback = document.getElementById("alert-feedback");
+    const matchingJobsList = document.getElementById("matching-jobs-list");
+    const matchingJobsFeedback = document.getElementById("matching-jobs-feedback");
     const profileMenuButton = document.querySelector(".profile-menu-button");
     const profileDropdown = document.querySelector(".profile-dropdown");
 
@@ -34,6 +36,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     function saveAlerts(alerts) {
         try {
             localStorage.setItem(storageKey, JSON.stringify(alerts));
+            document.dispatchEvent(new CustomEvent("jobboard:alerts-changed"));
             return true;
         } catch (error) {
             console.error("Impossible d'enregistrer les alertes :", error);
@@ -119,16 +122,16 @@ document.addEventListener("DOMContentLoaded", async () => {
             const toggleButton = document.createElement("button");
             toggleButton.type = "button";
             toggleButton.textContent = alert.enabled ? "Désactiver" : "Activer";
-            toggleButton.addEventListener("click", () => {
-                updateAlert(alert.id, { enabled: !alert.enabled });
+            toggleButton.addEventListener("click", async () => {
+                await updateAlert(alert.id, { enabled: !alert.enabled });
             });
 
             const deleteButton = document.createElement("button");
             deleteButton.type = "button";
             deleteButton.className = "delete-alert";
             deleteButton.textContent = "Supprimer";
-            deleteButton.addEventListener("click", () => {
-                deleteAlert(alert.id);
+            deleteButton.addEventListener("click", async () => {
+                await deleteAlert(alert.id);
             });
 
             actions.append(toggleButton, deleteButton);
@@ -137,7 +140,67 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
     }
 
-    function updateAlert(id, changes) {
+    function renderMatchingJobs(jobs) {
+        if (!matchingJobsList) return;
+        matchingJobsList.replaceChildren();
+
+        if (jobs.length === 0) {
+            matchingJobsList.appendChild(
+                createTextElement(
+                    "p",
+                    "empty-state",
+                    "Aucune offre ne correspond à vos alertes pour le moment."
+                )
+            );
+            return;
+        }
+
+        jobs.forEach((job) => {
+            const item = document.createElement("article");
+            item.className = "matching-job-item";
+            const details = document.createElement("div");
+            details.append(
+                createTextElement("h3", "", job.title || "Offre sans titre"),
+                createTextElement("p", "", [
+                    job.company,
+                    job.location,
+                    job.contract_type
+                ].filter(Boolean).join(" · "))
+            );
+            const link = document.createElement("a");
+            link.className = "btn btn-primary";
+            link.href = `job.html?id=${encodeURIComponent(job.id)}`;
+            link.textContent = "Voir l’offre";
+            item.append(details, link);
+            matchingJobsList.appendChild(item);
+        });
+    }
+
+    async function loadMatchingJobs(userId) {
+        if (!matchingJobsList || !window.JobBoardAlertNotifications) return;
+
+        try {
+            const jobs = await window.JobBoardAlertNotifications.getMatchingJobs(userId);
+            renderMatchingJobs(jobs);
+            window.JobBoardAlertNotifications.markViewed(userId);
+        } catch (error) {
+            console.error("Impossible de charger les offres correspondant aux alertes :", error);
+            matchingJobsList.replaceChildren(
+                createTextElement(
+                    "p",
+                    "empty-state",
+                    "Impossible de charger les offres correspondantes."
+                )
+            );
+            if (matchingJobsFeedback) {
+                matchingJobsFeedback.textContent =
+                    "Vérifiez que le serveur des offres est démarré, puis rechargez la page.";
+                matchingJobsFeedback.classList.add("error");
+            }
+        }
+    }
+
+    async function updateAlert(id, changes) {
         const currentAlerts = getAlerts();
         if (!currentAlerts) return;
         const alerts = currentAlerts.map((alert) =>
@@ -146,19 +209,21 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         if (!saveAlerts(alerts)) return;
         renderAlerts();
+        await loadMatchingJobs(user.id);
     }
 
-    function deleteAlert(id) {
+    async function deleteAlert(id) {
         const currentAlerts = getAlerts();
         if (!currentAlerts) return;
         const alerts = currentAlerts.filter((alert) => alert.id !== id);
         if (!saveAlerts(alerts)) return;
         renderAlerts();
+        await loadMatchingJobs(user.id);
         showFeedback("Alerte supprimée.");
     }
 
     if (alertForm) {
-        alertForm.addEventListener("submit", (event) => {
+        alertForm.addEventListener("submit", async (event) => {
             event.preventDefault();
 
             const formData = new FormData(alertForm);
@@ -187,6 +252,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             alertForm.reset();
             showFeedback("Votre alerte a bien été créée.");
             renderAlerts();
+            await loadMatchingJobs(user.id);
         });
     }
 
@@ -215,4 +281,5 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     renderAlerts();
+    await loadMatchingJobs(user.id);
 });

@@ -1,5 +1,6 @@
 const API_URL = "http://127.0.0.1:8001/api/jobs/";
 const APPLICATIONS_API_URL = "http://127.0.0.1:8001/api/app/";
+const PROFILE_DOCUMENTS_API_URL = "http://127.0.0.1:8001/api/profile-documents/";
 
 const params = new URLSearchParams(window.location.search);
 const jobId = Number(params.get("id") || params.get("job"));
@@ -12,6 +13,11 @@ const coverLetterLabel = document.getElementById("cover-letter-label");
 const coverLetterRequiredMessage = document.getElementById("cover-letter-required");
 let selectedJob = null;
 let coverLetterRequired = false;
+let currentUser = null;
+let applicationAlertId = null;
+let savedCvFile = null;
+let cvPreviewUrl = null;
+let cvSavePromise = Promise.resolve(true);
 
 function showMessage(message, isError = false) {
     if (!formMessage) return;
@@ -27,14 +33,86 @@ function isAllowedPdf(file) {
     );
 }
 
+function setCvStatus(message, isError = false) {
+    const status = document.getElementById("cv-file-status");
+    if (!status) return;
+    status.textContent = message;
+    status.classList.toggle("error", isError);
+}
+
+function showCvPreview(file) {
+    const preview = document.getElementById("cv-preview");
+    if (!preview) return;
+    const frame = preview.querySelector("iframe");
+    if (cvPreviewUrl) URL.revokeObjectURL(cvPreviewUrl);
+    cvPreviewUrl = null;
+    if (!file || file.type !== "application/pdf") {
+        frame.removeAttribute("src");
+        preview.hidden = true;
+        return;
+    }
+    cvPreviewUrl = URL.createObjectURL(file);
+    frame.src = cvPreviewUrl;
+    preview.hidden = false;
+}
+
+async function loadSavedCv() {
+    const response = await fetch(`${PROFILE_DOCUMENTS_API_URL}?type=cv`, {
+        credentials: "include"
+    });
+    if (response.status === 404) {
+        setCvStatus("Aucun CV enregistré dans votre profil. Ajoutez un PDF ici ou depuis votre profil.");
+        return;
+    }
+    if (!response.ok) {
+        const result = await response.json();
+        throw new Error(result.error || `Erreur HTTP ${response.status}`);
+    }
+    const blob = await response.blob();
+    const disposition = response.headers.get("Content-Disposition") || "";
+    const encodedName = disposition.match(/filename\*=UTF-8''([^;]+)/i);
+    const fileName = encodedName
+        ? decodeURIComponent(encodedName[1])
+        : "mon-cv.pdf";
+    if (blob.type !== "application/pdf") {
+        throw new Error("Le CV enregistré doit être au format PDF pour être prévisualisé.");
+    }
+    savedCvFile = new File([blob], fileName, { type: "application/pdf" });
+    showCvPreview(savedCvFile);
+    setCvStatus(`CV chargé automatiquement depuis votre profil : ${fileName}`);
+}
+
+async function saveCvToProfile(file) {
+    const body = new FormData();
+    body.append("type", "cv");
+    body.append("file", file);
+    const response = await fetch(PROFILE_DOCUMENTS_API_URL, {
+        method: "POST",
+        credentials: "include",
+        body
+    });
+    const result = await response.json();
+    if (!response.ok) {
+        throw new Error(result.error || `Erreur HTTP ${response.status}`);
+    }
+    savedCvFile = file;
+    setCvStatus(`CV enregistré dans votre profil : ${result.file_name}`);
+}
+
 async function loadJob() {
     if (!jobTitle || !form) return;
 
     form.style.display = "none";
 
     try {
-        const user = await window.JobBoardAuth.requireUser();
-        if (!user) return;
+        currentUser = await window.JobBoardAuth.requireUser();
+        if (!currentUser) return;
+        try {
+            await loadSavedCv();
+        } catch (error) {
+            console.error("Impossible de charger le CV du profil :", error);
+            setCvStatus(error.message, true);
+        }
 
         if (!jobId || !Number.isFinite(jobId)) {
             jobTitle.textContent = "Aucune offre sélectionnée.";
@@ -69,14 +147,97 @@ async function loadJob() {
         form.style.display = "block";
 
         document.getElementById("name").value =
-            `${user.first_name} ${user.last_name}`.trim();
-        document.getElementById("email").value = user.email || "";
-        document.getElementById("phone").value = user.phone || "";
+            `${currentUser.first_name} ${currentUser.last_name}`.trim();
+        document.getElementById("email").value = currentUser.email || "";
+        document.getElementById("phone").value = currentUser.phone || "";
     } catch (error) {
         console.error("Erreur lors du chargement de l'offre :", error);
         jobTitle.textContent =
             "Impossible de charger l'offre. Vérifiez que le serveur API est démarré.";
     }
+}
+
+const cvInput = document.getElementById("cv");
+if (cvInput) {
+    cvInput.addEventListener("change", () => {
+        const file = cvInput.files[0];
+        if (!file) {
+            showCvPreview(savedCvFile);
+            return;
+        }
+        if (!isAllowedPdf(file)) {
+            showCvPreview(null);
+            setCvStatus("Le CV doit être un fichier PDF valide de 5 Mo maximum.", true);
+            return;
+        }
+
+        showCvPreview(file);
+        setCvStatus("Enregistrement du nouveau CV dans votre profil...");
+        cvSavePromise = cvSavePromise.then(() => saveCvToProfile(file)).then(
+            () => true,
+            (error) => {
+                console.error("Impossible d'enregistrer le CV dans le profil :", error);
+                setCvStatus(
+                    `${error.message} Le fichier restera joint à cette candidature uniquement.`,
+                    true
+                );
+                return false;
+            }
+        );
+    });
+}
+
+function setApplicationAlertFeedback(message, isError = false) {
+    const feedback = document.getElementById("application-alert-feedback");
+    if (!feedback) return;
+    feedback.textContent = message;
+    feedback.classList.toggle("error", isError);
+}
+
+function updateApplicationAlert(enabled) {
+    if (!currentUser || !selectedJob || !applicationAlertId) {
+        throw new Error("Les informations de la candidature sont indisponibles.");
+    }
+
+    const storageKey = `jobboard_alerts_${currentUser.id}`;
+    const storedAlerts = JSON.parse(localStorage.getItem(storageKey) || "[]");
+    if (!Array.isArray(storedAlerts)) {
+        throw new Error("Le format des alertes enregistrées est invalide.");
+    }
+
+    const alerts = storedAlerts.filter((alert) => alert.id !== applicationAlertId);
+    if (enabled) {
+        alerts.unshift({
+            id: applicationAlertId,
+            title: `Offre : ${selectedJob.title || "Nouvelle offre"}`,
+            keyword: selectedJob.title || "",
+            location: selectedJob.location || "",
+            contract: selectedJob.contract_type || "",
+            enabled: true,
+            createdAt: new Date().toISOString()
+        });
+    }
+
+    localStorage.setItem(storageKey, JSON.stringify(alerts));
+    document.dispatchEvent(new CustomEvent("jobboard:alerts-changed"));
+}
+
+const applicationAlertCheckbox = document.getElementById("application-alert-checkbox");
+if (applicationAlertCheckbox) {
+    applicationAlertCheckbox.addEventListener("change", () => {
+        try {
+            updateApplicationAlert(applicationAlertCheckbox.checked);
+            setApplicationAlertFeedback(
+                applicationAlertCheckbox.checked
+                    ? "Votre alerte a bien été créée et enregistrée."
+                    : "L’alerte associée à cette offre a été supprimée."
+            );
+        } catch (error) {
+            console.error("Impossible de mettre à jour l’alerte de l’offre :", error);
+            applicationAlertCheckbox.checked = !applicationAlertCheckbox.checked;
+            setApplicationAlertFeedback(error.message, true);
+        }
+    });
 }
 
 if (form) {
@@ -87,7 +248,7 @@ if (form) {
             return;
         }
 
-        const selectedCv = document.getElementById("cv").files[0];
+        const selectedCv = cvInput.files[0] || savedCvFile;
         const selectedCoverLetter = coverLetterFile.files[0];
         if (!isAllowedPdf(selectedCv) || !isAllowedPdf(selectedCoverLetter)) {
             showMessage("Les documents doivent être des PDF valides de 5 Mo maximum.", true);
@@ -124,6 +285,7 @@ if (form) {
         submitButton.textContent = "Envoi en cours...";
 
         try {
+            await cvSavePromise;
             const response = await fetch(APPLICATIONS_API_URL, {
                 method: "POST",
                 credentials: "include",
@@ -134,8 +296,17 @@ if (form) {
                 throw new Error(result.error || `Erreur HTTP ${response.status}`);
             }
 
-            form.reset();
-            showMessage(result.message || "Votre candidature a bien été envoyée.");
+            applicationAlertId = `application-${result.application_id}`;
+            const successPanel = document.getElementById("application-success");
+            const successMessage = document.getElementById("application-success-message");
+            if (successMessage) {
+                successMessage.textContent =
+                    result.message || "Votre candidature a bien été envoyée.";
+            }
+            if (applicationAlertCheckbox) applicationAlertCheckbox.checked = false;
+            setApplicationAlertFeedback("");
+            form.style.display = "none";
+            if (successPanel) successPanel.hidden = false;
         } catch (error) {
             console.error("Erreur lors de l'enregistrement :", error);
             showMessage(error.message, true);

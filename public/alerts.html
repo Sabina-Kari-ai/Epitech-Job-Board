@@ -5,14 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mes alertes emploi | JobBoard</title>
     <link rel="stylesheet" href="css/style.css">
+    <script src="js/language.js" defer></script>
     <script src="js/auth-client.js" defer></script>
+    <script src="js/alert-notifications.js" defer></script>
     <script src="js/nav-auth.js" defer></script>
     <script src="js/alerts.js" defer></script>
 </head>
 <body class="alerts-page" data-auth-required="true">
 
     <header class="navbar">
-        <div class="navbar-content">
+        <div class="container navbar-content">
             <a href="index.html" class="logo">JobBoard</a>
 
             <nav class="nav-links" aria-label="Navigation principale">
@@ -40,9 +42,7 @@
 
                     <div class="profile-dropdown" hidden>
                         <a href="profile.html">Mon profil</a>
-                        <a href="profile.html#documents">Mon CV et ma lettre de motivation</a>
-                        <a href="profile.html#applications">Mes candidatures</a>
-                        <a href="candidate-dashboard.html">Mon espace candidat</a>
+                        <a href="app.html">Mes candidatures</a>
                         <button type="button" id="logout-button" class="logout-link">Déconnexion</button>
                     </div>
                 </div>
@@ -112,6 +112,19 @@
             <div id="alerts-list" class="alerts-list">
                 <p class="empty-state">Vous n'avez pas encore créé d'alerte.</p>
             </div>
+        </section>
+
+        <section class="alerts-list-section matching-jobs-section">
+            <div class="section-heading">
+                <div>
+                    <h2>Offres correspondant à vos alertes</h2>
+                    <p>Les correspondances seront marquées comme vues lorsque vous consultez cette page.</p>
+                </div>
+            </div>
+            <div id="matching-jobs-list" class="matching-jobs-list">
+                <p class="empty-state">Chargement des offres correspondantes...</p>
+            </div>
+            <p id="matching-jobs-feedback" class="form-feedback" role="status" aria-live="polite"></p>
         </section>
     </main>
 

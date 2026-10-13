@@ -6,10 +6,78 @@ document.addEventListener("DOMContentLoaded", async () => {
     const documentsList = document.getElementById("documents-list");
     const profileMenuButton = document.querySelector(".profile-menu-button");
     const profileDropdown = document.querySelector(".profile-dropdown");
+    const profileTabs = Array.from(document.querySelectorAll(".profile-tab"));
+    const phoneCountry = document.getElementById("phone-country");
+    const phoneField = document.getElementById("profile-phone");
+    const languageField = document.getElementById("profile-language");
 
+    const DOCUMENTS_API_URL = "http://127.0.0.1:8001/api/profile-documents/";
     const MAX_FILE_SIZE = 5 * 1024 * 1024;
     const ALLOWED_EXTENSIONS = ["pdf", "doc", "docx"];
+    const callingCodes = {
+        FR: "33", BE: "32", CH: "41", LU: "352", NL: "31", PT: "351",
+        CA: "1", US: "1", GB: "44", DE: "49", ES: "34", IT: "39",
+        DZ: "213", MA: "212", TN: "216", CM: "237", CD: "243",
+        GH: "233", KE: "254", ML: "223", NG: "234", ZA: "27",
+        SN: "221", CI: "225", AU: "61", BR: "55", CN: "86",
+        IN: "91", JP: "81", MX: "52", NZ: "64", TR: "90",
+        AE: "971", SA: "966"
+    };
+    const browserCountry = (navigator.language || "fr-FR").split("-")[1]?.toUpperCase();
     let user = null;
+    let savedDocuments = [];
+    let previewUrl = null;
+
+    function activateProfileTab(tab, updateHash = true) {
+        const panelId = tab.getAttribute("aria-controls");
+        const panel = document.getElementById(panelId);
+        if (!panel) return;
+
+        profileTabs.forEach((profileTab) => {
+            const isActive = profileTab === tab;
+            profileTab.setAttribute("aria-selected", String(isActive));
+            profileTab.tabIndex = isActive ? 0 : -1;
+            const controlledPanel = document.getElementById(
+                profileTab.getAttribute("aria-controls")
+            );
+            if (controlledPanel) controlledPanel.hidden = !isActive;
+        });
+
+        if (updateHash && window.location.hash !== `#${panelId}`) {
+            window.history.replaceState(
+                null,
+                "",
+                `${window.location.pathname}${window.location.search}#${panelId}`
+            );
+        }
+    }
+
+    profileTabs.forEach((tab, index) => {
+        tab.addEventListener("click", () => activateProfileTab(tab));
+        tab.addEventListener("keydown", (event) => {
+            let nextIndex = index;
+            if (event.key === "ArrowRight") nextIndex = (index + 1) % profileTabs.length;
+            else if (event.key === "ArrowLeft") {
+                nextIndex = (index - 1 + profileTabs.length) % profileTabs.length;
+            } else if (event.key === "Home") nextIndex = 0;
+            else if (event.key === "End") nextIndex = profileTabs.length - 1;
+            else return;
+
+            event.preventDefault();
+            profileTabs[nextIndex].focus();
+            activateProfileTab(profileTabs[nextIndex]);
+        });
+    });
+
+    function activateTabForHash() {
+        const requestedTab = profileTabs.find(
+            (tab) => `#${tab.getAttribute("aria-controls")}` === window.location.hash
+        );
+        if (requestedTab) activateProfileTab(requestedTab, false);
+    }
+
+    activateTabForHash();
+    window.addEventListener("hashchange", activateTabForHash);
 
     function showFeedback(element, message, isError = false) {
         if (!element) return;
@@ -22,7 +90,6 @@ document.addEventListener("DOMContentLoaded", async () => {
             firstName: data.first_name,
             lastName: data.last_name,
             email: data.email,
-            phone: data.phone,
             city: data.city,
             linkedin: data.linkedin_url,
             bio: data.bio
@@ -32,6 +99,30 @@ document.addEventListener("DOMContentLoaded", async () => {
             const field = profileForm.elements.namedItem(name);
             if (field) field.value = value || "";
         });
+
+        if (phoneCountry && phoneField) {
+            const storedPhone = data.phone || "";
+            const matchingCountries = Object.entries(callingCodes)
+                .sort((left, right) => right[1].length - left[1].length)
+                .filter(([, code]) => storedPhone.replace(/\D/g, "").startsWith(code));
+            const matchingCountry = matchingCountries.find(([country]) =>
+                country === browserCountry
+            ) || matchingCountries[0];
+            const country = matchingCountry?.[0] ||
+                (phoneCountry.querySelector(`option[value="${browserCountry}"]`)
+                    ? browserCountry
+                    : "FR");
+            phoneCountry.value = country;
+            let nationalNumber = storedPhone;
+            if (matchingCountry) {
+                nationalNumber = storedPhone.replace(/^\s*\+/, "").replace(/\D/g, "");
+                nationalNumber = nationalNumber.slice(matchingCountry[1].length);
+            }
+            phoneField.value = nationalNumber.replace(/[^\d]/g, "");
+            if (phoneField.value.startsWith("0")) {
+                phoneField.value = phoneField.value.slice(1);
+            }
+        }
     }
 
     async function loadProfile() {
@@ -54,9 +145,14 @@ document.addEventListener("DOMContentLoaded", async () => {
             values.first_name = values.firstName;
             values.last_name = values.lastName;
             values.linkedin_url = values.linkedin || "";
+            const nationalNumber = String(values.phone || "").replace(/\D/g, "");
+            values.phone = nationalNumber
+                ? `+${callingCodes[values.phoneCountry]}${nationalNumber.replace(/^0+/, "")}`
+                : "";
             delete values.firstName;
             delete values.lastName;
             delete values.linkedin;
+            delete values.phoneCountry;
 
             const button = profileForm.querySelector('[type="submit"]');
             button.disabled = true;
@@ -77,27 +173,90 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
     }
 
-    function documentsKey() {
-        return `jobboard_document_names_${user.id}`;
+    const changeEmailForm = document.getElementById("change-email-form");
+    if (changeEmailForm) {
+        changeEmailForm.addEventListener("submit", async (event) => {
+            event.preventDefault();
+            const button = changeEmailForm.querySelector('[type="submit"]');
+            const feedback = document.getElementById("change-email-feedback");
+            button.disabled = true;
+            try {
+                const result = await window.JobBoardAuth.request({
+                    method: "POST",
+                    body: JSON.stringify({
+                        action: "change_email",
+                        email: document.getElementById("new-email").value.trim(),
+                        current_password: document.getElementById("email-current-password").value
+                    })
+                });
+                user.email = result.email;
+                fillProfile(user);
+                changeEmailForm.reset();
+                showFeedback(feedback, result.message);
+            } catch (error) {
+                showFeedback(feedback, error.message, true);
+            } finally {
+                button.disabled = false;
+            }
+        });
     }
 
-    function getDocuments() {
-        try {
-            const documents = JSON.parse(localStorage.getItem(documentsKey()) || "{}");
-            return documents && typeof documents === "object" ? documents : {};
-        } catch (error) {
-            console.error("Impossible de lire les documents du profil :", error);
-            return {};
+    const changePasswordForm = document.getElementById("change-password-form");
+    if (changePasswordForm) {
+        changePasswordForm.addEventListener("submit", async (event) => {
+            event.preventDefault();
+            const newPassword = document.getElementById("new-password").value;
+            const confirmPassword = document.getElementById("confirm-new-password").value;
+            const feedback = document.getElementById("change-password-feedback");
+            if (newPassword !== confirmPassword) {
+                showFeedback(feedback, "Les mots de passe ne correspondent pas.", true);
+                return;
+            }
+
+            const button = changePasswordForm.querySelector('[type="submit"]');
+            button.disabled = true;
+            try {
+                const result = await window.JobBoardAuth.request({
+                    method: "POST",
+                    body: JSON.stringify({
+                        action: "change_password",
+                        current_password: document.getElementById(
+                            "password-current-password"
+                        ).value,
+                        new_password: newPassword,
+                        confirm_password: confirmPassword
+                    })
+                });
+                changePasswordForm.reset();
+                showFeedback(feedback, result.message);
+            } catch (error) {
+                showFeedback(feedback, error.message, true);
+            } finally {
+                button.disabled = false;
+            }
+        });
+    }
+
+    async function loadDocuments() {
+        const response = await fetch(DOCUMENTS_API_URL, { credentials: "include" });
+        const documents = await response.json();
+        if (!response.ok) {
+            throw new Error(documents.error || `Erreur HTTP ${response.status}`);
         }
+        if (!Array.isArray(documents)) {
+            throw new Error("La liste des documents reçue est invalide.");
+        }
+        savedDocuments = documents;
+        renderDocuments();
+        const cv = savedDocuments.find((item) => item.document_type === "cv");
+        if (cv) await previewDocument(cv);
     }
 
     function renderDocuments() {
         if (!documentsList || !user) return;
-        const documents = getDocuments();
         documentsList.replaceChildren();
 
-        const entries = Object.entries(documents);
-        if (entries.length === 0) {
+        if (savedDocuments.length === 0) {
             const empty = document.createElement("p");
             empty.className = "empty-state";
             empty.textContent = "Aucun document enregistré.";
@@ -105,41 +264,103 @@ document.addEventListener("DOMContentLoaded", async () => {
             return;
         }
 
-        entries.forEach(([key, info]) => {
+        savedDocuments.forEach((info) => {
             const item = document.createElement("article");
             item.className = "document-item";
 
             const content = document.createElement("div");
             content.className = "document-item-content";
             const title = document.createElement("h3");
-            title.textContent = key === "cv" ? "Mon CV" : "Ma lettre de motivation";
+            title.textContent = info.document_type === "cv"
+                ? "Mon CV"
+                : "Ma lettre de motivation";
             const filename = document.createElement("p");
-            filename.textContent = info.name;
+            filename.textContent = info.file_name;
             content.append(title, filename);
+
+            const actions = document.createElement("div");
+            actions.className = "document-item-actions";
+            if (info.mime_type === "application/pdf") {
+                const preview = document.createElement("button");
+                preview.type = "button";
+                preview.textContent = "Prévisualiser";
+                preview.addEventListener("click", async () => {
+                    try {
+                        await previewDocument(info);
+                    } catch (error) {
+                        showFeedback(documentsFeedback, error.message, true);
+                    }
+                });
+                actions.appendChild(preview);
+            }
 
             const remove = document.createElement("button");
             remove.type = "button";
             remove.className = "delete-document";
             remove.textContent = "Retirer";
-            remove.addEventListener("click", () => {
-                const updated = getDocuments();
-                delete updated[key];
+            remove.addEventListener("click", async () => {
+                remove.disabled = true;
                 try {
-                    localStorage.setItem(documentsKey(), JSON.stringify(updated));
+                    const response = await fetch(
+                        `${DOCUMENTS_API_URL}?type=${encodeURIComponent(info.document_type)}`,
+                        { method: "DELETE", credentials: "include" }
+                    );
+                    const result = await response.json();
+                    if (!response.ok) {
+                        throw new Error(result.error || `Erreur HTTP ${response.status}`);
+                    }
+                    savedDocuments = savedDocuments.filter(
+                        (documentInfo) => documentInfo.document_type !== info.document_type
+                    );
                     renderDocuments();
+                    if (info.document_type === "cv") clearDocumentPreview();
                     showFeedback(documentsFeedback, "Document retiré.");
                 } catch (error) {
-                    showFeedback(documentsFeedback, "Impossible de retirer ce document.", true);
+                    showFeedback(documentsFeedback, error.message, true);
+                    remove.disabled = false;
                 }
             });
 
-            item.append(content, remove);
+            actions.appendChild(remove);
+            item.append(content, actions);
             documentsList.appendChild(item);
         });
     }
 
+    function clearDocumentPreview() {
+        if (previewUrl) URL.revokeObjectURL(previewUrl);
+        previewUrl = null;
+        const preview = document.getElementById("profile-document-preview");
+        if (preview) {
+            preview.hidden = true;
+            preview.querySelector("iframe").removeAttribute("src");
+        }
+    }
+
+    async function previewDocument(info) {
+        const response = await fetch(
+            `${DOCUMENTS_API_URL}?type=${encodeURIComponent(info.document_type)}`,
+            { credentials: "include" }
+        );
+        if (!response.ok) {
+            const result = await response.json();
+            throw new Error(result.error || `Erreur HTTP ${response.status}`);
+        }
+        const blob = await response.blob();
+        if (blob.type !== "application/pdf") {
+            throw new Error("La prévisualisation est disponible pour les PDF uniquement.");
+        }
+        clearDocumentPreview();
+        previewUrl = URL.createObjectURL(blob);
+        const preview = document.getElementById("profile-document-preview");
+        preview.querySelector("iframe").src = previewUrl;
+        document.getElementById("profile-document-preview-title").textContent =
+            `Prévisualisation : ${info.file_name}`;
+        preview.hidden = false;
+    }
+
     if (documentsForm) {
-        documentsForm.addEventListener("submit", (event) => {
+        documentsForm.addEventListener("submit", async (event) => {
             event.preventDefault();
             if (!user) return;
 
@@ -156,8 +377,21 @@ document.addEventListener("DOMContentLoaded", async () => {
             for (const [, input] of selected) {
                 const file = input.files[0];
                 const extension = file.name.split(".").pop().toLowerCase();
-                if (!ALLOWED_EXTENSIONS.includes(extension)) {
-                    showFeedback(documentsFeedback, "Format accepté : PDF, DOC ou DOCX.", true);
+                const isCv = input.name === "cv";
+                if (
+                    !ALLOWED_EXTENSIONS.includes(extension) ||
+                    (isCv && (
+                        extension !== "pdf" ||
+                        (file.type && file.type !== "application/pdf")
+                    ))
+                ) {
+                    showFeedback(
+                        documentsFeedback,
+                        isCv
+                            ? "Le CV doit être au format PDF."
+                            : "Format accepté pour la lettre : PDF, DOC ou DOCX.",
+                        true
+                    );
                     return;
                 }
                 if (file.size > MAX_FILE_SIZE) {
@@ -166,22 +400,65 @@ document.addEventListener("DOMContentLoaded", async () => {
                 }
             }
 
-            const documents = getDocuments();
-            selected.forEach(([key, input]) => {
-                const file = input.files[0];
-                documents[key] = { name: file.name, size: file.size };
-            });
-
+            const button = documentsForm.querySelector('[type="submit"]');
+            button.disabled = true;
             try {
-                localStorage.setItem(documentsKey(), JSON.stringify(documents));
-                renderDocuments();
+                for (const [key, input] of selected) {
+                    const body = new FormData();
+                    body.append("type", key === "cv" ? "cv" : "cover_letter");
+                    body.append("file", input.files[0]);
+                    const response = await fetch(DOCUMENTS_API_URL, {
+                        method: "POST",
+                        credentials: "include",
+                        body
+                    });
+                    const result = await response.json();
+                    if (!response.ok) {
+                        throw new Error(result.error || `Erreur HTTP ${response.status}`);
+                    }
+                }
+                await loadDocuments();
                 documentsForm.reset();
-                showFeedback(
-                    documentsFeedback,
-                    "Noms enregistrés dans ce navigateur. Les fichiers ne sont pas envoyés au serveur."
-                );
+                showFeedback(documentsFeedback, "Vos documents ont été enregistrés sur le serveur.");
             } catch (error) {
-                showFeedback(documentsFeedback, "Impossible d'enregistrer ces documents.", true);
+                showFeedback(documentsFeedback, error.message, true);
+            } finally {
+                button.disabled = false;
+            }
+        });
+    }
+
+    const deleteAccountForm = document.getElementById("delete-account-form");
+    const deleteAccountFeedback = document.getElementById("delete-account-feedback");
+    if (deleteAccountForm) {
+        deleteAccountForm.addEventListener("submit", async (event) => {
+            event.preventDefault();
+            if (!user || !window.confirm(
+                "La suppression effacera définitivement votre profil, vos documents et vos candidatures. Continuer ?"
+            )) {
+                return;
+            }
+
+            const button = deleteAccountForm.querySelector('[type="submit"]');
+            button.disabled = true;
+            showFeedback(deleteAccountFeedback, "Suppression du compte en cours...");
+            try {
+                await window.JobBoardAuth.request({
+                    method: "POST",
+                    body: JSON.stringify({
+                        action: "delete_account",
+                        password: document.getElementById("delete-account-password").value
+                    })
+                });
+                [
+                    `jobboard_alerts_${user.id}`,
+                    `jobboard_alerts_last_viewed_${user.id}`,
+                    `jobboard_document_names_${user.id}`
+                ].forEach((key) => localStorage.removeItem(key));
+                window.location.href = "index.html";
+            } catch (error) {
+                showFeedback(deleteAccountFeedback, error.message, true);
+                button.disabled = false;
             }
         });
     }
@@ -208,5 +485,25 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
     }
 
+    if (languageField && window.JobBoardI18n) {
+        languageField.value = window.JobBoardI18n.getLanguage();
+        languageField.addEventListener("change", () => {
+            try {
+                window.JobBoardI18n.setLanguage(languageField.value);
+            } catch (error) {
+                console.error("Impossible de changer la langue :", error);
+                showFeedback(profileFeedback, "Impossible d’enregistrer la langue choisie.", true);
+            }
+        });
+    }
+
     await loadProfile();
+    if (user) {
+        try {
+            await loadDocuments();
+        } catch (error) {
+            console.error("Impossible de charger les documents du profil :", error);
+            showFeedback(documentsFeedback, error.message, true);
+        }
+    }
 });

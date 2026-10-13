@@ -9,6 +9,7 @@ let adminApplications = [];
 const statusLabels = {
 pending: "En attente",
 reviewing: "En cours d'étude",
+interview: "Entretien",
 accepted: "Acceptée",
 rejected: "Refusée"
 };
@@ -938,17 +939,31 @@ companyForm.addEventListener("submit", saveCompany);
 }
 
 if (applicationForm) {
-applicationForm.addEventListener("submit", function (event) {
-event.preventDefault();
+applicationForm.addEventListener("submit", async function (event) {
+    event.preventDefault();
+    const id = getFieldValue("application-id");
+    const status = getFieldValue("application-status");
+    const submitButton = applicationForm.querySelector('[type="submit"]');
 
+    if (!id || !status) return;
 
-    // TODO: Connecter ce formulaire à la route PUT des candidatures.
-    alert(
-        "La modification du statut depuis l'administration reste à connecter."
-    );
+    submitButton.disabled = true;
+    try {
+        const result = await apiRequest(APPLICATIONS_API_URL, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id: Number(id), status })
+        });
+        closeApplicationModal();
+        await loadApplications();
+        alert(result.message || "Le statut de la candidature a été mis à jour.");
+    } catch (error) {
+        console.error("Erreur de mise à jour du statut :", error);
+        alert("Impossible de mettre à jour le statut : " + error.message);
+    } finally {
+        submitButton.disabled = false;
+    }
 });
-
-
 }
 
 // Initialisation.

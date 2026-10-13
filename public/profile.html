@@ -5,22 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mon profil | JobBoard</title>
     <link rel="stylesheet" href="css/style.css">
+    <script src="js/language.js" defer></script>
     <script src="js/auth-client.js" defer></script>
+    <script src="js/alert-notifications.js" defer></script>
     <script src="js/nav-auth.js" defer></script>
     <script src="js/profile.js" defer></script>
 </head>
-<body class="profile-page" data-auth-required="true">
+<body class="profile-page" data-auth-required="true" data-auth-role="candidate">
 
     <header class="navbar">
-        <div class="navbar-content">
+        <div class="container navbar-content">
             <a href="index.html" class="logo">JobBoard</a>
 
             <nav class="nav-links" aria-label="Navigation principale">
-                <a href="index.html#jobs">Offres</a>
-                <a href="companies.html">Entreprises</a>
+                <a href="index.html#jobs" data-i18n="nav.jobs">Offres</a>
+                <a href="companies.html" data-i18n="nav.companies">Entreprises</a>
             </nav>
 
-            <div class="nav-actions">
+            <div class="nav-actions authenticated-actions" id="authenticated-actions">
                 <a href="alerts.html" class="icon-link" aria-label="Mes alertes emploi" title="Mes alertes">
                     <svg viewBox="0 0 24 24" aria-hidden="true">
                         <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"></path>
@@ -40,9 +42,7 @@
 
                     <div class="profile-dropdown" hidden>
                         <a href="profile.html">Mon profil</a>
-                        <a href="#documents">Mon CV et ma lettre de motivation</a>
                         <a href="app.html">Mes candidatures</a>
-                        <a href="candidate-dashboard.html">Mon espace candidat</a>
                         <button type="button" id="logout-button" class="logout-link">Déconnexion</button>
                     </div>
                 </div>
@@ -57,8 +57,36 @@
             <p>Gérez vos informations personnelles et vos documents de candidature.</p>
         </section>
 
-        <section class="profile-panel">
-            <h2>Informations personnelles</h2>
+        <nav class="profile-tabs" role="tablist" aria-label="Sections du profil">
+            <button id="profile-tab-information" class="profile-tab" type="button"
+                    role="tab" aria-controls="personal-information"
+                    aria-selected="true" tabindex="0">
+                <span class="profile-tab-count">01</span>
+                <span>Informations personnelles</span>
+            </button>
+            <button id="profile-tab-documents" class="profile-tab" type="button"
+                    role="tab" aria-controls="documents"
+                    aria-selected="false" tabindex="-1">
+                <span class="profile-tab-count">02</span>
+                <span>Mon CV et ma lettre</span>
+            </button>
+            <button id="profile-tab-delete" class="profile-tab" type="button"
+                    role="tab" aria-controls="delete-account"
+                    aria-selected="false" tabindex="-1">
+                <span class="profile-tab-count">03</span>
+                <span>Compte et sécurité</span>
+            </button>
+        </nav>
+
+        <section class="profile-panel" id="personal-information"
+                 role="tabpanel" aria-labelledby="profile-tab-information">
+            <div class="profile-panel-heading">
+                <div>
+                    <p class="profile-section-kicker">VOTRE IDENTITÉ</p>
+                    <h2>Informations personnelles</h2>
+                </div>
+                <span class="profile-panel-mark" aria-hidden="true">01</span>
+            </div>
 
             <form id="profile-form">
                 <div class="profile-form-grid">
@@ -74,12 +102,56 @@
 
                     <div class="form-field">
                         <label for="profile-email">Adresse e-mail</label>
-                        <input type="email" id="profile-email" name="email" autocomplete="email" required>
+                        <input type="email" id="profile-email" name="email" autocomplete="email"
+                               aria-describedby="profile-email-hint" readonly required>
+                        <small id="profile-email-hint">
+                            Modifiez votre adresse depuis l’onglet « Compte et sécurité ».
+                        </small>
                     </div>
 
                     <div class="form-field">
                         <label for="profile-phone">Téléphone</label>
-                        <input type="tel" id="profile-phone" name="phone" autocomplete="tel">
+                        <div class="phone-input">
+                            <label class="visually-hidden" for="phone-country">Indicatif du pays</label>
+                            <select id="phone-country" name="phoneCountry" autocomplete="tel-country-code"
+                                    aria-label="Indicatif du pays">
+                                <option value="FR">🇫🇷 +33</option>
+                                <option value="BE">🇧🇪 +32</option>
+                                <option value="CH">🇨🇭 +41</option>
+                                <option value="LU">🇱🇺 +352</option>
+                                <option value="NL">🇳🇱 +31</option>
+                                <option value="PT">🇵🇹 +351</option>
+                                <option value="CA">🇨🇦 +1</option>
+                                <option value="US">🇺🇸 +1</option>
+                                <option value="GB">🇬🇧 +44</option>
+                                <option value="DE">🇩🇪 +49</option>
+                                <option value="ES">🇪🇸 +34</option>
+                                <option value="IT">🇮🇹 +39</option>
+                                <option value="DZ">🇩🇿 +213</option>
+                                <option value="MA">🇲🇦 +212</option>
+                                <option value="TN">🇹🇳 +216</option>
+                                <option value="CM">🇨🇲 +237</option>
+                                <option value="CD">🇨🇩 +243</option>
+                                <option value="GH">🇬🇭 +233</option>
+                                <option value="KE">🇰🇪 +254</option>
+                                <option value="ML">🇲🇱 +223</option>
+                                <option value="NG">🇳🇬 +234</option>
+                                <option value="ZA">🇿🇦 +27</option>
+                                <option value="SN">🇸🇳 +221</option>
+                                <option value="CI">🇨🇮 +225</option>
+                                <option value="AU">🇦🇺 +61</option>
+                                <option value="BR">🇧🇷 +55</option>
+                                <option value="CN">🇨🇳 +86</option>
+                                <option value="IN">🇮🇳 +91</option>
+                                <option value="JP">🇯🇵 +81</option>
+                                <option value="MX">🇲🇽 +52</option>
+                                <option value="NZ">🇳🇿 +64</option>
+                                <option value="TR">🇹🇷 +90</option>
+                                <option value="AE">🇦🇪 +971</option>
+                                <option value="SA">🇸🇦 +966</option>
+                            </select>
+                            <input type="tel" id="profile-phone" name="phone" autocomplete="tel-national">
+                        </div>
                     </div>
 
                     <div class="form-field">
@@ -98,6 +170,15 @@
                         <textarea id="profile-bio" name="bio" rows="5"
                                   placeholder="Présentez votre parcours et vos compétences."></textarea>
                     </div>
+
+                    <div class="form-field form-field-full profile-language-field">
+                        <label for="profile-language">Langue de l’application</label>
+                        <select id="profile-language" name="language">
+                            <option value="fr">Français</option>
+                            <option value="en">English</option>
+                        </select>
+                        <span>Détectée depuis la langue de votre navigateur. Votre choix sera mémorisé sur cet appareil.</span>
+                    </div>
                 </div>
 
                 <button type="submit" class="btn btn-primary">Enregistrer mon profil</button>
@@ -105,18 +186,26 @@
             </form>
         </section>
 
-        <section class="profile-panel" id="documents">
-            <h2>Mon CV et ma lettre de motivation</h2>
+        <section class="profile-panel" id="documents" role="tabpanel"
+                 aria-labelledby="profile-tab-documents" hidden>
+            <div class="profile-panel-heading">
+                <div>
+                    <p class="profile-section-kicker">VOS PIÈCES JOINTES</p>
+                    <h2>Mon CV et ma lettre de motivation</h2>
+                </div>
+                <span class="profile-panel-mark" aria-hidden="true">02</span>
+            </div>
             <p class="panel-description">
-                Sélectionnez vos documents pour les retrouver dans votre espace.
-                Formats acceptés : PDF, DOC et DOCX. Taille maximale : 5 Mo par fichier.
+                Vos fichiers sont enregistrés de manière sécurisée sur JobBoard.
+                Le CV doit être un PDF pour pouvoir être prévisualisé lors d'une candidature.
+                La lettre accepte les formats PDF, DOC et DOCX. Taille maximale : 5 Mo par fichier.
             </p>
 
             <form id="documents-form">
                 <div class="form-field">
                     <label for="cv-file">Mon CV</label>
                     <input type="file" id="cv-file" name="cv"
-                           accept=".pdf,.doc,.docx">
+                           accept=".pdf,application/pdf">
                 </div>
 
                 <div class="form-field">
@@ -135,18 +224,83 @@
                     <p class="empty-state">Aucun document enregistré.</p>
                 </div>
                 <p class="documents-note">
-                    Les noms sont conservés dans ce navigateur. L'envoi sécurisé des fichiers au serveur
-                    nécessitera une connexion à l'API.
+                    Les documents sont stockés sur le serveur et associés à votre compte.
                 </p>
+            </div>
+            <div id="profile-document-preview" class="document-preview" hidden>
+                <h3 id="profile-document-preview-title">Prévisualisation du CV</h3>
+                <iframe title="Prévisualisation de votre document"></iframe>
             </div>
         </section>
 
-        <section class="profile-panel" id="applications">
-            <h2>Mes candidatures</h2>
-            <p class="panel-description">
-                Retrouvez le suivi de vos candidatures dans votre espace dédié.
-            </p>
-            <a href="app.html" class="btn btn-outline">Voir mes candidatures</a>
+        <section class="profile-panel" id="delete-account"
+                 role="tabpanel" aria-labelledby="profile-tab-delete" hidden>
+            <div class="profile-panel-heading">
+                <div>
+                    <p class="profile-section-kicker">SÉCURITÉ DU COMPTE</p>
+                    <h2>Adresse e-mail et mot de passe</h2>
+                </div>
+                <span class="profile-panel-mark" aria-hidden="true">03</span>
+            </div>
+            <div class="account-security-grid">
+                <form id="change-email-form" class="account-security-form">
+                    <h3>Changer mon adresse e-mail</h3>
+                    <div class="form-field">
+                        <label for="new-email">Nouvelle adresse e-mail</label>
+                        <input type="email" id="new-email" name="email"
+                               autocomplete="email" required>
+                    </div>
+                    <div class="form-field">
+                        <label for="email-current-password">Mot de passe actuel</label>
+                        <input type="password" id="email-current-password" name="current_password"
+                               autocomplete="current-password" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Modifier mon e-mail</button>
+                    <p id="change-email-feedback" class="form-feedback" role="status"
+                       aria-live="polite"></p>
+                </form>
+
+                <form id="change-password-form" class="account-security-form">
+                    <h3>Changer mon mot de passe</h3>
+                    <div class="form-field">
+                        <label for="password-current-password">Mot de passe actuel</label>
+                        <input type="password" id="password-current-password" name="current_password"
+                               autocomplete="current-password" required>
+                    </div>
+                    <div class="form-field">
+                        <label for="new-password">Nouveau mot de passe</label>
+                        <input type="password" id="new-password" name="new_password"
+                               autocomplete="new-password" minlength="6" required>
+                    </div>
+                    <div class="form-field">
+                        <label for="confirm-new-password">Confirmer le nouveau mot de passe</label>
+                        <input type="password" id="confirm-new-password" name="confirm_password"
+                               autocomplete="new-password" minlength="6" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Modifier mon mot de passe</button>
+                    <p id="change-password-feedback" class="form-feedback" role="status"
+                       aria-live="polite"></p>
+                </form>
+            </div>
+
+            <div class="account-delete-section">
+                <p class="profile-section-kicker">ACTION IRRÉVERSIBLE</p>
+                <h3>Supprimer mon compte</h3>
+                <p class="panel-description">
+                    La suppression efface votre profil, vos documents et vos candidatures.
+                    Cette action est définitive.
+                </p>
+                <form id="delete-account-form">
+                    <div class="form-field">
+                        <label for="delete-account-password">Confirmez avec votre mot de passe</label>
+                        <input type="password" id="delete-account-password" name="password"
+                               autocomplete="current-password" required>
+                    </div>
+                    <button type="submit" class="btn btn-danger">Supprimer définitivement mon compte</button>
+                    <p id="delete-account-feedback" class="form-feedback" role="status"
+                       aria-live="polite"></p>
+                </form>
+            </div>
         </section>
     </main>
 

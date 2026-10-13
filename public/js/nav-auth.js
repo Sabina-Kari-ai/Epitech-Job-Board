@@ -17,8 +17,15 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (user && requiredRole && user.role !== requiredRole) {
             window.location.href = user.role === "company"
                 ? "company-dashboard.html"
-                : "candidate-dashboard.html";
+                : "index.html";
             return;
+        }
+
+        if (user && user.role === "candidate") {
+            document.querySelectorAll(".nav-links a").forEach((link) => {
+                const href = link.getAttribute("href") || "";
+                if (href === "#jobs") link.href = "index.html#jobs";
+            });
         }
 
         if (guestActions) guestActions.hidden = Boolean(user);
@@ -27,6 +34,14 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (user) {
             const name = `${user.first_name} ${user.last_name}`.trim();
             if (userName) userName.textContent = name;
+        }
+        if (window.JobBoardAlertNotifications) {
+            const refreshAlertBadge = () => {
+                window.JobBoardAlertNotifications.updateBadge(user);
+            };
+            await window.JobBoardAlertNotifications.updateBadge(user);
+            document.addEventListener("jobboard:alerts-viewed", refreshAlertBadge);
+            document.addEventListener("jobboard:alerts-changed", refreshAlertBadge);
         }
     } catch (error) {
         console.error("Impossible de vérifier la session :", error);

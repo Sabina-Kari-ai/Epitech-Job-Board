@@ -65,6 +65,126 @@ try {
     $data = readAuthJson();
     $action = $data["action"] ?? "";
 
+    if ($action === "change_email" || $action === "change_password") {
+        $userId = (int) ($_SESSION["user_id"] ?? 0);
+        if ($userId < 1) {
+            sendAuthJson(401, ["error" => "Vous devez être connecté."]);
+        }
+        if (($_SESSION["user_role"] ?? "") !== "candidate") {
+            sendAuthJson(403, ["error" => "Cette fonction est réservée aux candidats."]);
+        }
+
+        $currentPassword = (string) ($data["current_password"] ?? "");
+        $statement = $pdo->prepare(
+            "SELECT password_hash FROM users WHERE id = :id AND role = 'candidate'"
+        );
+        $statement->execute([":id" => $userId]);
+        $account = $statement->fetch(PDO::FETCH_ASSOC);
+        if (!$account || !password_verify($currentPassword, $account["password_hash"])) {
+            sendAuthJson(403, ["error" => "Le mot de passe actuel est incorrect."]);
+        }
+
+        if ($action === "change_email") {
+            $email = strtolower(trim((string) ($data["email"] ?? "")));
+            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                sendAuthJson(400, ["error" => "Saisissez une adresse e-mail valide."]);
+            }
+
+            $check = $pdo->prepare(
+                "SELECT id FROM users WHERE email = :email AND id <> :id"
+            );
+            $check->execute([":email" => $email, ":id" => $userId]);
+            if ($check->fetch()) {
+                sendAuthJson(409, ["error" => "Cette adresse e-mail est déjà utilisée."]);
+            }
+
+            $update = $pdo->prepare(
+                "UPDATE users SET email = :email WHERE id = :id AND role = 'candidate'"
+            );
+            $update->execute([":email" => $email, ":id" => $userId]);
+            sendAuthJson(200, [
+                "success" => true,
+                "email" => $email,
+                "message" => "Votre adresse e-mail a été modifiée."
+            ]);
+        }
+
+        $newPassword = (string) ($data["new_password"] ?? "");
+        $confirmPassword = (string) ($data["confirm_password"] ?? "");
+        if (strlen($newPassword) < 6) {
+            sendAuthJson(400, [
+                "error" => "Le nouveau mot de passe doit contenir au moins 6 caractères."
+            ]);
+        }
+        if ($newPassword !== $confirmPassword) {
+            sendAuthJson(400, ["error" => "Les mots de passe ne correspondent pas."]);
+        }
+
+        $update = $pdo->prepare(
+            "UPDATE users SET password_hash = :password_hash
+             WHERE id = :id AND role = 'candidate'"
+        );
+        $update->execute([
+            ":password_hash" => password_hash($newPassword, PASSWORD_DEFAULT),
+            ":id" => $userId
+        ]);
+        sendAuthJson(200, [
+            "success" => true,
+            "message" => "Votre mot de passe a été modifié."
+        ]);
+    }
+
+    if ($action === "delete_account") {
+        $userId = (int) ($_SESSION["user_id"] ?? 0);
+        if ($userId < 1) {
+            sendAuthJson(401, ["error" => "Vous devez être connecté."]);
+        }
+        if (($_SESSION["user_role"] ?? "") !== "candidate") {
+            sendAuthJson(403, ["error" => "Cette fonction est réservée aux candidats."]);
+        }
+
+        $password = (string) ($data["password"] ?? "");
+        $statement = $pdo->prepare(
+            "SELECT password_hash FROM users WHERE id = :id AND role = 'candidate'"
+        );
+        $statement->execute([":id" => $userId]);
+        $account = $statement->fetch(PDO::FETCH_ASSOC);
+
+        if (!$account || !password_verify($password, $account["password_hash"])) {
+            sendAuthJson(403, ["error" => "Le mot de passe est incorrect."]);
+        }
+
+        $pdo->beginTransaction();
+        $deleteApplications = $pdo->prepare(
+            "DELETE FROM applications WHERE user_id = :user_id"
+        );
+        $deleteApplications->execute([":user_id" => $userId]);
+        $deleteAccount = $pdo->prepare(
+            "DELETE FROM users WHERE id = :id AND role = 'candidate'"
+        );
+        $deleteAccount->execute([":id" => $userId]);
+        if ($deleteAccount->rowCount() !== 1) {
+            $pdo->rollBack();
+            sendAuthJson(500, ["error" => "Le compte candidat n'a pas pu être supprimé."]);
+        }
+        $pdo->commit();
+
+        $_SESSION = [];
+        if (ini_get("session.use_cookies")) {
+            $params = session_get_cookie_params();
+            setcookie(session_name(), "", [
+                "expires" => time() - 42000,
+                "path" => $params["path"],
+                "domain" => $params["domain"],
+                "secure" => $params["secure"],
+                "httponly" => $params["httponly"],
+                "samesite" => "Lax"
+            ]);
+        }
+        session_destroy();
+        sendAuthJson(200, ["success" => true]);
+    }
+
     if ($action === "register") {
         $firstName = trim((string) ($data["first_name"] ?? ""));
         $lastName = trim((string) ($data["last_name"] ?? ""));
@@ -226,6 +346,21 @@ try {
 
         if ($linkedin !== "" && !filter_var($linkedin, FILTER_VALIDATE_URL)) {
             sendAuthJson(400, ["error" => "L'adresse LinkedIn est invalide."]);
+        }
+
+        $currentEmailStatement = $pdo->prepare(
+            "SELECT email FROM users WHERE id = :id AND role = 'candidate'"
+        );
+        $currentEmailStatement->execute([":id" => $_SESSION["user_id"]]);
+        $currentEmail = $currentEmailStatement->fetchColumn();
+        if ($currentEmail === false) {
+            sendAuthJson(404, ["error" => "Le compte candidat est introuvable."]);
+        }
+        if ($email !== strtolower((string) $currentEmail)) {
+            sendAuthJson(
+                400,
+                ["error" => "Modifiez votre adresse e-mail depuis l'onglet Compte et sécurité."]
+            );
         }
 
         $check = $pdo->prepare(
