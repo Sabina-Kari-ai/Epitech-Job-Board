@@ -35,3 +35,13 @@ ALTER TABLE users DROP FOREIGN KEY IF EXISTS fk_users_company,
  ADD CONSTRAINT fk_users_company FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE SET NULL ON UPDATE CASCADE;
 ALTER TABLE applications DROP FOREIGN KEY IF EXISTS fk_applications_user,
  ADD CONSTRAINT fk_applications_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL ON UPDATE CASCADE;
+
+CREATE TABLE IF NOT EXISTS mail_outbox (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    recipient VARCHAR(255) NOT NULL,
+    subject VARCHAR(255) NOT NULL,
+    body TEXT NOT NULL,
+    dedupe_key VARCHAR(100) NOT NULL UNIQUE,
+    status ENUM('demo','pending','sent','failed') NOT NULL DEFAULT 'demo',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

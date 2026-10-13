@@ -1,4 +1,4 @@
--- Shared demonstration database; fresh installation only. Contains sample data, no local credentials.
+-- Fresh demo installation only. No private data or credentials.
 CREATE DATABASE IF NOT EXISTS epitech_job_board
     CHARACTER SET utf8mb4
     COLLATE utf8mb4_unicode_ci;
@@ -258,6 +258,16 @@ CREATE TABLE password_reset_tokens (
         ON DELETE CASCADE
         ON UPDATE CASCADE
 );
+CREATE TABLE IF NOT EXISTS mail_outbox (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    recipient VARCHAR(255) NOT NULL,
+    subject VARCHAR(255) NOT NULL,
+    body TEXT NOT NULL,
+    dedupe_key VARCHAR(100) NOT NULL UNIQUE,
+    status ENUM('demo','pending','sent','failed') NOT NULL DEFAULT 'demo',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 USE epitech_job_board;
 
 

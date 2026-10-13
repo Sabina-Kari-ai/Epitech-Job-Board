@@ -233,8 +233,12 @@ async function loadJob() {
         }
 
 
-        selectedJob =
-            result;
+        selectedJob = result;
+        const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Paris', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
+        if (selectedJob.application_deadline && selectedJob.application_deadline < today) {
+            jobTitle.textContent = 'La date limite de candidature est dépassée.';
+            return;
+        }
 
 
         jobTitle.textContent =

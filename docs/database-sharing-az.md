@@ -4,7 +4,7 @@ Yerli MariaDB database-i GitHub ilə avtomatik ötürülmür. GitHub-da onun sch
 
 ## Yeni quraşdırma
 
-PR #4 branch-indən database/job-board-demo.sql faylını götürün. MariaDB client-də database yaratmağa icazəsi olan hesabla daxil olun və bu faylı SOURCE əmri ilə import edin. Fayl epitech_job_board database-i, 8 cədvəl, 6 şirkət və 6 elan, 3 demo hesabı və demo müraciət/alerts məlumatlarını yaradır. Bu fayl boş/yeni database üçündür.
+PR #4 branch-indən database/job-board-demo.sql faylını götürün. MariaDB client-də database yaratmağa icazəsi olan hesabla daxil olun və bu faylı SOURCE əmri ilə import edin. Fayl epitech_job_board database-i, 9 cədvəl, 6 şirkət və 6 elan, 3 demo hesabı və demo müraciət/alerts məlumatlarını yaradır. Bu fayl boş/yeni database üçündür.
 
 Windows-də repo Desktop-dadırsa:
 
@@ -33,3 +33,5 @@ Bu kompüterdə orijinal epitech_job_board qorunub; aktiv demo kopyası test_epi
     SELECT id, title, location, contract_type FROM jobs;
 
 Paylaşılan SQL yalnız nümunə məlumatları saxlayır; şəxsi istifadəçilər, yerli password və reset tokenləri export edilməyib.
+
+Email demosu üçün köhnə quraşdırmalarda database/migrate-completion.sql tətbiq edilir. Sonra admin panelindən Emails (démo) açılır. SMTP olmadan xarici email göndərilmir.

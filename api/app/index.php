@@ -160,16 +160,18 @@ try {
         }
 
 
-        // Check job
+        $pdo->beginTransaction();
+
+        // Lock the offer to serialize duplicate checks and deadline updates.
 
         $checkJob =
             $pdo->prepare(
                 "SELECT
                     id,
-                    cover_letter_required
+                    cover_letter_required, application_deadline
                  FROM jobs
                  WHERE id = :job_id
-                 LIMIT 1"
+                 LIMIT 1 FOR UPDATE"
             );
 
 
@@ -210,6 +212,18 @@ try {
             );
         }
 
+
+        $today = (new DateTimeImmutable('now', new DateTimeZone('Europe/Paris')))->format('Y-m-d');
+        if (!empty($job['application_deadline']) && $job['application_deadline'] < $today) {
+            $pdo->rollBack();
+            sendJson(410, ['error' => 'La date limite de candidature est dépassée.']);
+        }
+        $duplicate = $pdo->prepare('SELECT id FROM applications WHERE user_id = ? AND job_id = ? LIMIT 1');
+        $duplicate->execute([requireCandidate(), $jobId]);
+        if ($duplicate->fetch()) {
+            $pdo->rollBack();
+            sendJson(409, ['error' => 'Vous avez déjà postulé à cette offre.']);
+        }
 
         // Always associate a new application with the authenticated candidate.
 
@@ -274,6 +288,8 @@ try {
         ]);
 
 
+        $applicationId = (int) $pdo->lastInsertId();
+        $pdo->commit();
         sendJson(
             201,
             [
@@ -283,7 +299,7 @@ try {
                     "Votre candidature a bien été envoyée.",
 
                 "application_id" =>
-                    (int) $pdo->lastInsertId()
+                     $applicationId
             ]
         );
     }
@@ -638,6 +654,7 @@ try {
 
 
 } catch (PDOException $e) {
+    if ($pdo->inTransaction()) $pdo->rollBack();
 
     error_log(
         $e->getMessage()

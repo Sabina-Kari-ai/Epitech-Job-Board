@@ -95,6 +95,8 @@ function findCompanyId(PDO $pdo, array $data): int
     return (int) $company["id"];
 }
 
+require_once __DIR__ . '/../lib/mailer.php';
+
 // Valide et normalise une offre.
 function validateJobData(array $data): array
 {
@@ -129,7 +131,18 @@ function validateJobData(array $data): array
         ], 400);
     }
 
+    $deadline = trim((string) ($data['application_deadline'] ?? ''));
+    if ($deadline !== '') {
+        $date = DateTimeImmutable::createFromFormat('!Y-m-d', $deadline);
+        if (!$date || $date->format('Y-m-d') !== $deadline) sendJson(['error' => 'Date limite invalide.'], 400);
+    }
     return [
+        'skills' => trim((string) ($data['skills'] ?? '')) !== '' ? trim((string) $data['skills']) : null,
+        'missions' => trim((string) ($data['missions'] ?? '')) !== '' ? trim((string) $data['missions']) : null,
+        'profile' => trim((string) ($data['profile'] ?? '')) !== '' ? trim((string) $data['profile']) : null,
+        'benefits' => trim((string) ($data['benefits'] ?? '')) !== '' ? trim((string) $data['benefits']) : null,
+        'working_time' => trim((string) ($data['working_time'] ?? '')) !== '' ? trim((string) $data['working_time']) : null,
+        'application_deadline' => trim((string) ($data['application_deadline'] ?? '')) !== '' ? trim((string) $data['application_deadline']) : null,
         "title" => $title,
         "location" => $location,
         "contract_type" => $contractType,
@@ -276,6 +289,12 @@ try {
                 salary,
                 short_description,
                 description,
+                skills,
+                missions,
+                profile,
+                benefits,
+                working_time,
+                application_deadline,
                 cover_letter_required
             ) VALUES (
                 :company_id,
@@ -285,6 +304,12 @@ try {
                 :salary,
                 :short_description,
                 :description,
+                :skills,
+                :missions,
+                :profile,
+                :benefits,
+                :working_time,
+                :application_deadline,
                 :cover_letter_required
             )
         ";
@@ -299,13 +324,21 @@ try {
             ":salary" => $job["salary"],
             ":short_description" => $job["short_description"],
             ":description" => $job["description"],
+            ':skills' => $job['skills'],
+            ':missions' => $job['missions'],
+            ':profile' => $job['profile'],
+            ':benefits' => $job['benefits'],
+            ':working_time' => $job['working_time'],
+            ':application_deadline' => $job['application_deadline'],
             ":cover_letter_required" => $job["cover_letter_required"]
         ]);
 
+        $newJobId = (int) $pdo->lastInsertId();
+        notifyMatchingAlerts($pdo, $newJobId);
         sendJson([
             "success" => true,
             "message" => "Offre créée avec succès.",
-            "id" => (int) $pdo->lastInsertId()
+            "id" => $newJobId
         ], 201);
     }
 
@@ -325,16 +358,20 @@ try {
         }
 
         $check = $pdo->prepare(
-            "SELECT id FROM jobs WHERE id = ?"
+            "SELECT * FROM jobs WHERE id = ?"
         );
         $check->execute([$id]);
 
-        if (!$check->fetch()) {
+        $existingJob = $check->fetch();
+        if (!$existingJob) {
             sendJson([
                 "error" => "Offre introuvable."
             ], 404);
         }
 
+        foreach (['skills','missions','profile','benefits','working_time','application_deadline'] as $field) {
+            if (!array_key_exists($field, $data)) $data[$field] = $existingJob[$field];
+        }
         $job = validateJobData($data);
         $companyId = findCompanyId($pdo, $data);
 
@@ -347,6 +384,12 @@ try {
                 salary = :salary,
                 short_description = :short_description,
                 description = :description,
+                skills = :skills,
+                missions = :missions,
+                profile = :profile,
+                benefits = :benefits,
+                working_time = :working_time,
+                application_deadline = :application_deadline,
                 cover_letter_required = :cover_letter_required
             WHERE id = :id
         ";
@@ -361,10 +404,17 @@ try {
             ":salary" => $job["salary"],
             ":short_description" => $job["short_description"],
             ":description" => $job["description"],
+            ':skills' => $job['skills'],
+            ':missions' => $job['missions'],
+            ':profile' => $job['profile'],
+            ':benefits' => $job['benefits'],
+            ':working_time' => $job['working_time'],
+            ':application_deadline' => $job['application_deadline'],
             ":cover_letter_required" => $job["cover_letter_required"],
             ":id" => $id
         ]);
 
+        notifyMatchingAlerts($pdo, (int) $id);
         sendJson([
             "success" => true,
             "message" => "Offre modifiée avec succès."

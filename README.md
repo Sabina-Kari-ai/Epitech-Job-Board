@@ -32,7 +32,7 @@ Les annonces et entreprises sont publiques en lecture ; leur création, modifica
 
 ## Vérification
 
-Syntaxe : vérifier les fichiers PHP sous api avec php -l. Production frontend : npm run build inclut les 12 pages. 84 contrôles API/migration ont réussi dans une instance MariaDB isolée et 145 contrôles statiques/frontend ont réussi. Le navigateur a confirmé l'inscription à deux formulaires, le login candidat, l'envoi d'une candidature, Mes candidatures, le logout et l'administration avec modification du statut. Les styles JobBoard d'origine ont été restaurés et les éléments HTML requis par chaque script ont été vérifiés.
+Syntaxe : vérifier les fichiers PHP sous api avec php -l. Production frontend : npm run build inclut les 13 pages. 113 contrôles API/migration ont réussi dans une instance MariaDB isolée et 162 contrôles statiques/frontend ont réussi. Le navigateur a confirmé l'inscription à deux formulaires, le login candidat, l'envoi d'une candidature, Mes candidatures, le logout et l'administration avec modification du statut. Les styles JobBoard d'origine ont été restaurés et les éléments HTML requis par chaque script ont été vérifiés.
 
 La migration conserve les comptes et les lignes existantes, transforme sent en pending et under_review/interview en reviewing. Les anciennes pièces jointes restent liées aux candidatures.
 
@@ -47,3 +47,11 @@ Une base MariaDB locale n'est pas synchronisée par GitHub. Pour une installatio
 Pour la base existante à trois offres : sélectionner la base, exécuter migrate-integration.sql, puis add-demo-offers.sql. Ce dernier ajoute les offres manquantes jusqu'à six sans supprimer les lignes existantes ; une seconde exécution ne crée pas de doublons. La configuration locale doit sélectionner la base réellement importée.
 
 Guide en azéri : docs/database-sharing-az.md.
+
+## Dernières fonctionnalités
+
+L'admin lit le téléphone, le message, la lettre de motivation et les pièces jointes d'une candidature. Les documents sont accessibles via un endpoint protégé. Les compétences, missions, profil, avantages, temps de travail et date limite sont enregistrés et éditables dans l'offre. Les candidatures répétées (y compris concurrentes) et les offres expirées sont bloquées.
+
+Les réinitialisations et alertes génèrent des emails dans une boîte de réception locale réservée à l'admin : Emails (démo). Sans SMTP configuré, aucun email externe n'est envoyé. Le token de réinitialisation n'est jamais renvoyé par l'API publique. Les alertes actives sont filtrées par mot-clé, lieu et contrat ; plusieurs alertes correspondantes ne génèrent qu'un message par candidat/offre.
+
+Base déjà installée : importer database/migrate-completion.sql pour créer mail_outbox. Une installation complète via job-board-demo.sql inclut ce neuvième tableau. Configuration optionnelle : api/config/mail.local.example.php. Guide : docs/email-demo-az.md.

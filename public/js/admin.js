@@ -337,6 +337,12 @@ function normalizeJob(job) {
 
         description:
             job.description || "",
+        skills: job.skills || '',
+        missions: job.missions || '',
+        profile: job.profile || '',
+        benefits: job.benefits || '',
+        working_time: job.working_time || '',
+        application_deadline: job.application_deadline || '',
 
         cover_letter_required:
             Number(
@@ -366,6 +372,10 @@ function normalizeApplication(
 
         candidate_phone:
             application.candidate_phone || "",
+        message: application.message || '',
+        cover_letter: application.cover_letter || '',
+        cv_path: application.cv_path || '',
+        cover_letter_path: application.cover_letter_path || '',
 
         status:
             application.status ||
@@ -1406,6 +1416,9 @@ function openJobModal(job = null) {
     );
 
 
+    for (const field of ['skills','missions','profile','benefits','working_time','application_deadline']) {
+        setFieldValue('job-' + field.replaceAll('_', '-'), job ? job[field] : '');
+    }
     const checkbox =
         document.getElementById(
             "job-cover-letter-required"
@@ -1544,6 +1557,19 @@ function openApplicationModal(
     );
 
 
+    document.getElementById('application-phone').textContent = application.candidate_phone || 'Non renseigné';
+    document.getElementById('application-message').textContent = application.message || 'Aucun message';
+    document.getElementById('application-cover-letter').textContent = application.cover_letter || 'Non fournie';
+    const documents = document.getElementById('application-documents');
+    documents.replaceChildren();
+    for (const [type, label] of [['cv', 'Ouvrir le CV'], ['cover_letter', 'Ouvrir la lettre jointe']]) {
+        if (!application[type + '_path']) continue;
+        const link = document.createElement('a');
+        link.href = '/api/app/document.php?id=' + application.id + '&type=' + type;
+        link.target = '_blank'; link.rel = 'noopener'; link.className = 'btn btn-outline'; link.textContent = label;
+        documents.appendChild(link);
+    }
+    if (!documents.children.length) documents.textContent = 'Aucune pièce jointe';
     applicationModal.classList.add(
         "active"
     );
@@ -1624,6 +1650,9 @@ async function saveJob(event) {
     };
 
 
+    for (const field of ['skills','missions','profile','benefits','working_time','application_deadline']) {
+        data[field] = getFieldValue('job-' + field.replaceAll('_', '-'));
+    }
     const editing =
         id !== "";
 
