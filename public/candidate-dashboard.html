@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Espace candidat JobBoard : explorez les offres et suivez vos candidatures.">
+    <title>Mon espace candidat | JobBoard</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="js/auth-client.js" defer></script>
+    <script src="js/nav-auth.js" defer></script>
+    <script src="js/candidate-dashboard.js" defer></script>
+    <script src="js/jobs.js" defer></script>
+</head>
+<body data-auth-required="true" data-auth-role="candidate">
+    <header class="navbar">
+        <div class="container navbar-content">
+            <a href="candidate-dashboard.html" class="logo">JobBoard</a>
+            <nav class="nav-links" aria-label="Navigation principale">
+                <a href="#jobs">Offres</a>
+                <a href="companies.html">Entreprises</a>
+            </nav>
+            <div class="nav-actions" id="guest-actions" hidden>
+                <a href="login.html" class="btn btn-outline">Connexion</a>
+                <a href="register.html" class="btn btn-primary">Créer un compte</a>
+            </div>
+            <div class="nav-actions authenticated-actions" id="authenticated-actions" hidden>
+                <a href="alerts.html" class="nav-icon-link" aria-label="Mes alertes emploi" title="Mes alertes">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"></path>
+                        <path d="M10 21h4"></path>
+                    </svg>
+                </a>
+                <details class="profile-menu">
+                    <summary class="nav-icon-link" aria-label="Ouvrir le menu du profil" title="Mon profil">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <circle cx="12" cy="8" r="4"></circle>
+                            <path d="M4 21a8 8 0 0 1 16 0"></path>
+                        </svg>
+                    </summary>
+                    <div class="profile-dropdown">
+                        <p class="profile-menu-name" id="user-first-name"></p>
+                        <a href="profile.html">Mon profil</a>
+                        <a href="profile.html#documents">Mon CV et ma lettre de motivation</a>
+                        <a href="app.html">Mes candidatures</a>
+                        <button type="button" id="logout-button">Déconnexion</button>
+                    </div>
+                </details>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="container hero-content">
+                <div class="hero-text">
+                    <span class="hero-label">ESPACE CANDIDAT</span>
+                    <h1 id="candidate-greeting">Trouvez votre prochain <span>emploi</span></h1>
+                    <p>Explorez les nouvelles offres et gardez vos candidatures à portée de main.</p>
+                </div>
+                <div class="search-box">
+                    <div class="search-field">
+                        <label for="search">Métier ou compétence</label>
+                        <input type="text" id="search" placeholder="Ex : Développeur web">
+                    </div>
+                    <div class="search-field">
+                        <label for="location">Lieu</label>
+                        <input type="text" id="location" placeholder="Ex : Paris">
+                    </div>
+                    <button class="btn btn-primary search-button" id="search-button">Rechercher</button>
+                </div>
+            </div>
+        </section>
+
+        <section class="candidate-shortcuts">
+            <div class="container candidate-shortcuts-inner">
+                <p>Votre espace candidat est prêt.</p>
+                <a href="app.html">Mes candidatures <span id="candidate-application-count"></span><span aria-hidden="true"> →</span></a>
+            </div>
+        </section>
+
+        <section class="jobs-section" id="jobs">
+            <div class="container">
+                <div class="section-header">
+                    <div>
+                        <span class="section-label">POUR VOUS</span>
+                        <h2>Offres d'emploi</h2>
+                    </div>
+                    <span class="jobs-count" id="jobs-count">Chargement...</span>
+                </div>
+
+                <div class="jobs-layout">
+                    <aside class="filters">
+                        <div class="filter-header">
+                            <h3>Filtrer</h3>
+                            <button id="reset-filters" type="button">Réinitialiser</button>
+                        </div>
+                        <div class="filter-group">
+                            <h4>Type de contrat</h4>
+                            <label class="checkbox"><input type="checkbox" value="CDI" class="contract-filter"><span>CDI</span></label>
+                            <label class="checkbox"><input type="checkbox" value="CDD" class="contract-filter"><span>CDD</span></label>
+                            <label class="checkbox"><input type="checkbox" value="Stage" class="contract-filter"><span>Stage</span></label>
+                            <label class="checkbox"><input type="checkbox" value="Alternance" class="contract-filter"><span>Alternance</span></label>
+                        </div>
+                        <div class="filter-group">
+                            <h4>Lieu</h4>
+                            <label class="radio"><input type="radio" name="location-filter" value="all" checked><span>Tous</span></label>
+                            <label class="radio"><input type="radio" name="location-filter" value="Paris"><span>Paris</span></label>
+                            <label class="radio"><input type="radio" name="location-filter" value="Lyon"><span>Lyon</span></label>
+                            <label class="radio"><input type="radio" name="location-filter" value="Lille"><span>Lille</span></label>
+                        </div>
+                    </aside>
+                    <div class="jobs-list" id="jobs-list">
+                        <p class="empty-applications">Chargement des offres...</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="modal hidden" id="job-modal">
+            <div class="modal-overlay" id="modal-overlay"></div>
+            <div class="modal-content">
+                <button class="modal-close" id="modal-close" aria-label="Fermer">×</button>
+                <span class="section-label">DÉTAIL DE L'OFFRE</span>
+                <h2 id="modal-title"></h2>
+                <p class="company-name" id="modal-company"></p>
+                <p class="job-location" id="modal-location"></p>
+                <div class="modal-divider"></div>
+                <h3>Description</h3>
+                <p id="modal-description"></p>
+                <div class="modal-actions">
+                    <button class="btn btn-primary" id="apply-button">Postuler</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container footer-content">
+            <div><strong>JobBoard</strong><p>Trouvez simplement votre prochaine opportunité.</p></div>
+            <p>© 2026 JobBoard</p>
+        </div>
+    </footer>
+</body>
+</html>

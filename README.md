@@ -39,6 +39,12 @@ Epitech Job Board est une application web pour consulter des offres d'emploi, d�
 
    `mysql -u root -p job_board < database/seed.sql`
 
+Pour une base déjà créée avec l'ancien schéma, exécute dans l'ordre `database/migrations/001_candidate_accounts.sql`, `database/migrations/002_application_cv_upload.sql` et `database/migrations/003_company_accounts.sql`, une seule fois chacune. Vérifie avant l'exécution que les colonnes et contraintes correspondantes ne sont pas déjà présentes.
+
+Depuis l'accueil, les liens de connexion et d'inscription ouvrent les formulaires dédiés. Après authentification, les candidats arrivent sur leur tableau de bord candidat et les comptes entreprise sur leur tableau de bord entreprise.
+
+Les comptes se créent depuis `public/register.html` avec un mot de passe d'au moins 6 caractères. Après l'inscription, la session est ouverte automatiquement et l'utilisateur est dirigé vers le tableau de bord correspondant à son type de compte. Il pourra utiliser `public/login.html` lors de ses prochaines visites. Aucun compte utilisateur n'est créé par SQL.
+
 ## Lancer le projet
 
 Depuis la racine du dépôt, démarre l'API dans un terminal :
@@ -63,7 +69,13 @@ Ouvre l'adresse locale affichée par Vite, généralement `http://127.0.0.1:5173
 | `public/job.html` | Détail d'une offre |
 | `public/apply.html` | Formulaire de candidature |
 | `public/companies.html` | Liste des entreprises |
-| `public/app.html` | Candidatures |
+| `public/app.html` | Candidatures du compte connecté |
+| `public/login.html` | Connexion candidat |
+| `public/register.html` | Création de compte candidat ou entreprise |
+| `public/candidate-dashboard.html` | Tableau de bord candidat et recherche d'offres |
+| `public/company-dashboard.html` | Tableau de bord entreprise |
+| `public/profile.html` | Profil candidat et documents |
+| `public/alerts.html` | Gestion des alertes emploi |
 | `public/admin.html` | Administration |
 
 ## API
@@ -83,10 +95,16 @@ Toutes les routes sont servies depuis `http://127.0.0.1:8001`.
 | `DELETE` | `/api/companies/?id=1` | Supprime une entreprise si aucune offre ne lui est associée |
 | `GET` | `/api/app/` | Liste les candidatures |
 | `GET` | `/api/app/?id=1` | Récupère une candidature |
-| `POST` | `/api/app/` | Envoie une candidature |
+| `GET` | `/api/app/?mine=1` | Liste les candidatures du compte connecté |
+| `GET` | `/api/app/?id=1&attachment=cv` | Télécharge le CV avec autorisation |
+| `POST` | `/api/app/` | Envoie une candidature connectée avec sa lettre et son CV PDF facultatif |
 | `PUT` | `/api/app/` | Modifie le statut ; `id` et `status` sont envoyés dans le JSON |
+| `GET` | `/api/auth/` | Récupère la session et le profil connecté |
+| `POST` | `/api/auth/` | Crée un compte, ouvre/ferme une session ou met à jour le profil |
 
-Les requêtes `POST` et `PUT` attendent un corps JSON. Remplace `1` par l'identifiant de l'enregistrement voulu.
+Les candidatures nécessitent une session : un candidat ne voit que les siennes et le rôle administrateur peut consulter la liste complète et modifier les statuts. Le CV PDF joint à une candidature est conservé dans la base et son téléchargement est limité au candidat concerné ou à l'administration. Les alertes et les noms des documents sélectionnés depuis le profil restent dans le stockage local du navigateur.
+
+La création d'une candidature utilise `multipart/form-data` pour joindre le CV PDF (5 Mo maximum). Les autres requêtes `POST` et `PUT` attendent un corps JSON. Remplace `1` par l'identifiant de l'enregistrement voulu.
 
 ## Build
 
@@ -98,8 +116,7 @@ Les fichiers générés sont placés dans `dist/`.
 
 ## À poursuivre
 
-- Connecter les boutons de suppression des entreprises et de modification du statut des candidatures dans l'administration à leurs routes API.
-- Ajouter une authentification et des autorisations aux routes d'administration avant toute mise en ligne publique.
+- Ajouter une authentification et des autorisations aux autres routes d'administration avant toute mise en ligne publique.
 
 ## Notes
 

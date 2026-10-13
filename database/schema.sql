@@ -12,6 +12,29 @@ CREATE TABLE IF NOT EXISTS companies (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE IF NOT EXISTS users (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    first_name VARCHAR(100) NOT NULL,
+    last_name VARCHAR(100) NOT NULL,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL,
+    phone VARCHAR(50) NULL,
+    city VARCHAR(150) NULL,
+    linkedin_url VARCHAR(255) NULL,
+    bio TEXT NULL,
+    company_id INT UNSIGNED NULL,
+    role VARCHAR(20) NOT NULL DEFAULT 'candidate',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    KEY idx_users_company_id (company_id),
+    CONSTRAINT fk_users_company
+        FOREIGN KEY (company_id)
+        REFERENCES companies(id)
+        ON DELETE SET NULL
+        ON UPDATE CASCADE,
+    CONSTRAINT chk_users_role CHECK (role IN ('candidate', 'company', 'admin'))
+);
+
 CREATE TABLE IF NOT EXISTS jobs (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     company_id INT UNSIGNED NOT NULL,
@@ -43,6 +66,8 @@ CREATE TABLE IF NOT EXISTS applications (
     candidate_phone VARCHAR(50) NOT NULL,
     message TEXT NOT NULL,
     cover_letter TEXT NULL,
+    cv_file_name VARCHAR(255) NULL,
+    cv_file MEDIUMBLOB NULL,
     status VARCHAR(30) NOT NULL DEFAULT 'pending',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -53,6 +78,11 @@ CREATE TABLE IF NOT EXISTS applications (
         FOREIGN KEY (job_id)
         REFERENCES jobs(id)
         ON DELETE CASCADE
+        ON UPDATE CASCADE,
+    CONSTRAINT fk_applications_user
+        FOREIGN KEY (user_id)
+        REFERENCES users(id)
+        ON DELETE SET NULL
         ON UPDATE CASCADE,
     CONSTRAINT chk_application_status
         CHECK (status IN ('pending', 'reviewing', 'accepted', 'rejected'))

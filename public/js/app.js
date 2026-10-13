@@ -1,9 +1,5 @@
-const APPLICATIONS_API_URL = "http://127.0.0.1:8001/api/app/";
-
+const APPLICATIONS_API_URL = "http://127.0.0.1:8001/api/app/?mine=1";
 const applicationsList = document.getElementById("applications-list");
-
-const applications =
-    JSON.parse(localStorage.getItem("applications")) || [];
 
 const statusLabels = {
     pending: "En attente",
@@ -12,62 +8,94 @@ const statusLabels = {
     rejected: "Refusée"
 };
 
-function getStatusLabel(status) {
-    return statusLabels[status] || "En attente";
+function createTextElement(tag, className, text) {
+    const element = document.createElement(tag);
+    element.className = className;
+    element.textContent = text;
+    return element;
 }
 
-function displayApplications() {
-    if (applications.length === 0) {
-        applicationsList.innerHTML = `
-            <div class="empty-applications">
-                <h2>Aucune candidature</h2>
-                <p>
-                    Vous n'avez pas encore postulé à une offre.
-                </p>
-                <a href="index.html#jobs" class="btn btn-primary">
-                    Voir les offres
-                </a>
-            </div>
-        `;
+function renderApplications(applications) {
+    applicationsList.replaceChildren();
 
+    if (applications.length === 0) {
+        const empty = document.createElement("div");
+        empty.className = "empty-applications";
+        empty.append(
+            createTextElement("h2", "", "Aucune candidature"),
+            createTextElement(
+                "p",
+                "",
+                "Vos prochaines candidatures apparaîtront ici."
+            )
+        );
+
+        const link = document.createElement("a");
+        link.href = "candidate-dashboard.html#jobs";
+        link.className = "btn btn-primary";
+        link.textContent = "Découvrir les offres";
+        empty.appendChild(link);
+        applicationsList.appendChild(empty);
         return;
     }
 
-    applicationsList.innerHTML = "";
-
-    applications.forEach(function (application) {
+    applications.forEach((application) => {
         const card = document.createElement("article");
-
         card.className = "application-card";
 
-        card.innerHTML = `
-            <div class="application-info">
-                <span class="section-label">CANDIDATURE</span>
+        const info = document.createElement("div");
+        info.className = "application-info";
+        info.append(
+            createTextElement("span", "section-label", "CANDIDATURE"),
+            createTextElement(
+                "h2",
+                "",
+                application.job_title || `Offre #${application.job_id}`
+            ),
+            createTextElement("p", "application-company", application.company || ""),
+            createTextElement("p", "", application.candidate_email || ""),
+            createTextElement("p", "", application.candidate_phone || "")
+        );
 
-                <h2>${application.jobTitle}</h2>
+        if (application.cv_file_name) {
+            const cvLink = document.createElement("a");
+            cvLink.href =
+                `http://127.0.0.1:8001/api/app/?id=${encodeURIComponent(application.id)}&attachment=cv`;
+            cvLink.textContent = "Télécharger mon CV";
+            info.appendChild(cvLink);
+        }
 
-                <p class="application-company">
-                    ${application.company}
-                </p>
-
-                <p>
-                    ${application.email}
-                </p>
-
-                <p>
-                    ${application.phone}
-                </p>
-            </div>
-
-            <div class="application-status">
-                <span class="status ${application.status}">
-                    ${getStatusLabel(application.status)}
-                </span>
-            </div>
-        `;
-
+        const status = document.createElement("div");
+        status.className = "application-status";
+        const badge = createTextElement(
+            "span",
+            `status ${application.status}`,
+            statusLabels[application.status] || "En attente"
+        );
+        status.appendChild(badge);
+        card.append(info, status);
         applicationsList.appendChild(card);
     });
 }
 
-displayApplications();
+async function loadApplications() {
+    try {
+        const response = await fetch(APPLICATIONS_API_URL, {
+            credentials: "include"
+        });
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data.error || `Erreur HTTP ${response.status}`);
+        }
+        if (!Array.isArray(data)) {
+            throw new Error("Le format des candidatures est invalide.");
+        }
+        renderApplications(data);
+    } catch (error) {
+        console.error("Impossible de charger les candidatures :", error);
+        applicationsList.textContent =
+            "Impossible de charger vos candidatures pour le moment.";
+    }
+}
+
+loadApplications();

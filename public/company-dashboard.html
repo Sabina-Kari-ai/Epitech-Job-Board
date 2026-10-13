@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Espace entreprise JobBoard.">
+    <title>Espace entreprise | JobBoard</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="js/auth-client.js" defer></script>
+    <script src="js/nav-auth.js" defer></script>
+    <script src="js/company-dashboard.js" defer></script>
+</head>
+<body data-auth-required="true" data-auth-role="company">
+    <header class="navbar">
+        <div class="container navbar-content">
+            <a href="company-dashboard.html" class="logo">JobBoard</a>
+            <nav class="nav-links" aria-label="Navigation principale">
+                <a href="companies.html">Entreprises</a>
+                <a href="index.html#jobs">Offres</a>
+            </nav>
+            <div class="nav-actions authenticated-actions" id="authenticated-actions" hidden>
+                <span id="company-user-name"></span>
+                <button type="button" id="logout-button" class="btn btn-outline">Déconnexion</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="profile-container">
+        <section class="profile-heading">
+            <p class="page-eyebrow">ESPACE ENTREPRISE</p>
+            <h1 id="company-welcome">Bienvenue</h1>
+            <p>Votre compte entreprise JobBoard est prêt.</p>
+        </section>
+
+        <section class="profile-panel">
+            <h2>Votre entreprise</h2>
+            <p id="company-name">Chargement...</p>
+            <p id="company-location"></p>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <p>&copy; 2026 JobBoard. Tous droits réservés.</p>
+    </footer>
+</body>
+</html>

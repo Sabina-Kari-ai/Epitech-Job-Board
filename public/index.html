@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <base href="/">
     <title>JobBoard - Trouvez votre prochain emploi</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
@@ -14,12 +15,14 @@
 
             <nav class="nav-links">
                 <a href="#jobs">Offres</a>
+                <a href="companies.html">Entreprises</a>
             </nav>
 
-            <div class="nav-actions">
-                <a href="#" class="btn btn-outline">Connexion</a>
-                <a href="#" class="btn btn-primary">Créer un compte</a>
+            <div class="nav-actions" id="guest-actions">
+                <a href="login.html" class="btn btn-outline">Connexion</a>
+                <a href="register.html" class="btn btn-primary">Créer un compte</a>
             </div>
+
         </div>
     </header>
 
@@ -286,7 +289,7 @@
             <div class="modal-overlay" id="modal-overlay"></div>
 
             <div class="modal-content">
-                <button class="modal-close" id="modal-close">×</button>
+                <button class="modal-close" id="modal-close" aria-label="Fermer">×</button>
 
                 <span class="section-label">DÉTAIL DE L'OFFRE</span>
                 <h2 id="modal-title">Titre de l'offre</h2>
@@ -316,6 +319,6 @@
         </div>
     </footer>
 
-    <script src="js/jobs.js"></script>
+    <script src="js/jobs.js" defer></script>
 </body>
 </html>

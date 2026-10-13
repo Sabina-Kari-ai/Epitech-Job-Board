@@ -3,30 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Postulez simplement à une offre d'emploi sur JobBoard.">
     <title>Postuler - JobBoard</title>
     <link rel="stylesheet" href="css/style.css">
+    <script src="js/auth-client.js" defer></script>
+    <script src="js/nav-auth.js" defer></script>
+    <script src="js/apply.js" defer></script>
 </head>
 
-<body>
+<body data-auth-required="true" data-auth-role="candidate">
 
 <header class="navbar">
-    <div class="container">
+    <div class="container navbar-content">
         <a href="index.html" class="logo">JobBoard</a>
 
-        <nav>
-            <ul class="nav-links">
-                <li><a href="index.html">Offres</a></li>
-                <li><a href="app.html">Mes candidatures</a></li>
-                <li><a href="#">Connexion</a></li>
-            </ul>
+        <nav class="nav-links" aria-label="Navigation principale">
+            <a href="index.html#jobs">Offres</a>
+            <a href="companies.html">Entreprises</a>
         </nav>
+
+        <div class="nav-actions authenticated-actions" id="authenticated-actions" hidden>
+            <a href="alerts.html" class="nav-icon-link" aria-label="Mes alertes" title="Mes alertes">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"></path>
+                    <path d="M10 21h4"></path>
+                </svg>
+            </a>
+            <details class="profile-menu">
+                <summary class="nav-icon-link" aria-label="Ouvrir le menu du profil" title="Mon profil">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <circle cx="12" cy="8" r="4"></circle>
+                        <path d="M4 21a8 8 0 0 1 16 0"></path>
+                    </svg>
+                </summary>
+
+                <div class="profile-dropdown">
+                    <a href="profile.html">Mon profil</a>
+                    <a href="profile.html#documents">Mon CV et lettre de motivation</a>
+                    <a href="app.html">Mes candidatures</a>
+                    <a href="candidate-dashboard.html">Mon espace candidat</a>
+                    <button type="button" id="logout-button">Déconnexion</button>
+                </div>
+            </details>
+        </div>
     </div>
 </header>
 
 <main class="apply-section">
     <div class="container">
 
-        <a href="index.html" class="back-link">← Retour aux offres</a>
+        <a href="index.html#jobs" class="back-link">
+            ← Retour aux offres
+        </a>
 
         <div class="apply-layout">
 
@@ -43,6 +71,7 @@
                         type="text"
                         id="name"
                         name="name"
+                        autocomplete="name"
                         required
                     >
                 </div>
@@ -53,6 +82,7 @@
                         type="email"
                         id="email"
                         name="email"
+                        autocomplete="email"
                         required
                     >
                 </div>
@@ -63,12 +93,30 @@
                         type="tel"
                         id="phone"
                         name="phone"
+                        autocomplete="tel"
                         required
                     >
                 </div>
 
                 <div class="form-group">
-                    <label for="message">Message</label>
+                    <label for="cv">CV (PDF)</label>
+                    <input
+                        type="file"
+                        id="cv"
+                        name="cv"
+                        accept=".pdf,application/pdf"
+                    >
+                    <small>PDF uniquement, 5 Mo maximum.</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="coverLetterText">Lettre de motivation</label>
+                    <textarea id="coverLetterText" name="cover_letter" rows="5"
+                              placeholder="Ajoutez votre lettre de motivation si l'offre la demande."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="message">Message de candidature</label>
                     <textarea
                         id="message"
                         name="message"
@@ -82,22 +130,23 @@
                     Envoyer ma candidature
                 </button>
 
-                <p id="formMessage"></p>
+                <p id="formMessage" role="status" aria-live="polite"></p>
 
             </form>
 
         </div>
-
     </div>
 </main>
 
 <footer class="footer">
-    <div class="container">
+    <div class="container footer-content">
+        <div>
+            <strong>JobBoard</strong>
+            <p>Trouvez simplement votre prochaine opportunité.</p>
+        </div>
         <p>© 2026 JobBoard - Epitech</p>
     </div>
 </footer>
-
-<script src="js/apply.js"></script>
 
 </body>
 </html>

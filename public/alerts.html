@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mes alertes emploi | JobBoard</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="js/auth-client.js" defer></script>
+    <script src="js/nav-auth.js" defer></script>
+    <script src="js/alerts.js" defer></script>
+</head>
+<body class="alerts-page" data-auth-required="true">
+
+    <header class="navbar">
+        <div class="navbar-content">
+            <a href="index.html" class="logo">JobBoard</a>
+
+            <nav class="nav-links" aria-label="Navigation principale">
+                <a href="index.html#jobs">Offres</a>
+                <a href="companies.html">Entreprises</a>
+            </nav>
+
+            <div class="nav-actions">
+                <a href="alerts.html" class="icon-link active" aria-label="Mes alertes emploi" title="Mes alertes">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"></path>
+                        <path d="M10 21h4"></path>
+                    </svg>
+                </a>
+
+                <div class="profile-menu">
+                    <button class="icon-link profile-menu-button" type="button"
+                            aria-label="Ouvrir le menu du profil"
+                            aria-expanded="false">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <circle cx="12" cy="8" r="4"></circle>
+                            <path d="M4 21a8 8 0 0 1 16 0"></path>
+                        </svg>
+                    </button>
+
+                    <div class="profile-dropdown" hidden>
+                        <a href="profile.html">Mon profil</a>
+                        <a href="profile.html#documents">Mon CV et ma lettre de motivation</a>
+                        <a href="profile.html#applications">Mes candidatures</a>
+                        <a href="candidate-dashboard.html">Mon espace candidat</a>
+                        <button type="button" id="logout-button" class="logout-link">Déconnexion</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="alerts-container">
+        <section class="alerts-heading">
+            <p class="page-eyebrow">JOBBOARD</p>
+            <h1>Mes alertes emploi</h1>
+            <p>Recevez des alertes correspondant aux offres que vous recherchez.</p>
+        </section>
+
+        <section class="alerts-panel">
+            <h2>Créer une alerte</h2>
+
+            <form id="alert-form">
+                <div class="alert-form-grid">
+                    <div class="form-field">
+                        <label for="alert-title">Nom de l'alerte</label>
+                        <input type="text" id="alert-title" name="title"
+                               placeholder="Ex. Développeur web" required>
+                    </div>
+
+                    <div class="form-field">
+                        <label for="alert-keyword">Mot-clé ou métier</label>
+                        <input type="text" id="alert-keyword" name="keyword"
+                               placeholder="Ex. JavaScript">
+                    </div>
+
+                    <div class="form-field">
+                        <label for="alert-location">Localisation</label>
+                        <input type="text" id="alert-location" name="location"
+                               placeholder="Ex. Paris">
+                    </div>
+
+                    <div class="form-field">
+                        <label for="alert-contract">Type de contrat</label>
+                        <select id="alert-contract" name="contract">
+                            <option value="">Tous les contrats</option>
+                            <option value="CDI">CDI</option>
+                            <option value="CDD">CDD</option>
+                            <option value="Stage">Stage</option>
+                            <option value="Alternance">Alternance</option>
+                            <option value="Freelance">Freelance</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    Créer mon alerte
+                </button>
+
+                <p id="alert-feedback" class="form-feedback" role="status" aria-live="polite"></p>
+            </form>
+        </section>
+
+        <section class="alerts-list-section">
+            <div class="section-heading">
+                <div>
+                    <h2>Mes alertes enregistrées</h2>
+                    <p>Gérez les alertes que vous avez créées.</p>
+                </div>
+            </div>
+
+            <div id="alerts-list" class="alerts-list">
+                <p class="empty-state">Vous n'avez pas encore créé d'alerte.</p>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <p>&copy; 2026 JobBoard. Tous droits réservés.</p>
+    </footer>
+
+</body>
+</html>

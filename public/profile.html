@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mon profil | JobBoard</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="js/auth-client.js" defer></script>
+    <script src="js/nav-auth.js" defer></script>
+    <script src="js/profile.js" defer></script>
+</head>
+<body class="profile-page" data-auth-required="true">
+
+    <header class="navbar">
+        <div class="navbar-content">
+            <a href="index.html" class="logo">JobBoard</a>
+
+            <nav class="nav-links" aria-label="Navigation principale">
+                <a href="index.html#jobs">Offres</a>
+                <a href="companies.html">Entreprises</a>
+            </nav>
+
+            <div class="nav-actions">
+                <a href="alerts.html" class="icon-link" aria-label="Mes alertes emploi" title="Mes alertes">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"></path>
+                        <path d="M10 21h4"></path>
+                    </svg>
+                </a>
+
+                <div class="profile-menu">
+                    <button class="icon-link profile-menu-button" type="button"
+                            aria-label="Ouvrir le menu du profil"
+                            aria-expanded="false">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <circle cx="12" cy="8" r="4"></circle>
+                            <path d="M4 21a8 8 0 0 1 16 0"></path>
+                        </svg>
+                    </button>
+
+                    <div class="profile-dropdown" hidden>
+                        <a href="profile.html">Mon profil</a>
+                        <a href="#documents">Mon CV et ma lettre de motivation</a>
+                        <a href="app.html">Mes candidatures</a>
+                        <a href="candidate-dashboard.html">Mon espace candidat</a>
+                        <button type="button" id="logout-button" class="logout-link">Déconnexion</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="profile-container">
+        <section class="profile-heading">
+            <p class="page-eyebrow">MON ESPACE</p>
+            <h1>Mon profil</h1>
+            <p>Gérez vos informations personnelles et vos documents de candidature.</p>
+        </section>
+
+        <section class="profile-panel">
+            <h2>Informations personnelles</h2>
+
+            <form id="profile-form">
+                <div class="profile-form-grid">
+                    <div class="form-field">
+                        <label for="first-name">Prénom</label>
+                        <input type="text" id="first-name" name="firstName" autocomplete="given-name" required>
+                    </div>
+
+                    <div class="form-field">
+                        <label for="last-name">Nom</label>
+                        <input type="text" id="last-name" name="lastName" autocomplete="family-name" required>
+                    </div>
+
+                    <div class="form-field">
+                        <label for="profile-email">Adresse e-mail</label>
+                        <input type="email" id="profile-email" name="email" autocomplete="email" required>
+                    </div>
+
+                    <div class="form-field">
+                        <label for="profile-phone">Téléphone</label>
+                        <input type="tel" id="profile-phone" name="phone" autocomplete="tel">
+                    </div>
+
+                    <div class="form-field">
+                        <label for="profile-city">Ville</label>
+                        <input type="text" id="profile-city" name="city" autocomplete="address-level2">
+                    </div>
+
+                    <div class="form-field">
+                        <label for="profile-linkedin">Profil LinkedIn</label>
+                        <input type="url" id="profile-linkedin" name="linkedin"
+                               placeholder="https://www.linkedin.com/in/...">
+                    </div>
+
+                    <div class="form-field form-field-full">
+                        <label for="profile-bio">Présentation</label>
+                        <textarea id="profile-bio" name="bio" rows="5"
+                                  placeholder="Présentez votre parcours et vos compétences."></textarea>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Enregistrer mon profil</button>
+                <p id="profile-feedback" class="form-feedback" role="status" aria-live="polite"></p>
+            </form>
+        </section>
+
+        <section class="profile-panel" id="documents">
+            <h2>Mon CV et ma lettre de motivation</h2>
+            <p class="panel-description">
+                Sélectionnez vos documents pour les retrouver dans votre espace.
+                Formats acceptés : PDF, DOC et DOCX. Taille maximale : 5 Mo par fichier.
+            </p>
+
+            <form id="documents-form">
+                <div class="form-field">
+                    <label for="cv-file">Mon CV</label>
+                    <input type="file" id="cv-file" name="cv"
+                           accept=".pdf,.doc,.docx">
+                </div>
+
+                <div class="form-field">
+                    <label for="cover-letter-file">Ma lettre de motivation</label>
+                    <input type="file" id="cover-letter-file" name="coverLetter"
+                           accept=".pdf,.doc,.docx">
+                </div>
+
+                <button type="submit" class="btn btn-primary">Enregistrer les documents</button>
+                <p id="documents-feedback" class="form-feedback" role="status" aria-live="polite"></p>
+            </form>
+
+            <div class="documents-list-section">
+                <h3>Documents sélectionnés</h3>
+                <div id="documents-list" class="documents-list">
+                    <p class="empty-state">Aucun document enregistré.</p>
+                </div>
+                <p class="documents-note">
+                    Les noms sont conservés dans ce navigateur. L'envoi sécurisé des fichiers au serveur
+                    nécessitera une connexion à l'API.
+                </p>
+            </div>
+        </section>
+
+        <section class="profile-panel" id="applications">
+            <h2>Mes candidatures</h2>
+            <p class="panel-description">
+                Retrouvez le suivi de vos candidatures dans votre espace dédié.
+            </p>
+            <a href="app.html" class="btn btn-outline">Voir mes candidatures</a>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <p>&copy; 2026 JobBoard. Tous droits réservés.</p>
+    </footer>
+
+</body>
+</html>

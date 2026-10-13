@@ -87,7 +87,10 @@ return data;
 }
 
 async function apiRequest(url, options) {
-const response = await fetch(url, options);
+const requestOptions = url === APPLICATIONS_API_URL
+    ? { ...options, credentials: "include" }
+    : options;
+const response = await fetch(url, requestOptions);
 return await readApiResponse(response);
 }
 
