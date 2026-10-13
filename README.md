@@ -32,7 +32,7 @@ Les annonces et entreprises sont publiques en lecture ; leur création, modifica
 
 ## Vérification
 
-Syntaxe : vérifier les fichiers PHP sous api avec php -l. Production frontend : npm run build inclut les 12 pages. Les tests d'intégration ont été exécutés dans une instance MariaDB isolée et les filtres/navigation ont été contrôlés séparément.
+Syntaxe : vérifier les fichiers PHP sous api avec php -l. Production frontend : npm run build inclut les 12 pages. 84 contrôles API/migration ont réussi dans une instance MariaDB isolée et 145 contrôles statiques/frontend ont réussi. Le navigateur a confirmé l'inscription à deux formulaires, le login candidat, l'envoi d'une candidature, Mes candidatures, le logout et l'administration avec modification du statut. Les styles JobBoard d'origine ont été restaurés et les éléments HTML requis par chaque script ont été vérifiés.
 
 La migration conserve les comptes et les lignes existantes, transforme sent en pending et under_review/interview en reviewing. Les anciennes pièces jointes restent liées aux candidatures.
 

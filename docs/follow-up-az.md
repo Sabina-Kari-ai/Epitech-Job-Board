@@ -32,7 +32,7 @@ Açıq mətn kimi saxlanılmır. password_hash ilə hash yaradılır, login-də 
 Qorunan sorğuda rol yenidən database-dən oxunur. Buna görə köhnə session artıq itirilmiş admin icazəsini saxlaya bilmir.
 
 **Merge-dən sonra xəta niyə yarandı?**
-Kod job_board adlı database axtarırdı, mövcud database isə epitech_job_board idi. Köhnə schema-da account_type, company_id və müraciətin bəzi sahələri də yox idi. Database adı uyğunlaşdırıldı və məlumatı silməyən migration hazırlandı.
+Kod job_board adlı database axtarırdı, mövcud database isə epitech_job_board idi. Köhnə schema-da account_type, company_id və müraciətin bəzi sahələri də yox idi. Database adı uyğunlaşdırıldı və məlumatı silməyən migration hazırlandı. Merge zamanı partnyorun CSS-i də itmişdi; orijinal görünüş geri qaytarıldı. Müraciət formundakı çatışmayan sahələr JavaScript ilə uyğunlaşdırıldı.
 
 **Nəyi yoxladınız?**
 Bütün PHP fayllarına syntax yoxlaması, frontend build, ayrıca MariaDB-də API testləri və frontend filtrlərinin yoxlaması. Namizəd/şirkət/admin icazələri, müraciət ownership-i, CV, alerts və logout ayrıca yoxlanıldı.

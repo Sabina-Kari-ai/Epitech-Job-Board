@@ -11,16 +11,16 @@
 <body>
 
 <header class="navbar">
-    <div class="container">
+    <div class="container navbar-content">
         <a href="index.html" class="logo">JobBoard</a>
 
         <nav>
             <ul class="nav-links">
                 <li><a href="index.html">Offres</a></li>
                 <li><a hidden href="app.html">Mes candidatures</a></li>
-                <li><a href="#">Connexion</a></li>
             </ul>
         </nav>
+        <div class="nav-actions" id="authActions"></div>
     </div>
 </header>
 
@@ -79,7 +79,13 @@
                     ></textarea>
                 </div>
 
-                <button type="submit" class="details-button">
+                <div class="form-group">
+                    <label id="coverLetterLabel" for="coverLetter">Lettre de motivation (facultative)</label>
+                    <textarea id="coverLetter" name="cover_letter" rows="7"></textarea>
+                    <p id="coverLetterHelp">Ce champ est facultatif pour cette offre.</p>
+                </div>
+
+                <button id="submitButton" type="submit" class="details-button">
                     Envoyer ma candidature
                 </button>
 

@@ -1822,51 +1822,51 @@ body.auth-page main {
 
         width: min(94%, 900px);
         margin: 30px auto;
-    
+
 }
 body.auth-page main > h1 {
 
         font-size: 29px;
-    
+
 }
 body.auth-page section,
 body.auth-page main > form {
 
         padding: 22px;
-    
+
 }
 body.auth-page .profile-grid {
 
         grid-template-columns: 1fr;
-    
+
 }
 body.auth-page .profile-grid .full-width {
 
         grid-column: auto;
-    
+
 }
 body.auth-page .account-actions {
 
         flex-direction: column;
-    
+
 }
 body.auth-page .account-actions button {
 
         width: 100%;
-    
+
 }
 body.auth-page .jobboard-brand {
 
         flex-direction: column;
 
         gap: 12px;
-    
+
 }
 body.auth-page .jobboard-nav {
 
         flex-wrap: wrap;
         justify-content: center;
-    
+
 }
 }
 @media (max-width: 520px) {
@@ -1874,35 +1874,35 @@ body.auth-page main {
 
         width: calc(100% - 24px);
         margin: 22px auto;
-    
+
 }
 body.auth-page main > h1 {
 
         font-size: 26px;
-    
+
 }
 body.auth-page section,
 body.auth-page main > form {
 
         padding: 18px;
-    
+
 }
 body.auth-page button,
 body.auth-page .button-link {
 
         width: 100%;
-    
+
 }
 body.auth-page article button {
 
         width: 100%;
 
         margin-right: 0;
-    
+
 }
 }
 [hidden] {
- display: none !important; 
+ display: none !important;
 }
 
 [hidden], .hidden { display: none !important; }
