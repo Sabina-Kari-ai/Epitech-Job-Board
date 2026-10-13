@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Mes candidatures - JobBoard</title>
+
+    <link
+        rel="stylesheet"
+        href="css/style.css"
+    >
+    <script type="module" src="js/auth-nav.js"></script>
+</head>
+
+<body>
+
+<header class="navbar">
+
+    <div class="container navbar-content">
+
+        <a
+            href="index.html"
+            class="logo"
+        >
+            JobBoard
+        </a>
+
+        <nav class="nav-links">
+
+            <a href="index.html#jobs">
+                Offres
+            </a>
+
+            <a href="companies.html">
+                Entreprises
+            </a>
+
+            <a hidden href="app.html">
+                Mes candidatures
+            </a>
+
+        </nav>
+
+        <div class="nav-actions">
+
+            <a
+                href="profile.html"
+                class="btn btn-outline"
+            >
+                Mon compte
+            </a>
+
+            <button
+                type="button"
+                id="logoutButton"
+                class="btn btn-primary"
+            >
+                Déconnexion
+            </button>
+
+        </div>
+
+    </div>
+
+</header>
+
+
+<main>
+
+<section class="applications-section">
+
+    <div class="container">
+
+        <div class="applications-header">
+
+            <span class="section-label">
+                ESPACE CANDIDAT
+            </span>
+
+            <h1>
+                Mes candidatures
+            </h1>
+
+            <p>
+                Retrouvez toutes les offres
+                auxquelles vous avez postulé
+                avec votre compte JobBoard.
+            </p>
+
+        </div>
+
+
+        <div
+            id="applications-list"
+        >
+            <div class="empty-applications">
+
+                <h2>
+                    Chargement...
+                </h2>
+
+                <p>
+                    Récupération de vos candidatures.
+                </p>
+
+            </div>
+        </div>
+
+    </div>
+
+</section>
+
+</main>
+
+
+<footer class="footer">
+
+    <div class="container footer-content">
+
+        <div>
+
+            <strong>
+                JobBoard
+            </strong>
+
+            <p>
+                Trouvez simplement votre prochaine opportunité.
+            </p>
+
+        </div>
+
+        <p>
+            © 2026 JobBoard
+        </p>
+
+    </div>
+
+</footer>
+
+
+<script type="module" src="js/app.js"></script>
+
+</body>
+
+</html>

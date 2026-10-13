@@ -605,3 +605,5 @@ body:has(#resetForm) main > form {
         margin-right: 0;
     }
 }
+/* Keep conditional forms and candidate navigation hidden with existing layout rules. */
+[hidden] { display: none !important; }

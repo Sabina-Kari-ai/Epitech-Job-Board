@@ -1,49 +1,15 @@
--- ============================================
--- EPITECH JOB BOARD
--- Shared database schema
--- Partner structure + authentication/user features
--- MySQL / MariaDB
--- ============================================
-
-CREATE DATABASE IF NOT EXISTS job_board
+CREATE DATABASE IF NOT EXISTS epitech_job_board
     CHARACTER SET utf8mb4
     COLLATE utf8mb4_unicode_ci;
 
-USE job_board;
-
-
--- ============================================
--- USERS
--- Authentication / candidate / admin
--- ============================================
-
-CREATE TABLE IF NOT EXISTS users (
-    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    firstname VARCHAR(100) NOT NULL,
-    lastname VARCHAR(100) NOT NULL,
-    email VARCHAR(255) NOT NULL UNIQUE,
-    phone VARCHAR(50) NULL,
-    password_hash VARCHAR(255) NOT NULL,
-
-    role ENUM(
-        'candidate',
-        'admin'
-    ) NOT NULL DEFAULT 'candidate',
-
-    cv_path VARCHAR(500) NULL,
-
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        ON UPDATE CURRENT_TIMESTAMP
-);
+USE epitech_job_board;
 
 
 -- ============================================
 -- COMPANIES
--- Partner structure kept
 -- ============================================
 
-CREATE TABLE IF NOT EXISTS companies (
+CREATE TABLE companies (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
 
     name VARCHAR(150) NOT NULL,
@@ -61,11 +27,57 @@ CREATE TABLE IF NOT EXISTS companies (
 
 
 -- ============================================
--- JOBS
--- Partner structure kept
+-- USERS
+-- role = permissions
+-- account_type = candidate / company
 -- ============================================
 
-CREATE TABLE IF NOT EXISTS jobs (
+CREATE TABLE users (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+
+    company_id INT UNSIGNED NULL,
+
+    firstname VARCHAR(100) NOT NULL,
+    lastname VARCHAR(100) NOT NULL,
+
+    email VARCHAR(255) NOT NULL UNIQUE,
+    phone VARCHAR(50) NULL,
+
+    password_hash VARCHAR(255) NOT NULL,
+
+    role ENUM(
+        'candidate',
+        'admin'
+    ) NOT NULL DEFAULT 'candidate',
+
+    account_type ENUM(
+        'candidate',
+        'company'
+    ) NOT NULL DEFAULT 'candidate',
+
+    cv_path VARCHAR(500) NULL,
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        ON UPDATE CURRENT_TIMESTAMP,
+
+    KEY idx_users_company_id (company_id),
+    KEY idx_users_email (email),
+    KEY idx_users_account_type (account_type),
+
+    CONSTRAINT fk_users_company
+        FOREIGN KEY (company_id)
+        REFERENCES companies(id)
+        ON DELETE SET NULL
+        ON UPDATE CASCADE
+);
+
+
+-- ============================================
+-- JOBS
+-- ============================================
+
+CREATE TABLE jobs (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
 
     company_id INT UNSIGNED NOT NULL,
@@ -79,13 +91,14 @@ CREATE TABLE IF NOT EXISTS jobs (
     short_description VARCHAR(255) NOT NULL,
     description TEXT NOT NULL,
 
-    cover_letter_required BOOLEAN NOT NULL DEFAULT FALSE,
-
-    working_time VARCHAR(100) NULL,
+    skills TEXT NULL,
     missions TEXT NULL,
     profile TEXT NULL,
-    skills TEXT NULL,
     benefits TEXT NULL,
+    working_time VARCHAR(100) NULL,
+
+    cover_letter_required BOOLEAN NOT NULL DEFAULT FALSE,
+
     application_deadline DATE NULL,
 
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -93,6 +106,7 @@ CREATE TABLE IF NOT EXISTS jobs (
         ON UPDATE CURRENT_TIMESTAMP,
 
     KEY idx_jobs_company_id (company_id),
+    KEY idx_jobs_title (title),
     KEY idx_jobs_location (location),
     KEY idx_jobs_contract_type (contract_type),
 
@@ -106,11 +120,9 @@ CREATE TABLE IF NOT EXISTS jobs (
 
 -- ============================================
 -- APPLICATIONS
--- Partner Apply structure kept
--- User/CV compatibility added
 -- ============================================
 
-CREATE TABLE IF NOT EXISTS applications (
+CREATE TABLE applications (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
 
     job_id INT UNSIGNED NOT NULL,
@@ -121,8 +133,8 @@ CREATE TABLE IF NOT EXISTS applications (
     candidate_phone VARCHAR(50) NOT NULL,
 
     message TEXT NOT NULL,
-
     cover_letter TEXT NULL,
+
     cv_path VARCHAR(500) NULL,
     cover_letter_path VARCHAR(500) NULL,
 
@@ -135,6 +147,7 @@ CREATE TABLE IF NOT EXISTS applications (
     KEY idx_applications_job_id (job_id),
     KEY idx_applications_user_id (user_id),
     KEY idx_applications_status (status),
+    KEY idx_applications_email (candidate_email),
 
     CONSTRAINT fk_applications_job
         FOREIGN KEY (job_id)
@@ -153,7 +166,6 @@ CREATE TABLE IF NOT EXISTS applications (
             status IN (
                 'pending',
                 'reviewing',
-                'interview',
                 'accepted',
                 'rejected'
             )
@@ -163,10 +175,9 @@ CREATE TABLE IF NOT EXISTS applications (
 
 -- ============================================
 -- ALERTS
--- Candidate job alerts
 -- ============================================
 
-CREATE TABLE IF NOT EXISTS alerts (
+CREATE TABLE alerts (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
 
     user_id INT UNSIGNED NOT NULL,
@@ -193,10 +204,9 @@ CREATE TABLE IF NOT EXISTS alerts (
 
 -- ============================================
 -- CV VIEWS
--- Compatible with partner structure
 -- ============================================
 
-CREATE TABLE IF NOT EXISTS cv_views (
+CREATE TABLE cv_views (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
 
     cv_id INT UNSIGNED NULL,
@@ -224,10 +234,10 @@ CREATE TABLE IF NOT EXISTS cv_views (
 
 
 -- ============================================
--- PASSWORD RESET TOKENS
+-- PASSWORD RESET
 -- ============================================
 
-CREATE TABLE IF NOT EXISTS password_reset_tokens (
+CREATE TABLE password_reset_tokens (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
 
     user_id INT UNSIGNED NOT NULL,
@@ -247,14 +257,3 @@ CREATE TABLE IF NOT EXISTS password_reset_tokens (
         ON DELETE CASCADE
         ON UPDATE CASCADE
 );
-
-
--- ============================================
--- ADDITIONAL INDEXES
--- ============================================
-
-CREATE INDEX idx_jobs_title
-    ON jobs(title);
-
-CREATE INDEX idx_applications_email
-    ON applications(candidate_email);

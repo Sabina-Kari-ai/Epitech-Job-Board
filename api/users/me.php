@@ -11,7 +11,7 @@ $method = $_SERVER['REQUEST_METHOD'];
 
 if ($method === 'GET') {
     $stmt = $pdo->prepare(
-        'SELECT id, firstname, lastname, email, phone, role, cv_path, created_at, updated_at
+        'SELECT id, company_id, firstname, lastname, email, phone, role, account_type, cv_path, created_at, updated_at
          FROM users
          WHERE id = :id
          LIMIT 1'
@@ -180,7 +180,10 @@ if ($method === 'DELETE') {
                 . '/'
                 . $user['cv_path'];
 
-            if (is_file($fullPath)) {
+            // Submitted applications retain access to their attached CV.
+            $references = $pdo->prepare('SELECT COUNT(*) FROM applications WHERE cv_path = ?');
+            $references->execute([$user['cv_path']]);
+            if ((int) $references->fetchColumn() === 0 && is_file($fullPath)) {
                 unlink($fullPath);
             }
         }

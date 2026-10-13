@@ -1,84 +1,121 @@
-USE job_board;
+USE epitech_job_board;
+
+
+-- ============================================
+-- COMPANIES
+-- ============================================
+
+INSERT INTO companies (
+    name,
+    location,
+    description,
+    email,
+    phone,
+    website
+) VALUES
+(
+    'Tech Solutions',
+    'Paris',
+    'Entreprise spécialisée dans le développement de solutions numériques.',
+    'contact@techsolutions.test',
+    '0100000001',
+    'https://example.com'
+),
+(
+    'Digital Services',
+    'Lyon',
+    'Entreprise spécialisée dans les services numériques et les applications web.',
+    'contact@digitalservices.test',
+    '0100000002',
+    NULL
+),
+(
+    'Innovation Agency',
+    'Paris',
+    'Agence spécialisée dans les projets web et les nouvelles technologies.',
+    'contact@innovationagency.test',
+    '0100000003',
+    NULL
+),
+(
+    'Web Business',
+    'Lille',
+    'Entreprise spécialisée dans la création et le développement de sites web.',
+    'contact@webbusiness.test',
+    '0100000004',
+    NULL
+),
+(
+    'France Numérique',
+    'Paris',
+    'Entreprise spécialisée dans les services numériques.',
+    'contact@francenumerique.test',
+    '0100000005',
+    NULL
+),
+(
+    'Future Systems',
+    'Lyon',
+    'Entreprise spécialisée dans les solutions logicielles.',
+    'contact@futuresystems.test',
+    '0100000006',
+    NULL
+);
+
 
 -- ============================================
 -- USERS
 -- ============================================
 
 INSERT INTO users (
+    company_id,
     firstname,
     lastname,
     email,
     phone,
     password_hash,
-    role
+    role,
+    account_type
 ) VALUES
 (
+    NULL,
     'Admin',
     'JobBoard',
     'admin@jobboard.test',
     '0600000000',
-    '$2y$12$PPnCWeuGeBg8/h9zI4aB5.Q1TUiBk89FCqpipfP8LN2nBBR70fFLW',
-    'admin'
+    '$2y$12$xSAzJaKiNEPXLXfb6jXkoOyy9zZhx5PQl2gS/mqil12vsUN/GFYTq',
+    'admin',
+    'candidate'
 ),
 (
+    NULL,
     'Test',
     'Candidate',
     'candidate@jobboard.test',
     '0611111111',
-    '$2y$12$m98oASZrXpnkTh.ySUuSauJmpsPd/S4TRD8DR4IBab/AUxXTxi2.S',
+    '$2y$12$1vl7A7IX3ZiD9JTVJS6am..7np54eE8dgM0ahdqdeIuJ3GBuLtMhC',
+    'candidate',
     'candidate'
+),
+(
+    1,
+    'Sophie',
+    'Martin',
+    'entreprise@jobboard.test',
+    '0622222222',
+    '$2y$12$H0VM/FhlDp7y7/hqfqw8cei/kBKqi6pAcSjsOUHNRSwm/aAhpWtNy',
+    'candidate',
+    'company'
 );
 
--- Demo passwords:
--- admin@jobboard.test     -> Admin123!
--- candidate@jobboard.test -> Candidate123!
-
-
--- ============================================
--- COMPANIES
--- Partner data kept
--- ============================================
-
-INSERT INTO companies (
-    name,
-    location,
-    description
-) VALUES
-(
-    'Tech Solutions',
-    'Paris',
-    'Entreprise spécialisée dans le développement de solutions numériques.'
-),
-(
-    'Digital Services',
-    'Lyon',
-    'Entreprise spécialisée dans les services numériques et les applications web.'
-),
-(
-    'Innovation Agency',
-    'Paris',
-    'Agence spécialisée dans les projets web et les nouvelles technologies.'
-),
-(
-    'Web Business',
-    'Lille',
-    'Entreprise spécialisée dans la création et le développement de sites web.'
-),
-(
-    'France Numérique',
-    'Paris',
-    'Entreprise spécialisée dans les services numériques et le développement web.'
-),
-(
-    'Future Systems',
-    'Lyon',
-    'Entreprise spécialisée dans les solutions logicielles.'
-);
+-- Test passwords:
+-- admin@jobboard.test      -> Admin123!
+-- candidate@jobboard.test  -> Candidate123!
+-- entreprise@jobboard.test -> Company123!
 
 
 -- ============================================
 -- JOBS
--- Partner data kept
 -- ============================================
 
 INSERT INTO jobs (
@@ -89,6 +126,7 @@ INSERT INTO jobs (
     salary,
     short_description,
     description,
+    skills,
     cover_letter_required
 ) VALUES
 (
@@ -96,9 +134,10 @@ INSERT INTO jobs (
     'Développeur Web Full Stack',
     'Paris',
     'CDI',
-    '40k - 50k',
-    'Nous recherchons un développeur web full stack pour rejoindre notre équipe.',
-    'Vous participerez au développement d''applications web modernes, de la conception jusqu''à la mise en production.',
+    '40k - 50k €',
+    'Développement d’applications web modernes.',
+    'Développement frontend et backend au sein d’une équipe technique.',
+    'HTML, CSS, JavaScript, PHP, MySQL',
     FALSE
 ),
 (
@@ -106,19 +145,21 @@ INSERT INTO jobs (
     'Backend Developer PHP',
     'Lyon',
     'CDI',
-    '38k - 48k',
-    'Rejoignez notre équipe backend pour développer des applications PHP.',
-    'Vous développerez et maintiendrez des applications backend avec PHP, MySQL et les technologies web associées.',
+    '38k - 48k €',
+    'Développement backend avec PHP.',
+    'Développement et maintenance des applications backend.',
+    'PHP, MySQL, API REST, Git',
     FALSE
 ),
 (
     3,
-    'Stage Développeur JavaScript',
+    'Développeur JavaScript',
     'Paris',
-    'Stage',
-    '800 - 1000 €/mois',
-    'Une opportunité de stage pour découvrir le développement JavaScript.',
-    'Vous participerez au développement d''interfaces web et découvrirez les bonnes pratiques du développement JavaScript.',
+    'Alternance',
+    '1 200 €/mois',
+    'Alternance en développement JavaScript.',
+    'Participation au développement d’interfaces web modernes.',
+    'JavaScript, HTML, CSS, Git',
     FALSE
 ),
 (
@@ -126,9 +167,10 @@ INSERT INTO jobs (
     'Développeur Frontend',
     'Lille',
     'Alternance',
-    '1200 €/mois',
-    'Nous recherchons un développeur frontend en alternance.',
-    'Vous travaillerez sur la création et l''amélioration d''interfaces web modernes et responsives.',
+    '1 200 €/mois',
+    'Développement frontend en alternance.',
+    'Création et amélioration d’interfaces web responsives.',
+    'HTML, CSS, JavaScript',
     FALSE
 ),
 (
@@ -136,9 +178,10 @@ INSERT INTO jobs (
     'Intégrateur Web',
     'Paris',
     'CDD',
-    '32k - 38k',
-    'Rejoignez notre équipe en tant qu''intégrateur web.',
-    'Vous intégrerez des maquettes et développerez des interfaces web accessibles et responsives.',
+    '32k - 38k €',
+    'Intégration de maquettes web.',
+    'Intégration HTML/CSS et amélioration des interfaces.',
+    'HTML, CSS, Responsive Design',
     TRUE
 ),
 (
@@ -146,16 +189,16 @@ INSERT INTO jobs (
     'Ingénieur Logiciel',
     'Lyon',
     'CDI',
-    '45k - 55k',
-    'Nous recherchons un ingénieur logiciel pour renforcer notre équipe.',
-    'Vous participerez à la conception, au développement et à l''amélioration de solutions logicielles.',
+    '45k - 55k €',
+    'Conception de solutions logicielles.',
+    'Participation au développement de solutions logicielles.',
+    'Software Engineering, API, Git',
     FALSE
 );
 
 
 -- ============================================
 -- APPLICATIONS
--- Partner-compatible data
 -- ============================================
 
 INSERT INTO applications (
@@ -165,17 +208,15 @@ INSERT INTO applications (
     candidate_email,
     candidate_phone,
     message,
-    cover_letter,
     status
 ) VALUES
 (
     1,
-    NULL,
-    'Jean Dupont',
-    'jean.dupont@email.com',
-    '0601020304',
-    'Je souhaite rejoindre votre équipe et participer à vos projets web.',
-    NULL,
+    2,
+    'Test Candidate',
+    'candidate@jobboard.test',
+    '0611111111',
+    'Je souhaite rejoindre votre équipe.',
     'pending'
 ),
 (
@@ -184,8 +225,7 @@ INSERT INTO applications (
     'Marie Martin',
     'marie.martin@email.com',
     '0611223344',
-    'Mon expérience en PHP et MySQL correspond aux compétences recherchées.',
-    NULL,
+    'Mon expérience PHP correspond au poste.',
     'reviewing'
 ),
 (
@@ -194,8 +234,7 @@ INSERT INTO applications (
     'Lucas Bernard',
     'lucas.bernard@email.com',
     '0622334455',
-    'Je souhaite effectuer mon stage au sein de votre agence.',
-    NULL,
+    'Je souhaite rejoindre votre entreprise.',
     'accepted'
 );
 
@@ -224,22 +263,4 @@ INSERT INTO alerts (
     'Lyon',
     'CDI',
     TRUE
-);
-
-
--- ============================================
--- CV VIEWS
--- ============================================
-
-INSERT INTO cv_views (
-    user_id,
-    company_id
-) VALUES
-(
-    2,
-    1
-),
-(
-    2,
-    2
 );

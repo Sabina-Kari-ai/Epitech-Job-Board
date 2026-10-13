@@ -4,7 +4,7 @@ header('Content-Type: application/json; charset=utf-8');
 
 require __DIR__ . '/../config/auth.php';
 
-$userId = requireAuth();
+$userId = requireCandidate();
 
 if ($_SERVER['REQUEST_METHOD'] !== 'DELETE') {
     http_response_code(405);
@@ -58,7 +58,10 @@ $stmt->execute([
 if ($cvPath && str_starts_with($cvPath, 'uploads/cv/')) {
     $fullPath = dirname(__DIR__, 2) . '/' . $cvPath;
 
-    if (is_file($fullPath)) {
+    // Submitted applications retain access to their attached CV.
+    $references = $pdo->prepare('SELECT COUNT(*) FROM applications WHERE cv_path = ?');
+    $references->execute([$cvPath]);
+    if ((int) $references->fetchColumn() === 0 && is_file($fullPath)) {
         unlink($fullPath);
     }
 }

@@ -4,7 +4,7 @@ header('Content-Type: application/json; charset=utf-8');
 
 require __DIR__ . '/../config/auth.php';
 
-$userId = requireAuth();
+$userId = requireCandidate();
 $pdo = require __DIR__ . '/../config/database.php';
 
 $method = $_SERVER['REQUEST_METHOD'];

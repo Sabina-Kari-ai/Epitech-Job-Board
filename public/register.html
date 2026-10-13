@@ -1,224 +1,627 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inscription - JobBoard</title>
-    <link rel="stylesheet" href="css/style.css">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Créer un compte - JobBoard</title>
+
+    <link
+        rel="stylesheet"
+        href="css/style.css"
+    >
+    <script type="module" src="js/auth-nav.js"></script>
 </head>
 
 <body>
 
-<header class="jobboard-brand">
-    <a href="index.html" class="jobboard-logo">JobBoard</a>
+<header class="navbar">
 
-    <nav class="jobboard-nav">
-        <a href="index.html">Offres</a>
-        <a href="login.html">Se connecter</a>
-    </nav>
-</header>
+    <div class="container navbar-content">
 
-<main>
+        <a
+            href="index.html"
+            class="logo"
+        >
+            JobBoard
+        </a>
 
-    <div class="page-header">
-        <span class="page-label">ESPACE CANDIDAT</span>
-        <h1>Créer un compte</h1>
-        <p>
-            Créez votre profil pour gérer votre CV,
-            vos alertes et vos candidatures.
-        </p>
+        <nav class="nav-links">
+            <a href="index.html#jobs">Offres</a>
+            <a href="companies.html">Entreprises</a>
+        </nav>
+
+        <div class="nav-actions">
+            <a
+                href="login.html"
+                class="btn btn-outline"
+            >
+                Connexion
+            </a>
+        </div>
+
     </div>
 
-    <form id="registerForm">
+</header>
 
-        <label for="firstname">
-            Prénom
-        </label>
 
-        <input
-            type="text"
-            id="firstname"
-            placeholder="Votre prénom"
-            autocomplete="given-name"
-            required
-        >
+<main class="apply-section">
 
-        <label for="lastname">
-            Nom
-        </label>
+<div class="container">
 
-        <input
-            type="text"
-            id="lastname"
-            placeholder="Votre nom"
-            autocomplete="family-name"
-            required
-        >
+    <div class="apply-layout">
 
-        <label for="email">
-            Adresse email
-        </label>
+        <div class="apply-info">
 
-        <input
-            type="email"
-            id="email"
-            placeholder="exemple@email.com"
-            autocomplete="email"
-            required
-        >
+            <span class="section-label">
+                INSCRIPTION
+            </span>
 
-        <label for="phone">
-            Téléphone
-        </label>
+            <h1>
+                Créer un compte
+            </h1>
 
-        <input
-            type="tel"
-            id="phone"
-            placeholder="06 00 00 00 00"
-            autocomplete="tel"
-        >
+            <p>
+                Choisissez le type de compte
+                que vous souhaitez créer.
+            </p>
 
-        <label for="password">
-            Mot de passe
-        </label>
+        </div>
 
-        <input
-            type="password"
-            id="password"
-            placeholder="8 caractères minimum"
-            minlength="8"
-            autocomplete="new-password"
-            required
-        >
 
-        <label for="passwordConfirmation">
-            Confirmer le mot de passe
-        </label>
+        <div class="application-form">
 
-        <input
-            type="password"
-            id="passwordConfirmation"
-            placeholder="Confirmez votre mot de passe"
-            minlength="8"
-            autocomplete="new-password"
-            required
-        >
+            <div
+                style="
+                    display:flex;
+                    gap:10px;
+                    margin-bottom:30px;
+                "
+            >
 
-        <button type="submit">
-            Créer mon compte
-        </button>
+                <button
+                    type="button"
+                    id="candidateTab"
+                    class="btn btn-primary"
+                >
+                    Je suis candidat
+                </button>
 
-    </form>
+                <button
+                    type="button"
+                    id="companyTab"
+                    class="btn btn-outline"
+                >
+                    Je suis une entreprise
+                </button>
 
-    <p id="message"></p>
+            </div>
 
-    <p>
-        Déjà un compte ?
-        <a href="login.html">
-            Se connecter
-        </a>
-    </p>
+
+            <!-- CANDIDATE FORM -->
+
+            <form id="candidateForm">
+
+                <div class="form-group">
+                    <label for="candidateFirstname">
+                        Prénom
+                    </label>
+
+                    <input
+                        type="text"
+                        id="candidateFirstname"
+                        required
+                    >
+                </div>
+
+
+                <div class="form-group">
+                    <label for="candidateLastname">
+                        Nom
+                    </label>
+
+                    <input
+                        type="text"
+                        id="candidateLastname"
+                        required
+                    >
+                </div>
+
+
+                <div class="form-group">
+                    <label for="candidateEmail">
+                        Adresse email
+                    </label>
+
+                    <input
+                        type="email"
+                        id="candidateEmail"
+                        required
+                    >
+                </div>
+
+
+                <div class="form-group">
+                    <label for="candidatePhone">
+                        Téléphone
+                    </label>
+
+                    <input
+                        type="tel"
+                        id="candidatePhone"
+                    >
+                </div>
+
+
+                <div class="form-group">
+                    <label for="candidatePassword">
+                        Mot de passe
+                    </label>
+
+                    <input
+                        type="password"
+                        id="candidatePassword"
+                        minlength="8"
+                        required
+                    >
+                </div>
+
+
+                <div class="form-group">
+                    <label for="candidatePasswordConfirmation">
+                        Confirmer le mot de passe
+                    </label>
+
+                    <input
+                        type="password"
+                        id="candidatePasswordConfirmation"
+                        minlength="8"
+                        required
+                    >
+                </div>
+
+
+                <button
+                    type="submit"
+                    class="btn btn-primary"
+                >
+                    Créer mon compte candidat
+                </button>
+
+            </form>
+
+
+            <!-- COMPANY FORM -->
+
+            <form
+                id="companyForm"
+                hidden
+            >
+
+                <div class="form-group">
+                    <label for="companyFirstname">
+                        Prénom du responsable
+                    </label>
+
+                    <input
+                        type="text"
+                        id="companyFirstname"
+                        required
+                    >
+                </div>
+
+
+                <div class="form-group">
+                    <label for="companyLastname">
+                        Nom du responsable
+                    </label>
+
+                    <input
+                        type="text"
+                        id="companyLastname"
+                        required
+                    >
+                </div>
+
+
+                <div class="form-group">
+                    <label for="companyName">
+                        Nom de l'entreprise
+                    </label>
+
+                    <input
+                        type="text"
+                        id="companyName"
+                        required
+                    >
+                </div>
+
+
+                <div class="form-group">
+                    <label for="companyLocation">
+                        Ville
+                    </label>
+
+                    <input
+                        type="text"
+                        id="companyLocation"
+                        placeholder="Ex : Nantes"
+                        required
+                    >
+                </div>
+
+
+                <div class="form-group">
+                    <label for="companyDescription">
+                        Description de l'entreprise
+                    </label>
+
+                    <textarea
+                        id="companyDescription"
+                        placeholder="Présentez votre entreprise..."
+                    ></textarea>
+                </div>
+
+
+                <div class="form-group">
+                    <label for="companyWebsite">
+                        Site web
+                    </label>
+
+                    <input
+                        type="url"
+                        id="companyWebsite"
+                        placeholder="https://..."
+                    >
+                </div>
+
+
+                <div class="form-group">
+                    <label for="companyEmail">
+                        Adresse email
+                    </label>
+
+                    <input
+                        type="email"
+                        id="companyEmail"
+                        required
+                    >
+                </div>
+
+
+                <div class="form-group">
+                    <label for="companyPhone">
+                        Téléphone
+                    </label>
+
+                    <input
+                        type="tel"
+                        id="companyPhone"
+                    >
+                </div>
+
+
+                <div class="form-group">
+                    <label for="companyPassword">
+                        Mot de passe
+                    </label>
+
+                    <input
+                        type="password"
+                        id="companyPassword"
+                        minlength="8"
+                        required
+                    >
+                </div>
+
+
+                <div class="form-group">
+                    <label for="companyPasswordConfirmation">
+                        Confirmer le mot de passe
+                    </label>
+
+                    <input
+                        type="password"
+                        id="companyPasswordConfirmation"
+                        minlength="8"
+                        required
+                    >
+                </div>
+
+
+                <button
+                    type="submit"
+                    class="btn btn-primary"
+                >
+                    Créer mon compte entreprise
+                </button>
+
+            </form>
+
+
+            <p
+                id="registerMessage"
+                style="margin-top:20px;"
+            ></p>
+
+
+            <p style="margin-top:20px;">
+                Déjà un compte ?
+                <a href="login.html">
+                    Se connecter
+                </a>
+            </p>
+
+        </div>
+
+    </div>
+
+</div>
 
 </main>
 
 
+<footer class="footer">
+
+    <div class="container footer-content">
+        <p>© 2026 JobBoard</p>
+    </div>
+
+</footer>
+
+
 <script>
 
-const form =
-    document.getElementById('registerForm');
+const candidateTab =
+    document.getElementById(
+        "candidateTab"
+    );
 
-const message =
-    document.getElementById('message');
+const companyTab =
+    document.getElementById(
+        "companyTab"
+    );
+
+const candidateForm =
+    document.getElementById(
+        "candidateForm"
+    );
+
+const companyForm =
+    document.getElementById(
+        "companyForm"
+    );
+
+const registerMessage =
+    document.getElementById(
+        "registerMessage"
+    );
 
 
-form.addEventListener(
-    'submit',
-    async (event) => {
+function showCandidateForm() {
+
+    candidateForm.hidden =
+        false;
+
+    companyForm.hidden =
+        true;
+
+    candidateTab.className =
+        "btn btn-primary";
+
+    companyTab.className =
+        "btn btn-outline";
+
+    registerMessage.textContent =
+        "";
+}
+
+
+function showCompanyForm() {
+
+    candidateForm.hidden =
+        true;
+
+    companyForm.hidden =
+        false;
+
+    candidateTab.className =
+        "btn btn-outline";
+
+    companyTab.className =
+        "btn btn-primary";
+
+    registerMessage.textContent =
+        "";
+}
+
+
+candidateTab.addEventListener(
+    "click",
+    showCandidateForm
+);
+
+
+companyTab.addEventListener(
+    "click",
+    showCompanyForm
+);
+
+
+async function register(data) {
+
+    registerMessage.textContent =
+        "Création du compte...";
+
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/auth/register.php",
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body:
+                        JSON.stringify(data)
+                }
+            );
+
+
+        const result =
+            await response.json();
+
+
+        if (!response.ok) {
+
+            registerMessage.textContent =
+                result.message ||
+                "Impossible de créer le compte.";
+
+            return;
+        }
+
+
+        registerMessage.textContent =
+            result.message;
+
+
+        setTimeout(
+            function () {
+
+                window.location.href =
+                    "login.html";
+
+            },
+            800
+        );
+
+    } catch (error) {
+
+        registerMessage.textContent =
+            "Impossible de contacter le serveur.";
+    }
+}
+
+
+candidateForm.addEventListener(
+    "submit",
+    function (event) {
 
         event.preventDefault();
 
-        message.textContent = '';
 
-        const data = {
+        register({
+
+            account_type:
+                "candidate",
 
             firstname:
                 document.getElementById(
-                    'firstname'
-                ).value,
+                    "candidateFirstname"
+                ).value.trim(),
 
             lastname:
                 document.getElementById(
-                    'lastname'
-                ).value,
+                    "candidateLastname"
+                ).value.trim(),
 
             email:
                 document.getElementById(
-                    'email'
-                ).value,
+                    "candidateEmail"
+                ).value.trim(),
 
             phone:
                 document.getElementById(
-                    'phone'
-                ).value,
+                    "candidatePhone"
+                ).value.trim(),
 
             password:
                 document.getElementById(
-                    'password'
+                    "candidatePassword"
                 ).value,
 
             password_confirmation:
                 document.getElementById(
-                    'passwordConfirmation'
+                    "candidatePasswordConfirmation"
                 ).value
-        };
+        });
+    }
+);
 
-        try {
 
-            const response =
-                await fetch(
-                    '/api/auth/register.php',
-                    {
-                        method: 'POST',
+companyForm.addEventListener(
+    "submit",
+    function (event) {
 
-                        headers: {
-                            'Content-Type':
-                                'application/json'
-                        },
+        event.preventDefault();
 
-                        body:
-                            JSON.stringify(data)
-                    }
-                );
 
-            const result =
-                await response.json();
+        register({
 
-            if (!response.ok) {
+            account_type:
+                "company",
 
-                message.textContent =
-                    result.message || 'Erreur.';
+            firstname:
+                document.getElementById(
+                    "companyFirstname"
+                ).value.trim(),
 
-                return;
-            }
+            lastname:
+                document.getElementById(
+                    "companyLastname"
+                ).value.trim(),
 
-            message.textContent =
-                'Compte créé avec succès.';
+            company_name:
+                document.getElementById(
+                    "companyName"
+                ).value.trim(),
 
-            setTimeout(
-                () => {
+            company_location:
+                document.getElementById(
+                    "companyLocation"
+                ).value.trim(),
 
-                    window.location.href =
-                        'login.html';
+            company_description:
+                document.getElementById(
+                    "companyDescription"
+                ).value.trim(),
 
-                },
-                1000
-            );
+            company_website:
+                document.getElementById(
+                    "companyWebsite"
+                ).value.trim(),
 
-        } catch (error) {
+            email:
+                document.getElementById(
+                    "companyEmail"
+                ).value.trim(),
 
-            message.textContent =
-                'Erreur de connexion au serveur.';
-        }
+            phone:
+                document.getElementById(
+                    "companyPhone"
+                ).value.trim(),
+
+            password:
+                document.getElementById(
+                    "companyPassword"
+                ).value,
+
+            password_confirmation:
+                document.getElementById(
+                    "companyPasswordConfirmation"
+                ).value
+        });
     }
 );
 
