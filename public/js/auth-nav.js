@@ -26,6 +26,9 @@
         }
         add(user.role === 'admin' ? 'Administration' : user.account_type === 'company' ? 'Mon entreprise' : 'Mon compte',
             user.role === 'admin' ? 'admin.html' : user.account_type === 'company' ? 'companies.html#company-' + user.company_id : 'profile.html', 'btn-outline');
+        if (page === '' || page === 'index.html') {
+            add('Créer un compte', 'register.html', 'btn-primary');
+        }
         const button = document.createElement('button'); button.type = 'button';
         button.className = 'btn btn-primary'; button.textContent = 'Déconnexion';
         button.addEventListener('click', async () => {
