@@ -39,3 +39,11 @@ La migration conserve les comptes et les lignes existantes, transforme sent en p
 Pour une démonstration : recherche → inscription candidat/entreprise → login → profil/CV → candidature → Mes candidatures → alertes → logout → administration (jobs/companies/applications/users).
 
 Explication courte en azéri : [docs/follow-up-az.md](docs/follow-up-az.md).
+
+## Partage de la base et six offres
+
+Une base MariaDB locale n'est pas synchronisée par GitHub. Pour une installation vide, importer database/job-board-demo.sql : fichier complet schema + seed avec six offres. Ne pas l'importer dans une base déjà remplie.
+
+Pour la base existante à trois offres : sélectionner la base, exécuter migrate-integration.sql, puis add-demo-offers.sql. Ce dernier ajoute les offres manquantes jusqu'à six sans supprimer les lignes existantes ; une seconde exécution ne crée pas de doublons. La configuration locale doit sélectionner la base réellement importée.
+
+Guide en azéri : docs/database-sharing-az.md.
