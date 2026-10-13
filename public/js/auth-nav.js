@@ -52,7 +52,7 @@
             link('Mes candidatures','app.html','account-menu-link',panel);
         } else if (user.role === 'admin') {
             link('Administration','admin.html','account-menu-link',panel);
-            link('Emails (démo)','mail.html','account-menu-link',panel);
+            link('Les candidatures','admin.html#applications-panel','account-menu-link',panel);
         } else {
             link('Mon entreprise','companies.html#company-' + user.company_id,'account-menu-link',panel);
         }
@@ -66,6 +66,6 @@
         panel.appendChild(logout); menu.append(toggle,panel); actions.appendChild(menu);
         document.addEventListener('click',event => { if (!menu.contains(event.target)) menu.open = false; });
         document.addEventListener('keydown',event => { if (event.key === 'Escape' && menu.open) { menu.open = false; toggle.focus(); } });
-        if (page === '' || page === 'index.html') link('Créer un compte','register.html','btn btn-primary');
+
     });
 })();

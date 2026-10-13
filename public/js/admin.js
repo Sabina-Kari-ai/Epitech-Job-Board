@@ -2379,6 +2379,8 @@ async function startAdmin() {
     }
 
 
+    if (window.location.hash === '#applications-panel') changeTab('applications-panel');
+
     await Promise.all([
         loadJobs(),
         loadCompanies(),

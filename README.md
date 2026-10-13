@@ -52,7 +52,7 @@ Guide en azéri : docs/database-sharing-az.md.
 
 L'admin lit le téléphone, le message, la lettre de motivation et les pièces jointes d'une candidature. Les documents sont accessibles via un endpoint protégé. Les compétences, missions, profil, avantages, temps de travail et date limite sont enregistrés et éditables dans l'offre. Les candidatures répétées (y compris concurrentes) et les offres expirées sont bloquées.
 
-Les réinitialisations et alertes génèrent des emails dans une boîte de réception locale réservée à l'admin : Emails (démo). Sans SMTP configuré, aucun email externe n'est envoyé. Le token de réinitialisation n'est jamais renvoyé par l'API publique. Les alertes actives sont filtrées par mot-clé, lieu et contrat ; plusieurs alertes correspondantes ne génèrent qu'un message par candidat/offre.
+Les réinitialisations et alertes génèrent des emails dans une boîte de réception locale réservée à l'admin : Emails. Sans SMTP configuré, aucun email externe n'est envoyé. Le token de réinitialisation n'est jamais renvoyé par l'API publique. Les alertes actives sont filtrées par mot-clé, lieu et contrat ; plusieurs alertes correspondantes ne génèrent qu'un message par candidat/offre.
 
 Base déjà installée : importer database/migrate-completion.sql pour créer mail_outbox. Une installation complète via job-board-demo.sql inclut ce neuvième tableau. Configuration optionnelle : api/config/mail.local.example.php. Guide : docs/email-demo-az.md.
 
@@ -61,3 +61,7 @@ Base déjà installée : importer database/migrate-completion.sql pour créer ma
 Bonjour et le prénom après connexion, menu du compte avec nom complet, profil, documents, candidatures et déconnexion. La cloche ouvre les alertes candidat ou les emails admin. Le candidat peut enregistrer une lettre de motivation qui préremplit ses candidatures.
 
 Base déjà installée : importer database/migrate-profile-letter.sql. La migration complète et job-board-demo.sql incluent ce champ.
+
+## Navigation après connexion
+
+Connexion et Créer un compte sont affichés uniquement aux visiteurs déconnectés. Sur l’accueil, Mes candidatures se trouve uniquement dans le menu du compte candidat. Le menu admin contient Administration et Les candidatures ; ce dernier ouvre directement la gestion des candidatures. La boîte Emails reste accessible depuis la page admin.
