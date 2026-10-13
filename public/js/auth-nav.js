@@ -49,7 +49,7 @@
         if (candidate) {
             link('Mon profil','profile.html','account-menu-link',panel);
             link('Mon CV et lettre de motivation','profile.html#documents','account-menu-link',panel);
-            link('Mes candidatures','app.html','account-menu-link',panel);
+
         } else if (user.role === 'admin') {
             link('Administration','admin.html','account-menu-link',panel);
             link('Les candidatures','admin.html#applications-panel','account-menu-link',panel);
