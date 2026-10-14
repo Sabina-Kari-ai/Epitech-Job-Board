@@ -198,9 +198,12 @@ try {
         }
 
 
+        $documentQuery = $pdo->prepare('SELECT cover_letter_path FROM users WHERE id = ?');
+        $documentQuery->execute([requireCandidate()]);
+        $letterPath = $documentQuery->fetchColumn() ?: null;
         if (
             (bool) $job["cover_letter_required"] &&
-            $coverLetter === ""
+            $coverLetter === "" && !$letterPath
         ) {
 
             sendJson(
@@ -242,6 +245,7 @@ try {
                 message,
                 cover_letter,
                 cv_path,
+                cover_letter_path,
                 status
             ) VALUES (
                 :job_id,
@@ -252,6 +256,7 @@ try {
                 :message,
                 :cover_letter,
                 :cv_path,
+                :cover_letter_path,
                 'pending'
             )";
 
@@ -281,6 +286,7 @@ try {
                 $message,
 
             ":cv_path" => $cvPath,
+            ":cover_letter_path" => $letterPath,
             ":cover_letter" =>
                 $coverLetter !== ""
                     ? $coverLetter

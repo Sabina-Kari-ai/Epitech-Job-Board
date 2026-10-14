@@ -4,7 +4,7 @@
     window.addEventListener('DOMContentLoaded', async () => {
         const user = await ready;
         const page = window.location.pathname.split('/').pop();
-        if (['app.html', 'alerts.html', 'profile.html'].includes(page) && !user) {
+        if (['app.html', 'alerts.html', 'profile.html', 'company-dashboard.html'].includes(page) && !user) {
             window.location.href = 'login.html'; return;
         }
         if (['app.html', 'alerts.html', 'profile.html'].includes(page) && user && (user.account_type !== 'candidate' || user.role === 'admin')) {
@@ -54,7 +54,7 @@
             link('Administration','admin.html','account-menu-link',panel);
             link('Les candidatures','admin.html#applications-panel','account-menu-link',panel);
         } else {
-            link('Mon entreprise','companies.html#company-' + user.company_id,'account-menu-link',panel);
+            link('Mon entreprise','company-dashboard.html','account-menu-link',panel);
         }
         const logout = document.createElement('button'); logout.type = 'button'; logout.className = 'account-menu-link account-menu-logout'; logout.textContent = 'Déconnexion';
         logout.addEventListener('click',async () => {

@@ -1931,3 +1931,5 @@ body.auth-page .login-reference-card .page-header h1 { font-size: 32px; }
 body.auth-page .login-reference-card #loginForm { border: 0; box-shadow: none; padding: 0; background: transparent; }
 body.auth-page .login-reference-card #loginForm button { width: 100%; }
 @media(max-width:520px) { body.auth-page .login-reference-card { padding: 24px; } .nav-actions { flex-wrap: wrap; } }
+
+.account-icon { position: relative; } .alert-count { position: absolute; top: -4px; right: -6px; background: #b42318; color: white; border-radius: 12px; min-width: 18px; padding: 1px 4px; font-size: 11px; text-align: center; }

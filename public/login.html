@@ -6,6 +6,7 @@
     <title>Connexion - JobBoard</title>
     <link rel="stylesheet" href="css/style.css">
     <script type="module" src="js/auth-nav.js"></script>
+<script type="module" src="js/alert-notifications.js"></script>
 </head>
 
 <body class="auth-page">
@@ -152,7 +153,7 @@ form.addEventListener(
             } else {
 
                 window.location.href =
-                    result.user.account_type === 'company' ? 'companies.html' : 'profile.html';
+                    result.user.account_type === 'company' ? 'company-dashboard.html' : 'profile.html';
             }
 
         } catch (error) {
@@ -165,5 +166,6 @@ form.addEventListener(
 
 </script>
 
+<script type="module" src="js/language.js"></script>
 </body>
 </html>

@@ -56,6 +56,7 @@ const coverLetterHelp =
 
 let selectedJob = null;
 let currentUser = null;
+document.addEventListener('DOMContentLoaded', async () => {const user=await window.jobBoardUser;if(!user)return;const box=document.createElement('div');box.className='form-group';for(const [type,present,label] of [['cv',user.cv_path,'Prévisualiser mon CV'],['cover_letter',user.cover_letter_path,'Prévisualiser ma lettre PDF']]){if(!present)continue;const a=document.createElement('a');a.href='/api/profile-documents/?type='+type;a.target='_blank';a.rel='noopener';a.textContent=label;a.className='btn btn-outline';box.appendChild(a);}if(user.cover_letter_path){const note=document.createElement('p');note.textContent='Votre lettre PDF enregistrée sera jointe à cette candidature.';box.appendChild(note);document.getElementById('coverLetter').required=false;}form.prepend(box);});
 
 
 // ========================================
@@ -256,7 +257,7 @@ async function loadJob() {
 
         if (requiresCoverLetter) {
 
-            coverLetter.required =
+            coverLetter.required = !currentUser?.cover_letter_path &&
                 true;
 
 
@@ -386,7 +387,7 @@ form.addEventListener(
 
         if (
             coverLetter.required &&
-            !application.cover_letter
+            !application.cover_letter && !currentUser?.cover_letter_path
         ) {
 
             formMessage.textContent =

@@ -15,6 +15,7 @@
         href="css/style.css"
     >
     <script type="module" src="js/auth-nav.js"></script>
+<script type="module" src="js/alert-notifications.js"></script>
 </head>
 
 <body>
@@ -199,6 +200,10 @@
                 </div>
 
 
+                <div class="form-group"><label for="city">Ville</label><input id="city" maxlength="150" autocomplete="address-level2"></div>
+                <div class="form-group"><label for="linkedinUrl">Profil LinkedIn</label><input id="linkedinUrl" type="url" maxlength="500" placeholder="https://www.linkedin.com/in/..."></div>
+                <div class="form-group"><label for="bio">Présentation</label><textarea id="bio" rows="5" maxlength="5000"></textarea></div>
+                <div class="form-group"><label for="profileLanguage">Langue de l’application</label><select id="profileLanguage"><option value="fr">Français</option><option value="en">English</option></select></div>
                 <button
                     type="submit"
                     class="btn btn-primary"
@@ -285,7 +290,8 @@
                     </button>
 
                 </form>
-                <form id="letterForm" style="margin-top:24px">
+                <form id="letterPdfForm" class="application-form"><div class="form-group"><label for="letterPdf">Lettre de motivation PDF</label><input id="letterPdf" type="file" accept="application/pdf,.pdf" required><small>PDF, 5 Mo maximum.</small></div><button class="btn btn-primary" type="submit">Enregistrer le PDF</button><button id="deleteLetterPdf" class="btn btn-outline" type="button">Retirer le PDF</button><a id="previewLetterPdf" href="/api/profile-documents/?type=cover_letter" target="_blank" rel="noopener" class="btn btn-outline" hidden>Prévisualiser le PDF</a><p id="letterPdfMessage" role="status"></p></form>
+            <form id="letterForm" style="margin-top:24px">
                     <div class="form-group"><label for="motivationLetter">Ma lettre de motivation</label>
                     <textarea id="motivationLetter" rows="7" maxlength="20000" placeholder="Présentez votre motivation..."></textarea>
                     <p>Ce texte préremplit vos candidatures. Vous pouvez l'adapter pour chaque offre.</p></div>
@@ -601,6 +607,12 @@ async function loadProfile() {
 
 
         const user = result.user;
+        document.getElementById('previewLetterPdf').hidden = !user.cover_letter_path;
+        document.getElementById('deleteLetterPdf').disabled = !user.cover_letter_path;
+        document.getElementById('city').value = user.city || '';
+        document.getElementById('linkedinUrl').value = user.linkedin_url || '';
+        document.getElementById('bio').value = user.bio || '';
+        document.getElementById('profileLanguage').value = window.JobBoardI18n?.getLanguage() || 'fr';
         document.getElementById("motivationLetter").value = user.cover_letter || "";
         if (user.account_type !== 'candidate' || user.role === 'admin') {
             window.location.href = user.role === 'admin' ? 'admin.html' : 'companies.html';
@@ -672,6 +684,9 @@ profileForm.addEventListener(
 
 
         const data = {
+            city: document.getElementById('city').value.trim(),
+            linkedin_url: document.getElementById('linkedinUrl').value.trim(),
+            bio: document.getElementById('bio').value.trim(),
 
             firstname:
                 document.getElementById(
@@ -1080,8 +1095,15 @@ document.getElementById("letterForm").addEventListener("submit", async event => 
 });
 
 loadProfile();
+document.getElementById('profileLanguage').addEventListener('change', event => window.JobBoardI18n?.setLanguage(event.target.value));
 
 </script>
 
+<script type="module">
+const message=document.getElementById('letterPdfMessage');
+async function documentRequest(method,body){message.textContent='';try{const response=await fetch('/api/profile-documents/?type=cover_letter',{method,body,signal:AbortSignal.timeout(10000)});const data=await response.json();if(!response.ok)throw Error(data.message||'Impossible de modifier le document.');message.textContent='Document mis à jour.';document.getElementById('previewLetterPdf').hidden=method==='DELETE';document.getElementById('deleteLetterPdf').disabled=method==='DELETE';}catch(error){message.textContent=error.message;}}
+document.getElementById('letterPdfForm').addEventListener('submit',event=>{event.preventDefault();const data=new FormData();data.append('document',document.getElementById('letterPdf').files[0]);documentRequest('POST',data);});
+document.getElementById('deleteLetterPdf').addEventListener('click',()=>documentRequest('DELETE'));
+</script><script type="module" src="js/language.js"></script>
 </body>
 </html>

@@ -55,6 +55,10 @@ CREATE TABLE users (
         'company'
     ) NOT NULL DEFAULT 'candidate',
 
+    city VARCHAR(150) NULL,
+    linkedin_url VARCHAR(500) NULL,
+    bio TEXT NULL,
+    cover_letter_path VARCHAR(500) NULL,
     cv_path VARCHAR(500) NULL,
     cover_letter TEXT NULL,
 

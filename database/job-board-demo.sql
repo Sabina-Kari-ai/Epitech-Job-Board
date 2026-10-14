@@ -1,4 +1,3 @@
--- Fresh demo installation only. No private data or credentials.
 CREATE DATABASE IF NOT EXISTS epitech_job_board
     CHARACTER SET utf8mb4
     COLLATE utf8mb4_unicode_ci;
@@ -56,6 +55,10 @@ CREATE TABLE users (
         'company'
     ) NOT NULL DEFAULT 'candidate',
 
+    city VARCHAR(150) NULL,
+    linkedin_url VARCHAR(500) NULL,
+    bio TEXT NULL,
+    cover_letter_path VARCHAR(500) NULL,
     cv_path VARCHAR(500) NULL,
     cover_letter TEXT NULL,
 

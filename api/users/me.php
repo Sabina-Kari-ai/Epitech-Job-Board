@@ -11,7 +11,7 @@ $method = $_SERVER['REQUEST_METHOD'];
 
 if ($method === 'GET') {
     $stmt = $pdo->prepare(
-        'SELECT id, company_id, firstname, lastname, email, phone, role, account_type, cv_path, cover_letter, created_at, updated_at
+        'SELECT id, company_id, firstname, lastname, email, phone, role, account_type, cv_path, cover_letter, cover_letter_path, city, linkedin_url, bio, created_at, updated_at
          FROM users
          WHERE id = :id
          LIMIT 1'
@@ -68,6 +68,13 @@ if ($method === 'PUT' || $method === 'PATCH') {
         $pdo->prepare('UPDATE users SET cover_letter = ? WHERE id = ?')->execute([$letter !== '' ? $letter : null, $userId]);
         echo json_encode(['success' => true, 'message' => 'Lettre de motivation enregistrée.']); exit;
     }
+    $extra = [];
+    foreach (['city' => 150, 'linkedin_url' => 500, 'bio' => 5000] as $field => $limit) {
+        if (!array_key_exists($field, $data)) continue;
+        if (!is_string($data[$field]) || strlen($data[$field]) > $limit) { http_response_code(400); echo json_encode(['success'=>false,'message'=>'Champ de profil invalide.']); exit; }
+        $extra[$field] = trim($data[$field]);
+    }
+    if (!empty($extra['linkedin_url']) && (!filter_var($extra['linkedin_url'], FILTER_VALIDATE_URL) || !in_array(strtolower(parse_url($extra['linkedin_url'], PHP_URL_SCHEME) ?? ''), ['http','https'], true))) { http_response_code(400); echo json_encode(['success'=>false,'message'=>'URL LinkedIn invalide.']); exit; }
     $firstname = trim($data['firstname'] ?? '');
     $lastname = trim($data['lastname'] ?? '');
     $email = strtolower(trim($data['email'] ?? ''));
@@ -140,6 +147,7 @@ if ($method === 'PUT' || $method === 'PATCH') {
         'id' => $userId
     ]);
 
+    foreach ($extra as $field => $value) { $pdo->prepare('UPDATE users SET ' . $field . ' = ? WHERE id = ?')->execute([$value !== '' ? $value : null, $userId]); }
     echo json_encode([
         'success' => true,
         'message' => 'Profil modifié avec succès.'

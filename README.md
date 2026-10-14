@@ -32,7 +32,7 @@ Les annonces et entreprises sont publiques en lecture ; leur création, modifica
 
 ## Vérification
 
-Syntaxe : vérifier les fichiers PHP sous api avec php -l. Production frontend : npm run build inclut les 13 pages. 118 contrôles API/migration ont réussi dans une instance MariaDB isolée et 170 contrôles statiques/frontend ont réussi. Le navigateur a confirmé l'inscription à deux formulaires, le login candidat, l'envoi d'une candidature, Mes candidatures, le logout et l'administration avec modification du statut. Les styles JobBoard d'origine ont été restaurés et les éléments HTML requis par chaque script ont été vérifiés.
+Syntaxe : vérifier les fichiers PHP sous api avec php -l. Production frontend : npm run build inclut les 14 pages. 131 contrôles API/migration ont réussi dans une instance MariaDB isolée et 185 contrôles statiques/frontend ont réussi. Le navigateur a confirmé l'inscription à deux formulaires, le login candidat, l'envoi d'une candidature, Mes candidatures, le logout et l'administration avec modification du statut. Les styles JobBoard d'origine ont été restaurés et les éléments HTML requis par chaque script ont été vérifiés.
 
 La migration conserve les comptes et les lignes existantes, transforme sent en pending et under_review/interview en reviewing. Les anciennes pièces jointes restent liées aux candidatures.
 
@@ -67,3 +67,9 @@ Base déjà installée : importer database/migrate-profile-letter.sql. La migrat
 Connexion et Créer un compte sont affichés uniquement aux visiteurs déconnectés. Les raccourcis Mes candidatures ont été retirés du menu du compte et du profil à la demande du binôme. La page app.html reste disponible pour consulter les candidatures du candidat connecté. Les alertes sont accessibles par la cloche et le bouton du profil. Le menu admin contient Administration et Les candidatures ; ce dernier ouvre directement la gestion des candidatures. La boîte Emails reste accessible depuis la page admin.
 
 Les menus supérieurs des pages candidat, entreprises et offres sont cohérents : Offres et Entreprises, puis les icônes du compte connecté. Le chargement des entreprises et du détail d’une offre possède une limite de dix secondes et affiche une erreur si le serveur ne répond pas.
+
+## Fonctions adaptées du binôme
+
+Profil : ville, lien LinkedIn, présentation et sélection Français/English. CV et lettre PDF : aperçu réservé au candidat, remplacement et retrait ; les documents déjà joints aux candidatures restent conservés. Une lettre PDF enregistrée peut satisfaire une offre demandant une lettre. Les alertes utilisent la base et affichent les offres correspondantes et un compteur sur la cloche. Le compte entreprise ouvre son tableau de bord lié à company_id. Les permissions admin et account_type restent séparées.
+
+Base existante : importer database/migrate-partner-profile.sql (migration additive). La configuration locale reste ignorée. Les exports destructifs du binôme ne sont pas importés.
