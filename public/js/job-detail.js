@@ -4,7 +4,7 @@
     const element = (tag, text, cls = '') => { const el = document.createElement(tag); el.textContent = text; el.className = cls; return el; };
     try {
         if (!Number.isInteger(id) || id < 1) throw new Error('Offre introuvable.');
-        const response = await fetch('/api/jobs/?id=' + id); const job = await response.json();
+        const response = await fetch('/api/jobs/?id=' + id, { signal: AbortSignal.timeout(10000) }); const job = await response.json();
         if (!response.ok) throw new Error(job.error || 'Offre introuvable.');
         target.replaceChildren();
         const header = element('div', '', 'job-detail-header');

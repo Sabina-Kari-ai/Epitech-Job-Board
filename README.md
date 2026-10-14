@@ -58,10 +58,12 @@ Base déjà installée : importer database/migrate-completion.sql pour créer ma
 
 ## Accueil personnalisé
 
-Bonjour et le prénom après connexion, menu du compte avec nom complet, profil, documents, candidatures et déconnexion. La cloche ouvre les alertes candidat ou les emails admin. Le candidat peut enregistrer une lettre de motivation qui préremplit ses candidatures.
+Bonjour et le prénom après connexion, menu du compte avec nom complet, profil, documents et déconnexion. La cloche ouvre les alertes candidat ou les emails admin. Le candidat peut enregistrer une lettre de motivation qui préremplit ses candidatures.
 
 Base déjà installée : importer database/migrate-profile-letter.sql. La migration complète et job-board-demo.sql incluent ce champ.
 
 ## Navigation après connexion
 
-Connexion et Créer un compte sont affichés uniquement aux visiteurs déconnectés. Sur l’accueil, Mes candidatures se trouve uniquement dans le menu du compte candidat. Le menu admin contient Administration et Les candidatures ; ce dernier ouvre directement la gestion des candidatures. La boîte Emails reste accessible depuis la page admin.
+Connexion et Créer un compte sont affichés uniquement aux visiteurs déconnectés. Les raccourcis Mes candidatures ont été retirés du menu du compte et du profil à la demande du binôme. La page app.html reste disponible pour consulter les candidatures du candidat connecté. Les alertes sont accessibles par la cloche et le bouton du profil. Le menu admin contient Administration et Les candidatures ; ce dernier ouvre directement la gestion des candidatures. La boîte Emails reste accessible depuis la page admin.
+
+Les menus supérieurs des pages candidat, entreprises et offres sont cohérents : Offres et Entreprises, puis les icônes du compte connecté. Le chargement des entreprises et du détail d’une offre possède une limite de dix secondes et affiche une erreur si le serveur ne répond pas.

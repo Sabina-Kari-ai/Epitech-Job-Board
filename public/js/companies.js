@@ -1,7 +1,7 @@
 async function displayCompanies() {
     const list = document.getElementById('companies-list');
     try {
-        const response = await fetch('/api/companies/');
+        const response = await fetch('/api/companies/', { signal: AbortSignal.timeout(10000) });
         const companies = await response.json();
         if (!response.ok || !Array.isArray(companies)) throw new Error();
         list.replaceChildren();
