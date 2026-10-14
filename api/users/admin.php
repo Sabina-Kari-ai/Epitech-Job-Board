@@ -18,6 +18,8 @@ if ($method === 'GET') {
             email,
             phone,
             role,
+            account_type,
+            company_id,
             cv_path,
             created_at,
             updated_at

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JobBoard - Entreprises</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script type="module" src="js/auth-nav.js"></script>
+</head>
+
+<body>
+
+<header class="navbar">
+    <div class="container navbar-content">
+        <a href="index.html" class="logo">JobBoard</a>
+
+        <nav class="nav-links">
+            <a href="index.html#jobs">Offres</a>
+            <a href="companies.html">Entreprises</a></nav>
+
+        <div class="nav-actions">
+            <a href="login.html" class="btn btn-outline">Connexion</a>
+            <a href="register.html" class="btn btn-primary">Créer un compte</a>
+        </div>
+    </div>
+</header>
+
+<main class="companies-section">
+    <div class="container">
+
+        <div class="companies-header">
+            <span class="section-label">ENTREPRISES</span>
+            <h1>Découvrez les entreprises</h1>
+
+            <p>
+                Explorez les entreprises qui recrutent sur JobBoard.
+            </p>
+
+        </div>
+
+        <div
+            class="companies-list"
+            id="companies-list"
+        ></div>
+
+    </div>
+</main>
+
+<footer class="footer">
+    <div class="container footer-content">
+
+        <div>
+            <strong>JobBoard</strong>
+            <p>
+                Trouvez simplement votre prochaine opportunité.
+            </p>
+        </div>
+
+        <p>© 2026 JobBoard</p>
+
+    </div>
+</footer>
+
+<script type="module" src="js/companies.js"></script>
+
+</body>
+</html>

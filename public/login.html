@@ -5,9 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Connexion - JobBoard</title>
     <link rel="stylesheet" href="css/style.css">
+    <script type="module" src="js/auth-nav.js"></script>
 </head>
 
-<body>
+<body class="auth-page">
 
 <header class="jobboard-brand">
     <a href="index.html" class="jobboard-logo">JobBoard</a>
@@ -18,14 +19,13 @@
     </nav>
 </header>
 
-<main>
+<main class="login-reference-card">
 
     <div class="page-header">
-        <span class="page-label">ESPACE CANDIDAT</span>
-        <h1>Connexion</h1>
+        <span class="page-label">BON RETOUR</span>
+        <h1>Connectez-vous</h1>
         <p>
-            Connectez-vous pour gérer votre profil,
-            votre CV et vos alertes emploi.
+            Accédez à votre espace candidat ou entreprise.
         </p>
     </div>
 
@@ -152,7 +152,7 @@ form.addEventListener(
             } else {
 
                 window.location.href =
-                    'profile.html';
+                    result.user.account_type === 'company' ? 'companies.html' : 'profile.html';
             }
 
         } catch (error) {

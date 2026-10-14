@@ -11,7 +11,7 @@ $method = $_SERVER['REQUEST_METHOD'];
 
 if ($method === 'GET') {
     $stmt = $pdo->prepare(
-        'SELECT id, firstname, lastname, email, phone, role, cv_path, created_at, updated_at
+        'SELECT id, company_id, firstname, lastname, email, phone, role, account_type, cv_path, cover_letter, created_at, updated_at
          FROM users
          WHERE id = :id
          LIMIT 1'
@@ -59,6 +59,15 @@ if ($method === 'PUT' || $method === 'PATCH') {
         exit;
     }
 
+    if (array_key_exists('cover_letter', $data) && count($data) === 1) {
+        requireCandidate();
+        if (!is_string($data['cover_letter']) || strlen($data['cover_letter']) > 20000) {
+            http_response_code(400); echo json_encode(['success' => false, 'message' => 'Lettre invalide (20 000 caractères maximum).']); exit;
+        }
+        $letter = trim($data['cover_letter']);
+        $pdo->prepare('UPDATE users SET cover_letter = ? WHERE id = ?')->execute([$letter !== '' ? $letter : null, $userId]);
+        echo json_encode(['success' => true, 'message' => 'Lettre de motivation enregistrée.']); exit;
+    }
     $firstname = trim($data['firstname'] ?? '');
     $lastname = trim($data['lastname'] ?? '');
     $email = strtolower(trim($data['email'] ?? ''));
@@ -180,7 +189,10 @@ if ($method === 'DELETE') {
                 . '/'
                 . $user['cv_path'];
 
-            if (is_file($fullPath)) {
+            // Submitted applications retain access to their attached CV.
+            $references = $pdo->prepare('SELECT COUNT(*) FROM applications WHERE cv_path = ?');
+            $references->execute([$user['cv_path']]);
+            if ((int) $references->fetchColumn() === 0 && is_file($fullPath)) {
                 unlink($fullPath);
             }
         }

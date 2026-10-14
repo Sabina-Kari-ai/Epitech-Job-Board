@@ -1,326 +1,573 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
-    <title>Mon profil - JobBoard</title>
+    <title>Mon compte - JobBoard</title>
 
-    <link rel="stylesheet" href="css/style.css">
+    <link
+        rel="stylesheet"
+        href="css/style.css"
+    >
+    <script type="module" src="js/auth-nav.js"></script>
 </head>
 
 <body>
 
-<header class="jobboard-brand">
-    <a href="index.html" class="jobboard-logo">
-        JobBoard
-    </a>
+<header class="navbar">
+    <div class="container navbar-content">
 
-    <nav class="jobboard-nav">
-        <a href="index.html">Offres</a>
-        <a href="alerts.html">Mes alertes</a>
-        <a href="profile.html">Mon profil</a>
-    </nav>
+        <a
+            href="index.html"
+            class="logo"
+        >
+            JobBoard
+        </a>
+
+        <nav class="nav-links">
+            <a href="index.html#jobs">Offres</a>
+            <a href="companies.html">Entreprises</a>
+
+
+        </nav>
+
+        <div class="nav-actions">
+            <button
+                id="logoutButton"
+                type="button"
+                class="btn btn-outline"
+            >
+                Déconnexion
+            </button>
+        </div>
+
+    </div>
 </header>
 
 
 <main>
 
-    <div class="page-header">
-        <span class="page-label">
-            ESPACE CANDIDAT
-        </span>
+<section class="applications-section">
 
-        <h1>Mon profil</h1>
+    <div class="container">
 
-        <p>
-            Gérez vos informations personnelles,
-            votre mot de passe, votre CV et vos alertes.
-        </p>
-    </div>
+        <div class="applications-header">
+
+            <span class="section-label">
+                ESPACE CANDIDAT
+            </span>
+
+            <h1>Mon compte</h1>
+
+            <p>
+                Gérez votre profil, votre CV,
+                votre mot de passe et vos alertes.
+            </p>
+
+        </div>
 
 
-    <div class="profile-grid">
+        <!-- USER SUMMARY -->
+
+        <div class="application-card">
+
+            <div class="application-info">
+
+                <h2 id="accountName">
+                    Chargement...
+                </h2>
+
+                <p
+                    id="accountEmail"
+                    class="application-company"
+                >
+                    —
+                </p>
+
+                <p>
+                    Compte candidat JobBoard
+                </p>
+
+            </div>
+
+            <div>
+
+                <a
+                    href="alerts.html"
+                    class="btn btn-primary"
+                >
+                    Mes alertes
+                </a>
+
+            </div>
+
+        </div>
+
 
         <!-- PROFILE -->
-        <section>
 
-            <h2>
-                Mes informations
-            </h2>
+        <div class="apply-layout">
 
-            <form id="profileForm">
+            <div class="apply-info">
 
-                <label for="firstname">
-                    Prénom
-                </label>
+                <span class="section-label">
+                    PROFIL
+                </span>
 
-                <input
-                    type="text"
-                    id="firstname"
-                    autocomplete="given-name"
-                    required
+                <h1>
+                    Mes informations
+                </h1>
+
+                <p>
+                    Ces informations sont utilisées
+                    dans votre espace candidat.
+                </p>
+
+            </div>
+
+
+            <form
+                id="profileForm"
+                class="application-form"
+            >
+
+                <div class="form-group">
+
+                    <label for="firstname">
+                        Prénom
+                    </label>
+
+                    <input
+                        type="text"
+                        id="firstname"
+                        autocomplete="given-name"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="lastname">
+                        Nom
+                    </label>
+
+                    <input
+                        type="text"
+                        id="lastname"
+                        autocomplete="family-name"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="email">
+                        Adresse email
+                    </label>
+
+                    <input
+                        type="email"
+                        id="email"
+                        autocomplete="email"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="phone">
+                        Téléphone
+                    </label>
+
+                    <input
+                        type="tel"
+                        id="phone"
+                        autocomplete="tel"
+                    >
+
+                </div>
+
+
+                <button
+                    type="submit"
+                    class="btn btn-primary"
                 >
-
-                <label for="lastname">
-                    Nom
-                </label>
-
-                <input
-                    type="text"
-                    id="lastname"
-                    autocomplete="family-name"
-                    required
-                >
-
-                <label for="email">
-                    Adresse email
-                </label>
-
-                <input
-                    type="email"
-                    id="email"
-                    autocomplete="email"
-                    required
-                >
-
-                <label for="phone">
-                    Téléphone
-                </label>
-
-                <input
-                    type="tel"
-                    id="phone"
-                    autocomplete="tel"
-                >
-
-                <button type="submit">
                     Enregistrer les modifications
                 </button>
 
-            </form>
 
-            <p id="profileMessage"></p>
-
-        </section>
-
-
-        <!-- PASSWORD -->
-        <section>
-
-            <h2>
-                Sécurité
-            </h2>
-
-            <form id="passwordForm">
-
-                <label for="currentPassword">
-                    Mot de passe actuel
-                </label>
-
-                <input
-                    type="password"
-                    id="currentPassword"
-                    autocomplete="current-password"
-                    required
-                >
-
-                <label for="newPassword">
-                    Nouveau mot de passe
-                </label>
-
-                <input
-                    type="password"
-                    id="newPassword"
-                    minlength="8"
-                    autocomplete="new-password"
-                    required
-                >
-
-                <label for="newPasswordConfirmation">
-                    Confirmer le nouveau mot de passe
-                </label>
-
-                <input
-                    type="password"
-                    id="newPasswordConfirmation"
-                    minlength="8"
-                    autocomplete="new-password"
-                    required
-                >
-
-                <button type="submit">
-                    Modifier le mot de passe
-                </button>
+                <p id="profileMessage"></p>
 
             </form>
 
-            <p id="passwordMessage"></p>
-
-        </section>
+        </div>
 
 
         <!-- CV -->
-        <section>
 
-            <h2>
-                Mon CV
-            </h2>
+        <div class="apply-layout" id="documents">
 
-            <p>
-                Ajoutez votre CV au format PDF
-                pour faciliter vos candidatures.
-            </p>
+            <div class="apply-info">
 
-            <div id="currentCv">
-                Aucun CV enregistré.
+                <span class="section-label">
+                    CV
+                </span>
+
+                <h1>
+                    Mon CV et lettre de motivation
+                </h1>
+
+                <p>
+                    Ajoutez votre CV au format PDF
+                    pour faciliter vos candidatures.
+                </p>
+
             </div>
 
-            <form id="cvForm">
 
-                <label for="cv">
-                    Fichier PDF
-                </label>
+            <div class="application-form">
 
-                <input
-                    type="file"
-                    id="cv"
-                    accept="application/pdf"
-                    required
+                <div
+                    id="currentCv"
+                    class="form-group"
                 >
+                    Aucun CV enregistré.
+                </div>
 
-                <button type="submit">
-                    Ajouter mon CV
+
+                <form id="cvForm">
+
+                    <div class="form-group">
+
+                        <label for="cv">
+                            Fichier PDF
+                        </label>
+
+                        <input
+                            type="file"
+                            id="cv"
+                            accept="application/pdf"
+                            required
+                        >
+
+                        <small>
+                            Format accepté : PDF.
+                        </small>
+
+                    </div>
+
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary"
+                    >
+                        Ajouter ou remplacer mon CV
+                    </button>
+
+
+                    <button
+                        id="deleteCvButton"
+                        type="button"
+                        class="btn btn-outline"
+                    >
+                        Supprimer mon CV
+                    </button>
+
+                </form>
+                <form id="letterForm" style="margin-top:24px">
+                    <div class="form-group"><label for="motivationLetter">Ma lettre de motivation</label>
+                    <textarea id="motivationLetter" rows="7" maxlength="20000" placeholder="Présentez votre motivation..."></textarea>
+                    <p>Ce texte préremplit vos candidatures. Vous pouvez l'adapter pour chaque offre.</p></div>
+                    <button class="btn btn-primary" type="submit">Enregistrer ma lettre</button>
+                    <p id="letterMessage" role="status"></p>
+                </form>
+
+
+
+                <p id="cvMessage"></p>
+
+            </div>
+
+        </div>
+
+
+        <!-- PASSWORD -->
+
+        <div class="apply-layout">
+
+            <div class="apply-info">
+
+                <span class="section-label">
+                    SÉCURITÉ
+                </span>
+
+                <h1>
+                    Mot de passe
+                </h1>
+
+                <p>
+                    Modifiez le mot de passe
+                    associé à votre compte.
+                </p>
+
+            </div>
+
+
+            <form
+                id="passwordForm"
+                class="application-form"
+            >
+
+                <div class="form-group">
+
+                    <label for="currentPassword">
+                        Mot de passe actuel
+                    </label>
+
+                    <input
+                        type="password"
+                        id="currentPassword"
+                        autocomplete="current-password"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="newPassword">
+                        Nouveau mot de passe
+                    </label>
+
+                    <input
+                        type="password"
+                        id="newPassword"
+                        minlength="8"
+                        autocomplete="new-password"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="newPasswordConfirmation">
+                        Confirmer le nouveau mot de passe
+                    </label>
+
+                    <input
+                        type="password"
+                        id="newPasswordConfirmation"
+                        minlength="8"
+                        autocomplete="new-password"
+                        required
+                    >
+
+                </div>
+
+
+                <button
+                    type="submit"
+                    class="btn btn-primary"
+                >
+                    Modifier le mot de passe
                 </button>
+
+
+                <p id="passwordMessage"></p>
 
             </form>
 
-            <button
-                id="deleteCvButton"
-                type="button"
-            >
-                Supprimer mon CV
-            </button>
-
-            <p id="cvMessage"></p>
-
-        </section>
-
-
-        <!-- ALERTS -->
-        <section>
-
-            <h2>
-                Mes alertes emploi
-            </h2>
-
-            <p>
-                Créez et gérez vos alertes selon
-                vos critères de recherche.
-            </p>
-
-            <a
-                class="button-link"
-                href="alerts.html"
-            >
-                Gérer mes alertes
-            </a>
-
-        </section>
+        </div>
 
 
         <!-- ACCOUNT -->
-        <section class="account-actions full-width">
 
-            <button
-                id="logoutButton"
-                type="button"
-            >
-                Se déconnecter
-            </button>
+        <div class="apply-layout">
 
-            <button
-                id="deleteAccountButton"
-                type="button"
-            >
-                Supprimer mon compte
-            </button>
+            <div class="apply-info">
 
-        </section>
+                <span class="section-label">
+                    COMPTE
+                </span>
+
+                <h1>
+                    Gestion du compte
+                </h1>
+
+                <p>
+                    Déconnectez-vous ou supprimez
+                    définitivement votre compte.
+                </p>
+
+            </div>
+
+
+            <div class="application-form">
+
+                <button
+                    id="logoutBottomButton"
+                    type="button"
+                    class="btn btn-outline"
+                >
+                    Se déconnecter
+                </button>
+
+                <button
+                    id="deleteAccountButton"
+                    type="button"
+                    class="btn btn-outline"
+                >
+                    Supprimer mon compte
+                </button>
+
+            </div>
+
+        </div>
 
     </div>
 
+</section>
+
 </main>
+
+
+<footer class="footer">
+
+    <div class="container footer-content">
+
+        <div>
+            <strong>JobBoard</strong>
+
+            <p>
+                Trouvez simplement votre
+                prochaine opportunité.
+            </p>
+        </div>
+
+        <p>© 2026 JobBoard</p>
+
+    </div>
+
+</footer>
 
 
 <script>
 
 const profileForm =
-    document.getElementById('profileForm');
+    document.getElementById("profileForm");
 
 const passwordForm =
-    document.getElementById('passwordForm');
+    document.getElementById("passwordForm");
 
 const cvForm =
-    document.getElementById('cvForm');
+    document.getElementById("cvForm");
 
 const logoutButton =
-    document.getElementById('logoutButton');
+    document.getElementById("logoutButton");
+
+const logoutBottomButton =
+    document.getElementById(
+        "logoutBottomButton"
+    );
 
 const deleteCvButton =
-    document.getElementById('deleteCvButton');
+    document.getElementById(
+        "deleteCvButton"
+    );
 
 const deleteAccountButton =
-    document.getElementById('deleteAccountButton');
+    document.getElementById(
+        "deleteAccountButton"
+    );
 
 const profileMessage =
-    document.getElementById('profileMessage');
+    document.getElementById(
+        "profileMessage"
+    );
 
 const passwordMessage =
-    document.getElementById('passwordMessage');
+    document.getElementById(
+        "passwordMessage"
+    );
 
 const cvMessage =
-    document.getElementById('cvMessage');
+    document.getElementById(
+        "cvMessage"
+    );
 
 const currentCv =
-    document.getElementById('currentCv');
+    document.getElementById(
+        "currentCv"
+    );
+
+const accountName =
+    document.getElementById(
+        "accountName"
+    );
+
+const accountEmail =
+    document.getElementById(
+        "accountEmail"
+    );
 
 
-// ==============================
+// ========================================
 // DISPLAY CV
-// ==============================
+// ========================================
 
 function renderCv(path) {
 
-    currentCv.innerHTML = '';
+    currentCv.replaceChildren();
 
     if (!path) {
 
         currentCv.textContent =
-            'Aucun CV enregistré.';
+            "Aucun CV enregistré.";
 
         return;
     }
 
     const link =
-        document.createElement('a');
+        document.createElement("a");
 
     link.href =
-        '/' + path;
+        path.startsWith("/")
+            ? path
+            : "/" + path;
 
     link.target =
-        '_blank';
+        "_blank";
+
+    link.rel =
+        "noopener noreferrer";
 
     link.textContent =
-        'Voir mon CV';
+        "Voir mon CV actuel";
+
+    link.className =
+        "btn btn-outline";
 
     currentCv.appendChild(link);
 }
 
 
-// ==============================
+// ========================================
 // LOAD PROFILE
-// ==============================
+// ========================================
 
 async function loadProfile() {
 
@@ -328,13 +575,13 @@ async function loadProfile() {
 
         const response =
             await fetch(
-                '/api/users/me.php'
+                "/api/users/me.php"
             );
 
         if (response.status === 401) {
 
             window.location.href =
-                'login.html';
+                "login.html";
 
             return;
         }
@@ -342,36 +589,61 @@ async function loadProfile() {
         const result =
             await response.json();
 
+
         if (!response.ok) {
 
             profileMessage.textContent =
-                result.message || 'Erreur.';
+                result.message ||
+                "Impossible de charger le profil.";
 
             return;
         }
 
-        const user =
-            result.user;
+
+        const user = result.user;
+        document.getElementById("motivationLetter").value = user.cover_letter || "";
+        if (user.account_type !== 'candidate' || user.role === 'admin') {
+            window.location.href = user.role === 'admin' ? 'admin.html' : 'companies.html';
+            return;
+        }
+
 
         document.getElementById(
-            'firstname'
+            "firstname"
         ).value =
-            user.firstname || '';
+            user.firstname || "";
+
 
         document.getElementById(
-            'lastname'
+            "lastname"
         ).value =
-            user.lastname || '';
+            user.lastname || "";
+
 
         document.getElementById(
-            'email'
+            "email"
         ).value =
-            user.email || '';
+            user.email || "";
+
 
         document.getElementById(
-            'phone'
+            "phone"
         ).value =
-            user.phone || '';
+            user.phone || "";
+
+
+        accountName.textContent =
+            (
+                (user.firstname || "") +
+                " " +
+                (user.lastname || "")
+            ).trim() ||
+            "Mon compte";
+
+
+        accountEmail.textContent =
+            user.email || "";
+
 
         renderCv(
             user.cv_path
@@ -380,57 +652,60 @@ async function loadProfile() {
     } catch (error) {
 
         profileMessage.textContent =
-            'Erreur de connexion au serveur.';
+            "Impossible de contacter le serveur.";
     }
 }
 
 
-// ==============================
+// ========================================
 // UPDATE PROFILE
-// ==============================
+// ========================================
 
 profileForm.addEventListener(
-    'submit',
-    async (event) => {
+    "submit",
+    async function (event) {
 
         event.preventDefault();
 
-        profileMessage.textContent = '';
+        profileMessage.textContent =
+            "";
+
 
         const data = {
 
             firstname:
                 document.getElementById(
-                    'firstname'
-                ).value,
+                    "firstname"
+                ).value.trim(),
 
             lastname:
                 document.getElementById(
-                    'lastname'
-                ).value,
+                    "lastname"
+                ).value.trim(),
 
             email:
                 document.getElementById(
-                    'email'
-                ).value,
+                    "email"
+                ).value.trim(),
 
             phone:
                 document.getElementById(
-                    'phone'
-                ).value
+                    "phone"
+                ).value.trim()
         };
+
 
         try {
 
             const response =
                 await fetch(
-                    '/api/users/me.php',
+                    "/api/users/me.php",
                     {
-                        method: 'PUT',
+                        method: "PUT",
 
                         headers: {
-                            'Content-Type':
-                                'application/json'
+                            "Content-Type":
+                                "application/json"
                         },
 
                         body:
@@ -438,62 +713,86 @@ profileForm.addEventListener(
                     }
                 );
 
+
             const result =
                 await response.json();
 
+
             profileMessage.textContent =
-                result.message;
+                result.message ||
+                (
+                    response.ok
+                        ? "Profil mis à jour."
+                        : "Erreur."
+                );
+
+
+            if (response.ok) {
+
+                accountName.textContent =
+                    (
+                        data.firstname +
+                        " " +
+                        data.lastname
+                    ).trim();
+
+                accountEmail.textContent =
+                    data.email;
+            }
 
         } catch (error) {
 
             profileMessage.textContent =
-                'Erreur de connexion au serveur.';
+                "Impossible de contacter le serveur.";
         }
     }
 );
 
 
-// ==============================
+// ========================================
 // CHANGE PASSWORD
-// ==============================
+// ========================================
 
 passwordForm.addEventListener(
-    'submit',
-    async (event) => {
+    "submit",
+    async function (event) {
 
         event.preventDefault();
 
-        passwordMessage.textContent = '';
+        passwordMessage.textContent =
+            "";
+
 
         const data = {
 
             current_password:
                 document.getElementById(
-                    'currentPassword'
+                    "currentPassword"
                 ).value,
 
             new_password:
                 document.getElementById(
-                    'newPassword'
+                    "newPassword"
                 ).value,
 
             new_password_confirmation:
                 document.getElementById(
-                    'newPasswordConfirmation'
+                    "newPasswordConfirmation"
                 ).value
         };
+
 
         try {
 
             const response =
                 await fetch(
-                    '/api/users/password.php',
+                    "/api/users/password.php",
                     {
-                        method: 'POST',
+                        method: "POST",
 
                         headers: {
-                            'Content-Type':
-                                'application/json'
+                            "Content-Type":
+                                "application/json"
                         },
 
                         body:
@@ -501,11 +800,19 @@ passwordForm.addEventListener(
                     }
                 );
 
+
             const result =
                 await response.json();
 
+
             passwordMessage.textContent =
-                result.message;
+                result.message ||
+                (
+                    response.ok
+                        ? "Mot de passe modifié."
+                        : "Erreur."
+                );
+
 
             if (response.ok) {
 
@@ -515,59 +822,72 @@ passwordForm.addEventListener(
         } catch (error) {
 
             passwordMessage.textContent =
-                'Erreur de connexion au serveur.';
+                "Impossible de contacter le serveur.";
         }
     }
 );
 
 
-// ==============================
+// ========================================
 // UPLOAD CV
-// ==============================
+// ========================================
 
 cvForm.addEventListener(
-    'submit',
-    async (event) => {
+    "submit",
+    async function (event) {
 
         event.preventDefault();
 
-        cvMessage.textContent = '';
+        cvMessage.textContent =
+            "";
 
-        const fileInput =
-            document.getElementById('cv');
 
-        if (!fileInput.files.length) {
+        const input =
+            document.getElementById("cv");
+
+
+        if (!input.files.length) {
 
             cvMessage.textContent =
-                'Veuillez sélectionner un fichier PDF.';
+                "Veuillez sélectionner un fichier PDF.";
 
             return;
         }
+
 
         const formData =
             new FormData();
 
         formData.append(
-            'cv',
-            fileInput.files[0]
+            "cv",
+            input.files[0]
         );
+
 
         try {
 
             const response =
                 await fetch(
-                    '/api/cv/upload.php',
+                    "/api/cv/upload.php",
                     {
-                        method: 'POST',
+                        method: "POST",
                         body: formData
                     }
                 );
 
+
             const result =
                 await response.json();
 
+
             cvMessage.textContent =
-                result.message;
+                result.message ||
+                (
+                    response.ok
+                        ? "CV enregistré."
+                        : "Erreur."
+                );
+
 
             if (response.ok) {
 
@@ -581,44 +901,55 @@ cvForm.addEventListener(
         } catch (error) {
 
             cvMessage.textContent =
-                'Erreur pendant le téléchargement.';
+                "Erreur pendant le téléchargement.";
         }
     }
 );
 
 
-// ==============================
+// ========================================
 // DELETE CV
-// ==============================
+// ========================================
 
 deleteCvButton.addEventListener(
-    'click',
-    async () => {
+    "click",
+    async function () {
 
         const confirmed =
-            confirm(
-                'Voulez-vous supprimer votre CV ?'
+            window.confirm(
+                "Voulez-vous supprimer votre CV ?"
             );
 
+
         if (!confirmed) {
+
             return;
         }
+
 
         try {
 
             const response =
                 await fetch(
-                    '/api/cv/delete.php',
+                    "/api/cv/delete.php",
                     {
-                        method: 'DELETE'
+                        method: "DELETE"
                     }
                 );
+
 
             const result =
                 await response.json();
 
+
             cvMessage.textContent =
-                result.message;
+                result.message ||
+                (
+                    response.ok
+                        ? "CV supprimé."
+                        : "Erreur."
+                );
+
 
             if (response.ok) {
 
@@ -630,98 +961,123 @@ deleteCvButton.addEventListener(
         } catch (error) {
 
             cvMessage.textContent =
-                'Erreur de connexion au serveur.';
+                "Impossible de contacter le serveur.";
         }
     }
 );
 
 
-// ==============================
+// ========================================
 // LOGOUT
-// ==============================
+// ========================================
+
+async function logout() {
+
+    try {
+
+        await fetch(
+            "/api/auth/logout.php",
+            {
+                method: "POST"
+            }
+        );
+
+    } finally {
+
+        window.location.href =
+            "index.html";
+    }
+}
+
 
 logoutButton.addEventListener(
-    'click',
-    async () => {
-
-        try {
-
-            await fetch(
-                '/api/auth/logout.php',
-                {
-                    method: 'POST'
-                }
-            );
-
-        } finally {
-
-            window.location.href =
-                'login.html';
-        }
-    }
+    "click",
+    logout
 );
 
 
-// ==============================
+logoutBottomButton.addEventListener(
+    "click",
+    logout
+);
+
+
+// ========================================
 // DELETE ACCOUNT
-// ==============================
+// ========================================
 
 deleteAccountButton.addEventListener(
-    'click',
-    async () => {
+    "click",
+    async function () {
 
         const confirmed =
-            confirm(
-                'Voulez-vous vraiment supprimer votre compte ? Cette action est définitive.'
+            window.confirm(
+                "Voulez-vous vraiment supprimer votre compte ? Cette action est définitive."
             );
 
+
         if (!confirmed) {
+
             return;
         }
+
 
         try {
 
             const response =
                 await fetch(
-                    '/api/users/me.php',
+                    "/api/users/me.php",
                     {
-                        method: 'DELETE'
+                        method: "DELETE"
                     }
                 );
+
 
             const result =
                 await response.json();
 
+
             if (!response.ok) {
 
-                alert(
+                window.alert(
                     result.message ||
-                    'Erreur.'
+                    "Impossible de supprimer le compte."
                 );
 
                 return;
             }
 
-            alert(
-                'Compte supprimé avec succès.'
+
+            window.alert(
+                "Compte supprimé avec succès."
             );
 
+
             window.location.href =
-                'register.html';
+                "index.html";
 
         } catch (error) {
 
-            alert(
-                'Erreur de connexion au serveur.'
+            window.alert(
+                "Impossible de contacter le serveur."
             );
         }
     }
 );
 
 
-// ==============================
+// ========================================
 // START
-// ==============================
+// ========================================
+
+document.getElementById("letterForm").addEventListener("submit", async event => {
+    event.preventDefault();
+    const message = document.getElementById("letterMessage");
+    try {
+        const response = await fetch("/api/users/me.php", {method:"PATCH", headers:{"Content-Type":"application/json"}, body:JSON.stringify({cover_letter:document.getElementById("motivationLetter").value})});
+        const result = await response.json(); message.textContent = result.message || "Impossible d’enregistrer la lettre.";
+    } catch { message.textContent = "Impossible de contacter le serveur."; }
+});
 
 loadProfile();
 

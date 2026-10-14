@@ -1,54 +1,466 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
+
     <meta
         name="viewport"
         content="width=device-width, initial-scale=1.0"
     >
 
-    <title>Job Board</title>
+    <title>JobBoard - Trouvez votre prochain emploi</title>
 
     <link
         rel="stylesheet"
         href="css/style.css"
     >
+    <script type="module" src="js/auth-nav.js"></script>
 </head>
 
 <body>
 
-<main class="home">
+<header class="navbar">
 
-    <section class="hero">
+    <div class="container navbar-content">
 
-        <h1>Job Board</h1>
+        <a
+            href="index.html"
+            class="logo"
+        >
+            JobBoard
+        </a>
 
-        <p>
-            Trouvez votre prochaine opportunité :
-            emploi, alternance ou stage.
-        </p>
 
-        <div class="home-actions">
+        <nav class="nav-links">
+
+            <a href="#jobs">
+                Offres
+            </a>
+
+            <a href="companies.html">
+                Entreprises
+            </a>
+
+        </nav>
+
+
+        <div
+            class="nav-actions"
+            id="authActions"
+        >
 
             <a
-                class="button-link"
+                href="login.html"
+                class="btn btn-outline"
+            >
+                Connexion
+            </a>
+
+            <a
                 href="register.html"
+                class="btn btn-primary"
             >
                 Créer un compte
             </a>
 
-            <a
-                class="button-link secondary"
-                href="login.html"
-            >
-                Se connecter
-            </a>
+        </div>
+
+    </div>
+
+</header>
+
+
+<main>
+
+<section class="hero">
+
+    <div class="container hero-content">
+
+        <div class="hero-text">
+
+            <span class="hero-label" id="heroLabel">
+                JOB BOARD
+            </span>
+
+            <h1 id="heroTitle">
+                Trouvez votre prochain
+                <span>emploi</span>
+            </h1>
+
+            <p id="heroSubtitle">
+                Recherchez une offre selon
+                votre métier, vos compétences
+                et votre localisation.
+            </p>
 
         </div>
 
-    </section>
+
+        <div class="search-box">
+
+            <div class="search-field">
+
+                <label for="metier">
+                    Métier
+                </label>
+
+                <input
+                    type="text"
+                    id="metier"
+                    placeholder="Ex : Développeur web"
+                >
+
+            </div>
+
+
+            <div class="search-field">
+
+                <label for="competence">
+                    Compétence
+                </label>
+
+                <input
+                    type="text"
+                    id="competence"
+                    placeholder="Ex : PHP, JavaScript"
+                >
+
+            </div>
+
+
+            <div class="search-field">
+
+                <label for="location">
+                    Lieu
+                </label>
+
+                <input
+                    type="text"
+                    id="location"
+                    placeholder="Ex : Nantes"
+                >
+
+            </div>
+
+
+            <button
+                class="btn btn-primary search-button"
+                id="search-button"
+                type="button"
+            >
+                Rechercher
+            </button>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<section
+    class="jobs-section"
+    id="jobs"
+>
+
+<div class="container">
+
+    <div class="section-header">
+
+        <div>
+
+            <span class="section-label">
+                OPPORTUNITÉS
+            </span>
+
+            <h2>
+                Offres d'emploi
+            </h2>
+
+        </div>
+
+        <span
+            class="jobs-count"
+            id="jobs-count"
+        >
+            0 offre
+        </span>
+
+    </div>
+
+
+    <div class="jobs-layout">
+
+        <aside class="filters">
+
+            <div class="filter-header">
+
+                <h3>
+                    Filtrer
+                </h3>
+
+                <button
+                    id="reset-filters"
+                    type="button"
+                >
+                    Réinitialiser
+                </button>
+
+            </div>
+
+
+            <div class="filter-group">
+
+                <h4>
+                    Type de contrat
+                </h4>
+
+
+                <label class="checkbox">
+
+                    <input
+                        type="checkbox"
+                        value="CDI"
+                        class="contract-filter"
+                    >
+
+                    <span>CDI</span>
+
+                </label>
+
+
+                <label class="checkbox">
+
+                    <input
+                        type="checkbox"
+                        value="CDD"
+                        class="contract-filter"
+                    >
+
+                    <span>CDD</span>
+
+                </label>
+
+
+                <label class="checkbox">
+
+                    <input
+                        type="checkbox"
+                        value="Alternance"
+                        class="contract-filter"
+                    >
+
+                    <span>Alternance</span>
+
+                </label>
+
+                <label class="checkbox">
+                    <input type="checkbox" value="Stage" class="contract-filter">
+                    <span>Stage</span>
+                </label>
+
+                <label class="checkbox">
+                    <input type="checkbox" value="Intérim" class="contract-filter">
+                    <span>Intérim</span>
+                </label>
+
+            </div>
+
+
+            <div class="filter-group">
+
+                <h4>
+                    Ville
+                </h4>
+
+
+                <label class="radio">
+
+                    <input
+                        type="radio"
+                        name="city-filter"
+                        value="all"
+                        checked
+                    >
+
+                    <span>Toutes</span>
+
+                </label>
+
+
+                <label class="radio">
+
+                    <input
+                        type="radio"
+                        name="city-filter"
+                        value="Paris"
+                    >
+
+                    <span>Paris</span>
+
+                </label>
+
+
+                <label class="radio">
+
+                    <input
+                        type="radio"
+                        name="city-filter"
+                        value="Lyon"
+                    >
+
+                    <span>Lyon</span>
+
+                </label>
+
+
+                <label class="radio">
+
+                    <input
+                        type="radio"
+                        name="city-filter"
+                        value="Lille"
+                    >
+
+                    <span>Lille</span>
+
+                </label>
+
+
+                <label class="radio">
+
+                    <input
+                        type="radio"
+                        name="city-filter"
+                        value="Nantes"
+                    >
+
+                    <span>Nantes</span>
+
+                </label>
+
+            </div>
+
+        </aside>
+
+
+        <div
+            class="jobs-list"
+            id="jobs-list"
+        >
+
+            <div class="empty-applications">
+
+                <h2>
+                    Chargement des offres...
+                </h2>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+</section>
+
+
+<!-- JOB MODAL -->
+
+<div
+    class="modal hidden"
+    id="job-modal"
+>
+
+    <div
+        class="modal-overlay"
+        id="modal-overlay"
+    ></div>
+
+
+    <div class="modal-content">
+
+        <button
+            class="modal-close"
+            id="modal-close"
+            type="button"
+        >
+            ×
+        </button>
+
+
+        <span class="section-label">
+            DÉTAIL DE L'OFFRE
+        </span>
+
+
+        <h2 id="modal-title">
+            Offre
+        </h2>
+
+
+        <p
+            class="company-name"
+            id="modal-company"
+        ></p>
+
+
+        <p
+            class="job-location"
+            id="modal-location"
+        ></p>
+
+
+        <div class="modal-divider"></div>
+
+
+        <h3>
+            Description
+        </h3>
+
+
+        <p id="modal-description"></p>
+
+
+        <div class="modal-actions">
+
+            <button
+                class="btn btn-primary"
+                id="apply-button"
+                type="button"
+            >
+                Postuler
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
 
 </main>
+
+
+<footer class="footer">
+
+    <div class="container footer-content">
+
+        <strong>
+            JobBoard
+        </strong>
+
+        <p>
+            © 2026 JobBoard
+        </p>
+
+    </div>
+
+</footer>
+
+
+<script type="module" src="js/jobs.js"></script>
 
 </body>
 </html>

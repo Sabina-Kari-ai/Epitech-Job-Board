@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emails - JobBoard</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script type="module" src="js/auth-nav.js"></script>
+    <script type="module" src="js/mail.js"></script>
+</head>
+<body>
+<header class="navbar"><div class="container navbar-content">
+    <a class="logo" href="index.html">JobBoard</a>
+    <nav class="nav-links"><a href="admin.html">Administration</a></nav>
+    <div class="nav-actions"></div>
+</div></header>
+<main class="admin-section"><div class="container">
+    <div class="admin-header"><span class="section-label">ADMINISTRATION</span><h1>Emails</h1>
+        <p>Les demandes de réinitialisation et les alertes emploi apparaissent ici. En mode démo, aucun email n'est envoyé à l'extérieur.</p>
+        <button class="btn btn-outline" id="refreshMail">Actualiser</button>
+    </div>
+    <p id="mailError" role="status"></p>
+    <div class="admin-table-wrapper"><table class="admin-table">
+        <thead><tr><th>Date</th><th>Destinataire</th><th>Objet</th><th>État</th><th>Action</th></tr></thead>
+        <tbody id="mailList"></tbody>
+    </table></div>
+    <section class="application-form" id="mailDetail" hidden>
+        <h2 id="mailSubject"></h2><p id="mailRecipient"></p><div id="mailBody" style="white-space:pre-wrap;overflow-wrap:anywhere"></div>
+    </section>
+</div></main>
+</body>
+</html>

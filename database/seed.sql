@@ -1,42 +1,4 @@
--- ============================================
--- EPITECH JOB BOARD
--- Test data
--- ============================================
-
 USE epitech_job_board;
-
--- ============================================
--- USERS
--- ============================================
-
-INSERT INTO users (
-    firstname,
-    lastname,
-    email,
-    phone,
-    password_hash,
-    role
-) VALUES
-(
-    'Admin',
-    'JobBoard',
-    'admin@jobboard.test',
-    '0600000000',
-    '$2y$12$PPnCWeuGeBg8/h9zI4aB5.Q1TUiBk89FCqpipfP8LN2nBBR70fFLW',
-    'admin'
-),
-(
-    'Test',
-    'Candidate',
-    'candidate@jobboard.test',
-    '0611111111',
-    '$2y$12$m98oASZrXpnkTh.ySUuSauJmpsPd/S4TRD8DR4IBab/AUxXTxi2.S',
-    'candidate'
-);
-
--- Test passwords:
--- admin@jobboard.test     -> Admin123!
--- candidate@jobboard.test -> Candidate123!
 
 
 -- ============================================
@@ -45,32 +7,111 @@ INSERT INTO users (
 
 INSERT INTO companies (
     name,
+    location,
     description,
     email,
     phone,
     website
 ) VALUES
 (
-    'TechNova',
-    'Entreprise spécialisée dans le développement web et les solutions numériques.',
-    'contact@technova.test',
-    '0200000001',
-    'https://technova.test'
+    'Tech Solutions',
+    'Paris',
+    'Entreprise spécialisée dans le développement de solutions numériques.',
+    'contact@techsolutions.test',
+    '0100000001',
+    'https://example.com'
 ),
 (
-    'DataSphere',
-    'Entreprise spécialisée dans la data, le cloud et l intelligence artificielle.',
-    'contact@datasphere.test',
-    '0200000002',
-    'https://datasphere.test'
+    'Digital Services',
+    'Lyon',
+    'Entreprise spécialisée dans les services numériques et les applications web.',
+    'contact@digitalservices.test',
+    '0100000002',
+    NULL
 ),
 (
-    'WebCraft',
-    'Agence numérique spécialisée dans les applications web modernes.',
-    'contact@webcraft.test',
-    '0200000003',
-    'https://webcraft.test'
+    'Innovation Agency',
+    'Paris',
+    'Agence spécialisée dans les projets web et les nouvelles technologies.',
+    'contact@innovationagency.test',
+    '0100000003',
+    NULL
+),
+(
+    'Web Business',
+    'Lille',
+    'Entreprise spécialisée dans la création et le développement de sites web.',
+    'contact@webbusiness.test',
+    '0100000004',
+    NULL
+),
+(
+    'France Numérique',
+    'Paris',
+    'Entreprise spécialisée dans les services numériques.',
+    'contact@francenumerique.test',
+    '0100000005',
+    NULL
+),
+(
+    'Future Systems',
+    'Lyon',
+    'Entreprise spécialisée dans les solutions logicielles.',
+    'contact@futuresystems.test',
+    '0100000006',
+    NULL
 );
+
+
+-- ============================================
+-- USERS
+-- ============================================
+
+INSERT INTO users (
+    company_id,
+    firstname,
+    lastname,
+    email,
+    phone,
+    password_hash,
+    role,
+    account_type
+) VALUES
+(
+    NULL,
+    'Admin',
+    'JobBoard',
+    'admin@jobboard.test',
+    '0600000000',
+    '$2y$12$xSAzJaKiNEPXLXfb6jXkoOyy9zZhx5PQl2gS/mqil12vsUN/GFYTq',
+    'admin',
+    'candidate'
+),
+(
+    NULL,
+    'Test',
+    'Candidate',
+    'candidate@jobboard.test',
+    '0611111111',
+    '$2y$12$1vl7A7IX3ZiD9JTVJS6am..7np54eE8dgM0ahdqdeIuJ3GBuLtMhC',
+    'candidate',
+    'candidate'
+),
+(
+    1,
+    'Sophie',
+    'Martin',
+    'entreprise@jobboard.test',
+    '0622222222',
+    '$2y$12$H0VM/FhlDp7y7/hqfqw8cei/kBKqi6pAcSjsOUHNRSwm/aAhpWtNy',
+    'candidate',
+    'company'
+);
+
+-- Test passwords:
+-- admin@jobboard.test      -> Admin123!
+-- candidate@jobboard.test  -> Candidate123!
+-- entreprise@jobboard.test -> Company123!
 
 
 -- ============================================
@@ -80,65 +121,78 @@ INSERT INTO companies (
 INSERT INTO jobs (
     company_id,
     title,
-    short_description,
-    description,
     location,
     contract_type,
     salary,
-    working_time,
-    missions,
-    profile,
+    short_description,
+    description,
     skills,
-    benefits,
-    application_deadline,
     cover_letter_required
 ) VALUES
 (
     1,
-    'Développeur Web Junior',
-    'Participer au développement de plusieurs applications web.',
-    'Vous rejoindrez une équipe de développement afin de créer et maintenir des applications web.',
-    'Nantes',
-    'Alternance',
-    NULL,
-    '35h',
-    'Développer des fonctionnalités, corriger des bugs et participer aux tests.',
-    'Étudiant en informatique avec de bonnes bases en développement web.',
-    'HTML, CSS, JavaScript, PHP, SQL',
-    'Télétravail partiel, tickets restaurant',
-    '2026-11-30',
+    'Développeur Web Full Stack',
+    'Paris',
+    'CDI',
+    '40k - 50k €',
+    'Développement d’applications web modernes.',
+    'Développement frontend et backend au sein d’une équipe technique.',
+    'HTML, CSS, JavaScript, PHP, MySQL',
     FALSE
 ),
 (
     2,
-    'Assistant Data Analyst',
-    'Participer à la préparation et à l analyse des données.',
-    'Vous travaillerez avec l équipe Data sur la préparation, le nettoyage et la visualisation de données.',
-    'Saint-Herblain',
-    'Alternance',
-    NULL,
-    '35h',
-    'Nettoyage de données, création de rapports et tableaux de bord.',
-    'Étudiant intéressé par la data et les outils analytiques.',
-    'SQL, Python, Excel',
-    'Formation interne',
-    '2026-12-15',
-    TRUE
+    'Backend Developer PHP',
+    'Lyon',
+    'CDI',
+    '38k - 48k €',
+    'Développement backend avec PHP.',
+    'Développement et maintenance des applications backend.',
+    'PHP, MySQL, API REST, Git',
+    FALSE
 ),
 (
     3,
-    'Développeur PHP',
-    'Développement et maintenance de plateformes web.',
-    'WebCraft recherche un développeur PHP junior pour accompagner ses projets clients.',
-    'Rezé',
-    'Stage',
-    1200.00,
-    '35h',
-    'Développement backend, API REST et intégration avec MySQL.',
-    'Bonnes bases en PHP et bases de données relationnelles.',
-    'PHP, MySQL, REST API, Git',
-    'Horaires flexibles',
-    '2026-12-20',
+    'Développeur JavaScript',
+    'Paris',
+    'Alternance',
+    '1 200 €/mois',
+    'Alternance en développement JavaScript.',
+    'Participation au développement d’interfaces web modernes.',
+    'JavaScript, HTML, CSS, Git',
+    FALSE
+),
+(
+    4,
+    'Développeur Frontend',
+    'Lille',
+    'Alternance',
+    '1 200 €/mois',
+    'Développement frontend en alternance.',
+    'Création et amélioration d’interfaces web responsives.',
+    'HTML, CSS, JavaScript',
+    FALSE
+),
+(
+    5,
+    'Intégrateur Web',
+    'Paris',
+    'CDD',
+    '32k - 38k €',
+    'Intégration de maquettes web.',
+    'Intégration HTML/CSS et amélioration des interfaces.',
+    'HTML, CSS, Responsive Design',
+    TRUE
+),
+(
+    6,
+    'Ingénieur Logiciel',
+    'Lyon',
+    'CDI',
+    '45k - 55k €',
+    'Conception de solutions logicielles.',
+    'Participation au développement de solutions logicielles.',
+    'Software Engineering, API, Git',
     FALSE
 );
 
@@ -148,25 +202,40 @@ INSERT INTO jobs (
 -- ============================================
 
 INSERT INTO applications (
-    user_id,
     job_id,
-    cv_path,
-    cover_letter_path,
+    user_id,
+    candidate_name,
+    candidate_email,
+    candidate_phone,
+    message,
     status
 ) VALUES
 (
-    2,
     1,
-    'uploads/cv/test-candidate-cv.pdf',
-    NULL,
-    'sent'
+    2,
+    'Test Candidate',
+    'candidate@jobboard.test',
+    '0611111111',
+    'Je souhaite rejoindre votre équipe.',
+    'pending'
 ),
 (
     2,
-    2,
-    'uploads/cv/test-candidate-cv.pdf',
-    'uploads/cover-letters/test-candidate-letter.pdf',
-    'under_review'
+    NULL,
+    'Marie Martin',
+    'marie.martin@email.com',
+    '0611223344',
+    'Mon expérience PHP correspond au poste.',
+    'reviewing'
+),
+(
+    3,
+    NULL,
+    'Lucas Bernard',
+    'lucas.bernard@email.com',
+    '0622334455',
+    'Je souhaite rejoindre votre entreprise.',
+    'accepted'
 );
 
 
@@ -184,32 +253,14 @@ INSERT INTO alerts (
 (
     2,
     'Développeur',
-    'Nantes',
+    'Paris',
     'Alternance',
     TRUE
 ),
 (
     2,
-    'Data',
-    'Saint-Herblain',
-    'Alternance',
+    'PHP',
+    'Lyon',
+    'CDI',
     TRUE
-);
-
-
--- ============================================
--- CV VIEWS
--- ============================================
-
-INSERT INTO cv_views (
-    user_id,
-    company_id
-) VALUES
-(
-    2,
-    1
-),
-(
-    2,
-    2
 );

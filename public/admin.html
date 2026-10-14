@@ -1,490 +1,805 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
-    <title>Administration - JobBoard</title>
+    <title>JobBoard - Administration</title>
 
-    <link rel="stylesheet" href="css/style.css">
+    <link
+        rel="stylesheet"
+        href="css/style.css"
+    >
+    <script type="module" src="js/auth-nav.js"></script>
 </head>
 
 <body>
 
-<header class="jobboard-brand">
+<header class="navbar">
 
-    <a
-        href="admin.html"
-        class="jobboard-logo"
-    >
-        JobBoard
-    </a>
+    <div class="container navbar-content">
 
-    <nav class="jobboard-nav">
-
-        <a href="admin.html">
-            Utilisateurs
+        <a
+            href="admin.html"
+            class="logo"
+        >
+            JobBoard
         </a>
 
-        <a href="index.html">
-            Retour au site
-        </a>
+        <nav class="nav-links">
+            <a href="index.html">Retour au site</a>
+            <a href="mail.html" class="btn btn-outline">Emails</a>
+        </nav>
 
-        <a href="#" id="logoutLink">
-            Se déconnecter
-        </a>
+        <div class="nav-actions">
 
-    </nav>
+            <button
+                id="logoutButton"
+                type="button"
+                class="btn btn-outline"
+            >
+                Déconnexion
+            </button>
+
+
+        </div>
+
+    </div>
 
 </header>
 
 
-<main>
+<main class="admin-section">
 
-    <div class="page-header">
+<div class="container">
 
-        <span class="page-label">
-            ADMINISTRATION
-        </span>
+    <div class="admin-header">
 
-        <h1>
-            Gestion des utilisateurs
-        </h1>
+        <div>
 
-        <p>
-            Consultez les comptes utilisateurs,
-            modifiez leurs rôles et gérez les accès
-            à la plateforme.
-        </p>
+            <span class="section-label">
+                ADMINISTRATION
+            </span>
+
+            <h1>
+                Tableau de bord
+            </h1>
+
+            <p>
+                Gérez les offres, les entreprises,
+                les candidatures et les utilisateurs.
+            </p>
+
+        </div>
 
     </div>
 
 
-    <p id="message"></p>
+    <p id="admin-message"></p>
 
 
-    <section>
+    <!-- TABS -->
 
-        <h2>
+    <div class="admin-tabs">
+
+        <button
+            class="admin-tab active"
+            data-tab="jobs-panel"
+        >
+            Offres
+        </button>
+
+        <button
+            class="admin-tab"
+            data-tab="companies-panel"
+        >
+            Entreprises
+        </button>
+
+        <button
+            class="admin-tab"
+            data-tab="applications-panel"
+        >
+            Candidatures
+        </button>
+
+        <button
+            class="admin-tab"
+            data-tab="users-panel"
+        >
             Utilisateurs
-        </h2>
+        </button>
 
-        <p>
-            Les comptes enregistrés sur la plateforme
-            sont affichés ci-dessous.
-        </p>
+    </div>
 
-        <div id="usersList">
-            Chargement...
+
+    <!-- JOBS -->
+
+    <section
+        class="admin-panel active"
+        id="jobs-panel"
+    >
+
+        <div class="admin-panel-header">
+
+            <div>
+
+                <h2>
+                    Offres d'emploi
+                </h2>
+
+                <p>
+                    Gérez les offres publiées sur le site.
+                </p>
+
+            </div>
+
+            <button
+                class="btn btn-primary"
+                id="add-job-button"
+            >
+                Ajouter une offre
+            </button>
+
+        </div>
+
+
+        <div class="admin-table-wrapper">
+
+            <table class="admin-table">
+
+                <thead>
+                    <tr>
+                        <th>Poste</th>
+                        <th>Entreprise</th>
+                        <th>Lieu</th>
+                        <th>Type</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody id="admin-jobs-list"></tbody>
+
+            </table>
+
         </div>
 
     </section>
 
 
-    <section class="account-actions">
+    <!-- COMPANIES -->
 
-        <a
-            href="index.html"
-            class="button-link"
-        >
-            Retour au site
-        </a>
+    <section
+        class="admin-panel"
+        id="companies-panel"
+    >
 
-        <button
-            id="logoutButton"
-            type="button"
-        >
-            Se déconnecter
-        </button>
+        <div class="admin-panel-header">
+
+            <div>
+
+                <h2>
+                    Entreprises
+                </h2>
+
+                <p>
+                    Gérez les entreprises présentes
+                    sur la plateforme.
+                </p>
+
+            </div>
+
+            <button
+                class="btn btn-primary"
+                id="add-company-button"
+            >
+                Ajouter une entreprise
+            </button>
+
+        </div>
+
+
+        <div class="admin-table-wrapper">
+
+            <table class="admin-table">
+
+                <thead>
+                    <tr>
+                        <th>Entreprise</th>
+                        <th>Lieu</th>
+                        <th>Offres</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody id="admin-companies-list"></tbody>
+
+            </table>
+
+        </div>
 
     </section>
+
+
+    <!-- APPLICATIONS -->
+
+    <section
+        class="admin-panel"
+        id="applications-panel"
+    >
+
+        <div class="admin-panel-header">
+
+            <div>
+
+                <h2>
+                    Candidatures
+                </h2>
+
+                <p>
+                    Consultez les candidatures
+                    et gérez leur statut.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="admin-table-wrapper">
+
+            <table class="admin-table">
+
+                <thead>
+                    <tr>
+                        <th>Candidat</th>
+                        <th>Offre</th>
+                        <th>Email</th>
+                        <th>Statut</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody id="admin-applications-list"></tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+
+    <!-- USERS -->
+
+    <section
+        class="admin-panel"
+        id="users-panel"
+    >
+
+        <div class="admin-panel-header">
+
+            <div>
+
+                <h2>
+                    Utilisateurs
+                </h2>
+
+                <p>
+                    Gérez les comptes candidats
+                    entreprises et administrateurs.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="admin-table-wrapper">
+
+            <table class="admin-table">
+
+                <thead>
+                    <tr>
+                        <th>Utilisateur</th>
+                        <th>Email</th>
+                        <th>Téléphone</th>
+                        <th>Type de compte</th>
+                        <th>Rôle</th>
+                        <th>CV</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody id="admin-users-list"></tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+</div>
 
 </main>
 
 
-<script>
+<!-- JOB MODAL -->
 
-const usersList =
-    document.getElementById('usersList');
+<div
+    class="admin-modal"
+    id="job-modal"
+>
 
-const message =
-    document.getElementById('message');
+    <div class="admin-modal-content">
 
-const logoutButton =
-    document.getElementById('logoutButton');
+        <div class="admin-modal-header">
 
-const logoutLink =
-    document.getElementById('logoutLink');
+            <h2 id="job-modal-title">
+                Ajouter une offre
+            </h2>
 
+            <button
+                class="modal-close"
+                id="job-modal-close"
+                type="button"
+            >
+                &times;
+            </button>
 
-// ==============================
-// LOAD USERS
-// ==============================
+        </div>
 
-async function loadUsers() {
 
-    try {
+        <form id="job-form">
 
-        const response =
-            await fetch(
-                '/api/users/admin.php'
-            );
+            <input
+                type="hidden"
+                id="job-id"
+            >
 
-        if (response.status === 401) {
 
-            window.location.href =
-                'login.html';
+            <div class="form-group">
 
-            return;
-        }
+                <label for="job-title">
+                    Titre
+                </label>
 
-        if (response.status === 403) {
+                <input
+                    type="text"
+                    id="job-title"
+                    required
+                >
 
-            message.textContent =
-                'Accès administrateur requis.';
+            </div>
 
-            usersList.textContent = '';
 
-            return;
-        }
+            <div class="form-group">
 
-        const result =
-            await response.json();
+                <label for="job-company">
+                    Entreprise
+                </label>
 
-        if (!response.ok) {
+                <select
+                    id="job-company"
+                    required
+                ></select>
 
-            usersList.textContent =
-                result.message || 'Erreur.';
+            </div>
 
-            return;
-        }
 
-        renderUsers(
-            result.users
-        );
+            <div class="form-group">
 
-    } catch (error) {
+                <label for="job-location">
+                    Lieu
+                </label>
 
-        usersList.textContent =
-            'Erreur de connexion au serveur.';
-    }
-}
+                <input
+                    type="text"
+                    id="job-location"
+                    required
+                >
 
+            </div>
 
-// ==============================
-// DISPLAY USERS
-// ==============================
 
-function renderUsers(users) {
+            <div class="form-group">
 
-    usersList.innerHTML = '';
+                <label for="job-type">
+                    Type de contrat
+                </label>
 
-    if (!users.length) {
+                <select
+                    id="job-type"
+                    required
+                >
 
-        usersList.textContent =
-            'Aucun utilisateur enregistré.';
+                    <option value="CDI">
+                        CDI
+                    </option>
 
-        return;
-    }
+                    <option value="CDD">
+                        CDD
+                    </option>
 
-    users.forEach((user) => {
+                    <option value="Stage">
+                        Stage
+                    </option>
+                    <option value="Intérim">Intérim</option>
 
-        const article =
-            document.createElement('article');
+                    <option value="Alternance">
+                        Alternance
+                    </option>
 
+                </select>
 
-        const name =
-            document.createElement('h3');
+            </div>
 
-        name.textContent =
-            user.firstname +
-            ' ' +
-            user.lastname;
 
-        article.appendChild(name);
+            <div class="form-group">
 
+                <label for="job-salary">
+                    Salaire
+                </label>
 
-        const email =
-            document.createElement('p');
+                <input
+                    type="text"
+                    id="job-salary"
+                >
 
-        email.textContent =
-            'Email : ' +
-            user.email;
+            </div>
 
-        article.appendChild(email);
 
+            <div class="form-group">
 
-        if (user.phone) {
+                <label for="job-short-description">
+                    Description courte
+                </label>
 
-            const phone =
-                document.createElement('p');
+                <textarea
+                    id="job-short-description"
+                    rows="3"
+                    required
+                ></textarea>
 
-            phone.textContent =
-                'Téléphone : ' +
-                user.phone;
+            </div>
 
-            article.appendChild(phone);
-        }
 
+            <div class="form-group">
 
-        const roleInfo =
-            document.createElement('p');
+                <label for="job-description">
+                    Description complète
+                </label>
 
-        roleInfo.textContent =
-            'Rôle actuel : ' +
-            (
-                user.role === 'admin'
-                    ? 'Administrateur'
-                    : 'Candidat'
-            );
+                <textarea
+                    id="job-description"
+                    rows="6"
+                    required
+                ></textarea>
 
-        article.appendChild(roleInfo);
+            </div>
+            <div class="form-group"><label for="job-skills">Compétences</label>
+                <textarea id="job-skills" rows="3"></textarea>
+            </div>
 
+            <div class="form-group"><label for="job-missions">Missions</label>
+                <textarea id="job-missions" rows="3"></textarea>
+            </div>
 
-        const roleLabel =
-            document.createElement('label');
+            <div class="form-group"><label for="job-profile">Profil recherché</label>
+                <textarea id="job-profile" rows="3"></textarea>
+            </div>
 
-        roleLabel.textContent =
-            'Modifier le rôle';
+            <div class="form-group"><label for="job-benefits">Avantages</label>
+                <textarea id="job-benefits" rows="3"></textarea>
+            </div>
 
-        article.appendChild(roleLabel);
+            <div class="form-group"><label for="job-working-time">Temps de travail</label>
+                <input type="text" id="job-working-time">
+            </div>
 
+            <div class="form-group"><label for="job-application-deadline">Date limite de candidature</label>
+                <input type="date" id="job-application-deadline">
+            </div>
 
-        const roleSelect =
-            document.createElement('select');
 
+            <div class="form-group">
 
-        const candidateOption =
-            document.createElement('option');
+                <label>
 
-        candidateOption.value =
-            'candidate';
+                    <input
+                        type="checkbox"
+                        id="job-cover-letter-required"
+                    >
 
-        candidateOption.textContent =
-            'Candidat';
+                    Lettre de motivation obligatoire
 
+                </label>
 
-        const adminOption =
-            document.createElement('option');
+            </div>
 
-        adminOption.value =
-            'admin';
 
-        adminOption.textContent =
-            'Administrateur';
+            <div class="admin-modal-actions">
 
+                <button
+                    type="button"
+                    class="btn btn-outline"
+                    id="job-cancel"
+                >
+                    Annuler
+                </button>
 
-        roleSelect.appendChild(
-            candidateOption
-        );
+                <button
+                    type="submit"
+                    class="btn btn-primary"
+                >
+                    Enregistrer
+                </button>
 
-        roleSelect.appendChild(
-            adminOption
-        );
+            </div>
 
-        roleSelect.value =
-            user.role;
+        </form>
 
-        article.appendChild(
-            roleSelect
-        );
+    </div>
 
+</div>
 
-        const saveButton =
-            document.createElement('button');
 
-        saveButton.textContent =
-            'Modifier le rôle';
+<!-- COMPANY MODAL -->
 
-        saveButton.addEventListener(
-            'click',
-            () => updateRole(
-                user.id,
-                roleSelect.value
-            )
-        );
+<div
+    class="admin-modal"
+    id="company-modal"
+>
 
-        article.appendChild(
-            saveButton
-        );
+    <div class="admin-modal-content">
 
+        <div class="admin-modal-header">
 
-        const deleteButton =
-            document.createElement('button');
+            <h2 id="company-modal-title">
+                Ajouter une entreprise
+            </h2>
 
-        deleteButton.textContent =
-            'Supprimer';
+            <button
+                class="modal-close"
+                id="company-modal-close"
+                type="button"
+            >
+                &times;
+            </button>
 
-        deleteButton.classList.add(
-            'danger'
-        );
+        </div>
 
-        deleteButton.addEventListener(
-            'click',
-            () => deleteUser(
-                user.id,
-                user.email
-            )
-        );
 
-        article.appendChild(
-            deleteButton
-        );
+        <form id="company-form">
 
+            <input
+                type="hidden"
+                id="company-id"
+            >
 
-        usersList.appendChild(
-            article
-        );
-    });
-}
 
+            <div class="form-group">
 
-// ==============================
-// UPDATE ROLE
-// ==============================
+                <label for="company-name">
+                    Nom
+                </label>
 
-async function updateRole(
-    id,
-    role
-) {
+                <input
+                    type="text"
+                    id="company-name"
+                    required
+                >
 
-    try {
+            </div>
 
-        const response =
-            await fetch(
-                '/api/users/admin.php?id='
-                + id,
-                {
-                    method: 'PATCH',
 
-                    headers: {
-                        'Content-Type':
-                            'application/json'
-                    },
+            <div class="form-group">
 
-                    body:
-                        JSON.stringify({
-                            role: role
-                        })
-                }
-            );
+                <label for="company-location">
+                    Lieu
+                </label>
 
-        const result =
-            await response.json();
+                <input
+                    type="text"
+                    id="company-location"
+                    required
+                >
 
-        message.textContent =
-            result.message;
+            </div>
 
-        if (response.ok) {
 
-            loadUsers();
-        }
+            <div class="form-group">
 
-    } catch (error) {
+                <label for="company-description">
+                    Description
+                </label>
 
-        message.textContent =
-            'Erreur de connexion au serveur.';
-    }
-}
+                <textarea
+                    id="company-description"
+                    rows="6"
+                    required
+                ></textarea>
 
+            </div>
 
-// ==============================
-// DELETE USER
-// ==============================
 
-async function deleteUser(
-    id,
-    email
-) {
+            <div class="admin-modal-actions">
 
-    const confirmed =
-        confirm(
-            'Voulez-vous supprimer l’utilisateur '
-            + email +
-            ' ?'
-        );
+                <button
+                    type="button"
+                    class="btn btn-outline"
+                    id="company-cancel"
+                >
+                    Annuler
+                </button>
 
-    if (!confirmed) {
-        return;
-    }
+                <button
+                    type="submit"
+                    class="btn btn-primary"
+                >
+                    Enregistrer
+                </button>
 
-    try {
+            </div>
 
-        const response =
-            await fetch(
-                '/api/users/admin.php?id='
-                + id,
-                {
-                    method: 'DELETE'
-                }
-            );
+        </form>
 
-        const result =
-            await response.json();
+    </div>
 
-        message.textContent =
-            result.message;
+</div>
 
-        if (response.ok) {
 
-            loadUsers();
-        }
+<!-- APPLICATION MODAL -->
 
-    } catch (error) {
+<div
+    class="admin-modal"
+    id="application-modal"
+>
 
-        message.textContent =
-            'Erreur de connexion au serveur.';
-    }
-}
+    <div class="admin-modal-content">
 
+        <div class="admin-modal-header">
 
-// ==============================
-// LOGOUT
-// ==============================
+            <h2>
+                Gérer la candidature
+            </h2>
 
-async function logout() {
+            <button
+                class="modal-close"
+                id="application-modal-close"
+                type="button"
+            >
+                &times;
+            </button>
 
-    try {
+        </div>
 
-        await fetch(
-            '/api/auth/logout.php',
-            {
-                method: 'POST'
-            }
-        );
 
-    } finally {
+        <form id="application-form">
 
-        window.location.href =
-            'login.html';
-    }
-}
+            <input
+                type="hidden"
+                id="application-id"
+            >
 
 
-logoutButton.addEventListener(
-    'click',
-    logout
-);
+            <div class="application-detail">
 
+                <span class="section-label">
+                    CANDIDAT
+                </span>
 
-logoutLink.addEventListener(
-    'click',
-    (event) => {
+                <h3 id="application-candidate"></h3>
 
-        event.preventDefault();
+            </div>
 
-        logout();
-    }
-);
 
+            <div class="application-detail">
 
-// ==============================
-// START
-// ==============================
+                <span class="section-label">
+                    OFFRE
+                </span>
 
-loadUsers();
+                <p id="application-job"></p>
 
-</script>
+            </div>
+
+
+            <div class="application-detail">
+
+                <span class="section-label">
+                    EMAIL
+                </span>
+
+                <p id="application-email"></p>
+
+            </div>
+
+
+            <div class="application-detail"><span class="section-label">TÉLÉPHONE</span><p id="application-phone"></p></div>
+            <div class="application-detail"><span class="section-label">MESSAGE</span><p id="application-message" style="white-space:pre-wrap"></p></div>
+            <div class="application-detail"><span class="section-label">LETTRE DE MOTIVATION</span><p id="application-cover-letter" style="white-space:pre-wrap"></p></div>
+            <div class="application-detail"><span class="section-label">PIÈCES JOINTES</span><div id="application-documents"></div></div>
+            <div class="form-group">
+
+                <label for="application-status">
+                    Statut
+                </label>
+
+                <select
+                    id="application-status"
+                    required
+                >
+
+                    <option value="pending">
+                        En attente
+                    </option>
+
+                    <option value="reviewing">
+                        En cours d'étude
+                    </option>
+
+                    <option value="accepted">
+                        Acceptée
+                    </option>
+
+                    <option value="rejected">
+                        Refusée
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="admin-modal-actions">
+
+                <button
+                    type="button"
+                    class="btn btn-outline"
+                    id="application-cancel"
+                >
+                    Annuler
+                </button>
+
+                <button
+                    type="submit"
+                    class="btn btn-primary"
+                >
+                    Enregistrer
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<footer class="footer">
+
+    <div class="container footer-content">
+
+        <p>
+            JobBoard
+        </p>
+
+        <p>
+            © 2026 JobBoard. Tous droits réservés.
+        </p>
+
+    </div>
+
+</footer>
+
+
+<script type="module" src="js/admin.js"></script>
 
 </body>
+
 </html>

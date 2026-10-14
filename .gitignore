@@ -1,3 +1,7 @@
 api/config/database.local.php
 uploads/
 .env
+node_modules/
+dist/
+
+api/config/mail.local.php
