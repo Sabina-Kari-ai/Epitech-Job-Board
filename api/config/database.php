@@ -1,13 +1,15 @@
 <?php
 
-$host = "localhost";
-$dbname = "job_board";
-$username = "root";
-$password = "";
+// Valeurs par défaut WAMP ; surchargeables par variables d'environnement.
+$host = getenv("DB_HOST") ?: "localhost";
+$port = getenv("DB_PORT") ?: "3306";
+$dbname = getenv("DB_NAME") ?: "job_board";
+$username = getenv("DB_USER") ?: "root";
+$password = getenv("DB_PASSWORD") ?: "";
 
 try {
     $pdo = new PDO(
-        "mysql:host=$host;dbname=$dbname;charset=utf8mb4",
+        "mysql:host=$host;port=$port;dbname=$dbname;charset=utf8mb4",
         $username,
         $password
     );
@@ -24,4 +26,3 @@ try {
 
     exit;
 }
-?>

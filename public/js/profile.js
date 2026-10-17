@@ -1,3 +1,6 @@
+// Profil candidat : informations personnelles, documents (CV, lettre)
+// et sécurité du compte (e-mail, mot de passe, suppression).
+
 document.addEventListener("DOMContentLoaded", async () => {
     const profileForm = document.getElementById("profile-form");
     const profileFeedback = document.getElementById("profile-feedback");
@@ -11,7 +14,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const phoneField = document.getElementById("profile-phone");
     const languageField = document.getElementById("profile-language");
 
-    const DOCUMENTS_API_URL = "http://127.0.0.1:8001/api/profile-documents/";
+    const DOCUMENTS_API_URL = `http://${window.location.hostname}:8001/api/profile-documents/`;
     const MAX_FILE_SIZE = 5 * 1024 * 1024;
     const ALLOWED_EXTENSIONS = ["pdf", "doc", "docx"];
     const callingCodes = {
@@ -26,8 +29,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     const browserCountry = (navigator.language || "fr-FR").split("-")[1]?.toUpperCase();
     let user = null;
     let savedDocuments = [];
-    let previewUrl = null;
 
+    // Les onglets sont reflétés dans l'URL (#documents…) pour pouvoir y revenir.
     function activateProfileTab(tab, updateHash = true) {
         const panelId = tab.getAttribute("aria-controls");
         const panel = document.getElementById(panelId);
@@ -237,6 +240,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
     }
 
+    // Les documents sont stockés en base : on ne récupère ici que leurs noms.
     async function loadDocuments() {
         const response = await fetch(DOCUMENTS_API_URL, { credentials: "include" });
         const documents = await response.json();
@@ -248,8 +252,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
         savedDocuments = documents;
         renderDocuments();
-        const cv = savedDocuments.find((item) => item.document_type === "cv");
-        if (cv) await previewDocument(cv);
     }
 
     function renderDocuments() {
@@ -280,19 +282,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
             const actions = document.createElement("div");
             actions.className = "document-item-actions";
-            if (info.mime_type === "application/pdf") {
-                const preview = document.createElement("button");
-                preview.type = "button";
-                preview.textContent = "Prévisualiser";
-                preview.addEventListener("click", async () => {
-                    try {
-                        await previewDocument(info);
-                    } catch (error) {
-                        showFeedback(documentsFeedback, error.message, true);
-                    }
-                });
-                actions.appendChild(preview);
-            }
 
             const remove = document.createElement("button");
             remove.type = "button";
@@ -313,7 +302,6 @@ document.addEventListener("DOMContentLoaded", async () => {
                         (documentInfo) => documentInfo.document_type !== info.document_type
                     );
                     renderDocuments();
-                    if (info.document_type === "cv") clearDocumentPreview();
                     showFeedback(documentsFeedback, "Document retiré.");
                 } catch (error) {
                     showFeedback(documentsFeedback, error.message, true);
@@ -325,38 +313,6 @@ document.addEventListener("DOMContentLoaded", async () => {
             item.append(content, actions);
             documentsList.appendChild(item);
         });
-    }
-
-    function clearDocumentPreview() {
-        if (previewUrl) URL.revokeObjectURL(previewUrl);
-        previewUrl = null;
-        const preview = document.getElementById("profile-document-preview");
-        if (preview) {
-            preview.hidden = true;
-            preview.querySelector("iframe").removeAttribute("src");
-        }
-    }
-
-    async function previewDocument(info) {
-        const response = await fetch(
-            `${DOCUMENTS_API_URL}?type=${encodeURIComponent(info.document_type)}`,
-            { credentials: "include" }
-        );
-        if (!response.ok) {
-            const result = await response.json();
-            throw new Error(result.error || `Erreur HTTP ${response.status}`);
-        }
-        const blob = await response.blob();
-        if (blob.type !== "application/pdf") {
-            throw new Error("La prévisualisation est disponible pour les PDF uniquement.");
-        }
-        clearDocumentPreview();
-        previewUrl = URL.createObjectURL(blob);
-        const preview = document.getElementById("profile-document-preview");
-        preview.querySelector("iframe").src = previewUrl;
-        document.getElementById("profile-document-preview-title").textContent =
-            `Prévisualisation : ${info.file_name}`;
-        preview.hidden = false;
     }
 
     if (documentsForm) {

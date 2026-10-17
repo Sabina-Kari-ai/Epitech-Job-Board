@@ -1,8 +1,13 @@
 <?php
 
+// Authentification et compte : GET renvoie l'utilisateur connecté,
+// POST traite une action envoyée dans le JSON (register, login, logout,
+// profile, company_profile, change_email, change_password, delete_account).
+
 require_once __DIR__ . "/../config/session.php";
 
 require_once __DIR__ . "/../config/database.php";
+require_once __DIR__ . "/../config/helpers.php";
 
 function sendAuthJson(int $status, array $data): void
 {
@@ -22,6 +27,7 @@ function readAuthJson(): array
     return $data;
 }
 
+// On ne renvoie jamais le hash du mot de passe au navigateur.
 function publicUser(array $user): array
 {
     unset($user["password_hash"]);
@@ -40,7 +46,11 @@ try {
             "SELECT users.id, users.first_name, users.last_name, users.email,
                     users.phone, users.city, users.linkedin_url, users.bio,
                     users.role, users.company_id, companies.name AS company_name,
-                    companies.location AS company_location
+                    companies.location AS company_location,
+                    companies.logo_path AS logo_path,
+                    companies.siret AS company_siret,
+                    companies.status AS company_status,
+                    companies.description AS company_description
              FROM users
              LEFT JOIN companies ON companies.id = users.company_id
              WHERE users.id = :id"
@@ -70,13 +80,9 @@ try {
         if ($userId < 1) {
             sendAuthJson(401, ["error" => "Vous devez être connecté."]);
         }
-        if (($_SESSION["user_role"] ?? "") !== "candidate") {
-            sendAuthJson(403, ["error" => "Cette fonction est réservée aux candidats."]);
-        }
-
         $currentPassword = (string) ($data["current_password"] ?? "");
         $statement = $pdo->prepare(
-            "SELECT password_hash FROM users WHERE id = :id AND role = 'candidate'"
+            "SELECT password_hash FROM users WHERE id = :id"
         );
         $statement->execute([":id" => $userId]);
         $account = $statement->fetch(PDO::FETCH_ASSOC);
@@ -99,7 +105,7 @@ try {
             }
 
             $update = $pdo->prepare(
-                "UPDATE users SET email = :email WHERE id = :id AND role = 'candidate'"
+                "UPDATE users SET email = :email WHERE id = :id"
             );
             $update->execute([":email" => $email, ":id" => $userId]);
             sendAuthJson(200, [
@@ -122,7 +128,7 @@ try {
 
         $update = $pdo->prepare(
             "UPDATE users SET password_hash = :password_hash
-             WHERE id = :id AND role = 'candidate'"
+             WHERE id = :id"
         );
         $update->execute([
             ":password_hash" => password_hash($newPassword, PASSWORD_DEFAULT),
@@ -185,6 +191,7 @@ try {
         sendAuthJson(200, ["success" => true]);
     }
 
+    // Inscription : une entreprise est créée « en attente » avec son SIRET.
     if ($action === "register") {
         $firstName = trim((string) ($data["first_name"] ?? ""));
         $lastName = trim((string) ($data["last_name"] ?? ""));
@@ -193,6 +200,7 @@ try {
         $accountType = $data["account_type"] ?? "candidate";
         $companyName = trim((string) ($data["company_name"] ?? ""));
         $companyLocation = trim((string) ($data["company_location"] ?? ""));
+        $companySiret = null;
 
         if ($firstName === "" || $lastName === "" || $email === "" || $password === "") {
             sendAuthJson(400, ["error" => "Tous les champs sont obligatoires."]);
@@ -206,6 +214,21 @@ try {
             sendAuthJson(400, [
                 "error" => "Le nom et la ville de l'entreprise sont obligatoires."
             ]);
+        }
+
+        if ($accountType === "company") {
+            $companySiret = apiNormalizeSiret((string) ($data["company_siret"] ?? ""));
+            if ($companySiret === null) {
+                sendAuthJson(400, [
+                    "error" => "Le numéro SIRET est invalide : il doit contenir 14 chiffres valides."
+                ]);
+            }
+
+            $siretCheck = $pdo->prepare("SELECT id FROM companies WHERE siret = :siret");
+            $siretCheck->execute([":siret" => $companySiret]);
+            if ($siretCheck->fetch()) {
+                sendAuthJson(409, ["error" => "Une entreprise est déjà inscrite avec ce numéro SIRET."]);
+            }
         }
 
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
@@ -229,10 +252,12 @@ try {
         $companyId = null;
         if ($accountType === "company") {
             $company = $pdo->prepare(
-                "INSERT INTO companies (name, location) VALUES (:name, :location)"
+                "INSERT INTO companies (name, siret, location, status)
+                 VALUES (:name, :siret, :location, 'pending')"
             );
             $company->execute([
                 ":name" => $companyName,
+                ":siret" => $companySiret,
                 ":location" => $companyLocation
             ]);
             $companyId = (int) $pdo->lastInsertId();
@@ -268,11 +293,57 @@ try {
                 "role" => $accountType,
                 "company_id" => $companyId,
                 "company_name" => $companyName ?: null,
-                "company_location" => $companyLocation ?: null
+                "company_location" => $companyLocation ?: null,
+                "company_siret" => $companySiret,
+                "company_status" => $companyId ? "pending" : null
             ]
         ]);
     }
 
+    // Profil d'un compte entreprise : contact et fiche de l'entreprise.
+    if ($action === "company_profile") {
+        $userId = apiRequireRole("company");
+        $company = apiCompanyOf($pdo, $userId);
+
+        $firstName = trim((string) ($data["first_name"] ?? ""));
+        $lastName = trim((string) ($data["last_name"] ?? ""));
+        $companyName = trim((string) ($data["company_name"] ?? ""));
+        $companyLocation = trim((string) ($data["company_location"] ?? ""));
+        $companyDescription = trim((string) ($data["company_description"] ?? ""));
+
+        if ($firstName === "" || $lastName === "" || $companyName === "" || $companyLocation === "") {
+            sendAuthJson(400, [
+                "error" => "Le prénom, le nom, le nom de l'entreprise et la ville sont obligatoires."
+            ]);
+        }
+
+        $pdo->beginTransaction();
+        $pdo->prepare(
+            "UPDATE users SET first_name = :first_name, last_name = :last_name WHERE id = :id"
+        )->execute([
+            ":first_name" => $firstName,
+            ":last_name" => $lastName,
+            ":id" => $userId
+        ]);
+        $pdo->prepare(
+            "UPDATE companies
+             SET name = :name, location = :location, description = :description
+             WHERE id = :id"
+        )->execute([
+            ":name" => $companyName,
+            ":location" => $companyLocation,
+            ":description" => $companyDescription !== "" ? $companyDescription : null,
+            ":id" => $company["id"]
+        ]);
+        $pdo->commit();
+
+        sendAuthJson(200, [
+            "success" => true,
+            "message" => "Les informations de votre entreprise ont été enregistrées."
+        ]);
+    }
+
+    // Connexion : la session est régénérée pour éviter la fixation de session.
     if ($action === "login") {
         $email = strtolower(trim((string) ($data["email"] ?? "")));
         $password = (string) ($data["password"] ?? "");
@@ -285,7 +356,11 @@ try {
             "SELECT users.id, users.first_name, users.last_name, users.email,
                     users.password_hash, users.role, users.company_id,
                     companies.name AS company_name,
-                    companies.location AS company_location
+                    companies.location AS company_location,
+                    companies.logo_path AS logo_path,
+                    companies.siret AS company_siret,
+                    companies.status AS company_status,
+                    companies.description AS company_description
              FROM users
              LEFT JOIN companies ON companies.id = users.company_id
              WHERE users.email = :email"
@@ -297,6 +372,18 @@ try {
             sendAuthJson(401, ["error" => "E-mail ou mot de passe incorrect."]);
         }
 
+        // Le formulaire de la page admin n'accepte que les administrateurs.
+        $isAdmin = $user["role"] === "admin";
+        if (jobBoardRequestScope() === "admin" && !$isAdmin) {
+            sendAuthJson(403, ["error" => "Ce compte n'a pas les droits d'administration."]);
+        }
+
+        // Un admin est toujours connecté dans la session d'administration,
+        // même depuis login.html : la session du site (candidat ou entreprise
+        // ouverte dans un autre onglet) n'est donc jamais écrasée.
+        jobBoardStartSession($isAdmin ? "admin" : "site");
+
+        $_SESSION = [];
         session_regenerate_id(true);
         $_SESSION["user_id"] = (int) $user["id"];
         $_SESSION["user_role"] = $user["role"];

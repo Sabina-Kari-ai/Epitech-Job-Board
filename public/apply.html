@@ -90,7 +90,7 @@
                 <section class="apply-form-section">
                     <h2>Vos documents</h2>
                     <div class="form-group">
-                        <label for="cv">CV (PDF, facultatif)</label>
+                        <label for="cv">CV (PDF)</label>
                         <input type="file" id="cv" name="cv"
                                accept=".pdf,application/pdf">
                     </div>
@@ -100,25 +100,28 @@
                         <h3>Prévisualisation du CV</h3>
                         <iframe title="Prévisualisation du CV pour cette candidature"></iframe>
                     </div>
-                    <p class="apply-file-note">PDF uniquement, 5 Mo maximum.</p>
-                    <div class="form-group">
-                        <label for="cover-letter-file" id="cover-letter-label">
-                            Lettre de motivation (facultative)
-                        </label>
-                        <input type="file" id="cover-letter-file" name="cover_letter_file"
-                               accept=".pdf,application/pdf">
-                    </div>
                     <p class="apply-file-note">
-                        PDF uniquement, 5 Mo maximum. Tu peux aussi saisir ta lettre ci-dessous.
+                        Un CV PDF est obligatoire. Votre CV enregistré dans le profil est chargé
+                        automatiquement ; sinon, ajoutez-le ici. PDF de 5 Mo maximum.
                     </p>
-                    <div class="form-group">
-                        <label for="coverLetterText">Texte de la lettre de motivation</label>
-                        <textarea id="coverLetterText" name="cover_letter" rows="5"
-                                  placeholder="Présente ta motivation pour ce poste..."></textarea>
+                    <div id="cover-letter-section" hidden>
+                        <div class="form-group">
+                            <label for="cover-letter-file">Lettre de motivation</label>
+                            <input type="file" id="cover-letter-file" name="cover_letter_file"
+                                   accept=".pdf,application/pdf">
+                        </div>
+                        <p class="apply-file-note">
+                            PDF uniquement, 5 Mo maximum. Tu peux aussi saisir ta lettre ci-dessous.
+                        </p>
+                        <div class="form-group">
+                            <label for="coverLetterText">Texte de la lettre de motivation</label>
+                            <textarea id="coverLetterText" name="cover_letter" rows="5"
+                                      placeholder="Présente ta motivation pour ce poste..."></textarea>
+                        </div>
+                        <p id="cover-letter-required" class="cover-letter-required" hidden>
+                            Le recruteur exige une lettre de motivation : joins un fichier ou saisis le texte.
+                        </p>
                     </div>
-                    <p id="cover-letter-required" class="cover-letter-required" hidden>
-                        Le recruteur exige une lettre de motivation : joins un fichier ou saisis le texte.
-                    </p>
                 </section>
 
                 <section class="apply-form-section">

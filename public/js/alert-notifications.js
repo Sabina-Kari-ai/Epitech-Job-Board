@@ -1,5 +1,8 @@
+// Pastille de la cloche : nombre d'offres publiées depuis la dernière visite
+// de la page des alertes et qui correspondent à au moins une alerte.
+
 (() => {
-    const JOBS_API_URL = "http://127.0.0.1:8001/api/jobs/";
+    const JOBS_API_URL = `http://${window.location.hostname}:8001/api/jobs/`;
 
     function normalize(value) {
         return String(value || "")

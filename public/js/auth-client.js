@@ -1,5 +1,11 @@
+// Petit client partagé par toutes les pages pour parler à /api/auth/ :
+// récupérer l'utilisateur connecté, envoyer une action, rediriger vers la connexion.
+
 (() => {
-    const API_URL = "http://127.0.0.1:8001/api/auth/";
+    const isLocalFrontend = ["localhost", "127.0.0.1"].includes(window.location.hostname);
+    const API_URL = isLocalFrontend
+        ? `http://${window.location.hostname}:8001/api/auth/`
+        : `${window.location.origin}/api/auth/`;
     const UNAUTHENTICATED_MESSAGES = [
         "Vous devez être connecté.",
         "La session n'est plus valide.",
@@ -9,6 +15,13 @@
         "Unauthorized request",
         "Connectez-vous pour consulter"
     ];
+
+    // La page d'administration utilise sa propre session (cookie séparé côté API),
+    // pour ne pas se mélanger avec le compte candidat ou entreprise des autres onglets.
+    const SESSION_SCOPE = document.documentElement.dataset.sessionScope === "admin"
+        ? "admin"
+        : "site";
+    const scopeHeaders = SESSION_SCOPE === "admin" ? { "X-Session-Scope": "admin" } : {};
 
     function parseJsonSafely(response) {
         return response.text().then((text) => {
@@ -29,6 +42,7 @@
                 credentials: "include",
                 headers: {
                     ...(options.method && options.method !== "GET" ? { "Content-Type": "application/json" } : {}),
+                    ...scopeHeaders,
                     ...(options.headers || {})
                 }
             });
@@ -70,10 +84,18 @@
         return `login.html?return=${returnTo}`;
     }
 
+    // Page d'accueil selon le rôle : admin, entreprise ou candidat.
+    function homeFor(role) {
+        if (role === "admin") return "admin.html";
+        if (role === "company") return "company-dashboard.html";
+        return "index.html";
+    }
+
     window.JobBoardAuth = {
         request,
         getUser,
         loginUrl,
+        homeFor,
         requireUser: async () => {
             const user = await getUser();
             if (!user) {

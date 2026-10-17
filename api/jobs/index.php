@@ -1,177 +1,200 @@
-
 <?php
 
-header("Content-Type: application/json; charset=UTF-8");
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type");
+// Offres d'emploi : GET /api/jobs/ (liste ou ?id=), POST, PUT et DELETE.
+// La lecture est publique ; l'écriture est réservée à l'admin et aux
+// entreprises validées, qui ne peuvent toucher qu'à leurs propres offres.
 
-if ($_SERVER["REQUEST_METHOD"] === "OPTIONS") {
-    http_response_code(204);
-    exit;
-}
-
+require_once __DIR__ . "/../config/session.php";
 require_once __DIR__ . "/../config/database.php";
+require_once __DIR__ . "/../config/helpers.php";
 
-// Envoie une réponse JSON.
 function sendJson(array $data, int $statusCode = 200): void
 {
     http_response_code($statusCode);
-
     echo json_encode(
         $data,
         JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES
     );
-
     exit;
 }
 
-// Lit le corps JSON.
 function getRequestData(): array
 {
     $raw = file_get_contents("php://input");
     $data = json_decode($raw, true);
 
-    if (json_last_error() !== JSON_ERROR_NONE || !is_array($data)) {
-        sendJson([
-            "error" => "Les données JSON sont invalides.",
-            "json_error" => json_last_error_msg(),
-            "received_body" => $raw
-        ], 400);
+    if (!is_array($data)) {
+        sendJson(["error" => "Les données JSON sont invalides."], 400);
     }
 
     return $data;
 }
 
-// Résout une entreprise par ID ou nom.
-function findCompanyId(PDO $pdo, array $data): int
+// Retourne l'utilisateur et son entreprise, ou coupe la requête (401/403).
+function requireCompany(PDO $pdo): array
 {
-    if (!empty($data["company_id"])) {
-        $companyId = filter_var(
-            $data["company_id"],
-            FILTER_VALIDATE_INT
-        );
+    $userId = (int) ($_SESSION["user_id"] ?? 0);
+    $role = $_SESSION["user_role"] ?? "";
 
-        if ($companyId === false || $companyId < 1) {
-            sendJson([
-                "error" => "Identifiant d'entreprise invalide."
-            ], 400);
-        }
-
-        $statement = $pdo->prepare(
-            "SELECT id FROM companies WHERE id = ?"
-        );
-        $statement->execute([$companyId]);
-
-        if (!$statement->fetch()) {
-            sendJson([
-                "error" => "Cette entreprise n'existe pas."
-            ], 404);
-        }
-
-        return (int) $companyId;
+    if ($userId < 1) {
+        sendJson(["error" => "Connecte-toi pour effectuer cette action."], 401);
     }
 
-    $companyName = trim((string) ($data["company"] ?? ""));
-
-    if ($companyName === "") {
-        sendJson([
-            "error" => "L'entreprise est obligatoire."
-        ], 400);
+    if ($role !== "company") {
+        sendJson(["error" => "Accès réservé aux comptes entreprise."], 403);
     }
 
     $statement = $pdo->prepare(
-        "SELECT id FROM companies WHERE name = ?"
+        "SELECT company_id FROM users WHERE id = :user_id AND role = 'company'"
     );
-    $statement->execute([$companyName]);
+    $statement->execute([":user_id" => $userId]);
+    $companyId = (int) $statement->fetchColumn();
 
-    $company = $statement->fetch(PDO::FETCH_ASSOC);
-
-    if (!$company) {
-        sendJson([
-            "error" => "Entreprise introuvable. Vérifiez qu'elle existe dans la base de données."
-        ], 400);
-    }
-
-    return (int) $company["id"];
-}
-
-// Valide et normalise une offre.
-function validateJobData(array $data): array
-{
-    $title = trim((string) ($data["title"] ?? ""));
-    $location = trim((string) ($data["location"] ?? ""));
-
-    $contractType = trim(
-        (string) ($data["contract_type"] ?? $data["type"] ?? "")
-    );
-
-    $salary = trim((string) ($data["salary"] ?? ""));
-
-    $shortDescription = trim(
-        (string) (
-            $data["short_description"]
-            ?? $data["shortDescription"]
-            ?? ""
-        )
-    );
-
-    $description = trim((string) ($data["description"] ?? ""));
-
-    if (
-        $title === "" ||
-        $location === "" ||
-        $contractType === "" ||
-        $shortDescription === "" ||
-        $description === ""
-    ) {
-        sendJson([
-            "error" => "Veuillez remplir tous les champs obligatoires."
-        ], 400);
+    if ($companyId < 1) {
+        sendJson(
+            ["error" => "Aucune entreprise n'est associée à ce compte."],
+            403
+        );
     }
 
     return [
-        "title" => $title,
-        "location" => $location,
-        "contract_type" => $contractType,
-        "salary" => $salary !== "" ? $salary : null,
-        "short_description" => $shortDescription,
-        "description" => $description,
+        "user_id" => $userId,
+        "company_id" => $companyId
+    ];
+}
+
+function requireAdmin(): void
+{
+    $userId = (int) ($_SESSION["user_id"] ?? 0);
+    $role = $_SESSION["user_role"] ?? "";
+
+    if ($userId < 1) {
+        sendJson(["error" => "Connecte-toi pour effectuer cette action."], 401);
+    }
+
+    if ($role !== "admin") {
+        sendJson(["error" => "Accès réservé à l'administration."], 403);
+    }
+}
+
+// L'admin choisit l'entreprise de l'offre : par identifiant ou, à défaut, par nom.
+function resolveCompanyId(PDO $pdo, array $data): int
+{
+    $companyId = filter_var($data["company_id"] ?? null, FILTER_VALIDATE_INT);
+    if ($companyId !== false && $companyId !== null && $companyId > 0) {
+        $statement = $pdo->prepare("SELECT id FROM companies WHERE id = :id");
+        $statement->execute([":id" => $companyId]);
+        if ($statement->fetchColumn()) {
+            return (int) $companyId;
+        }
+        sendJson(["error" => "Entreprise introuvable."], 404);
+    }
+
+    $companyName = trim(
+        (string) ($data["company"] ?? $data["company_name"] ?? "")
+    );
+    if ($companyName === "") {
+        sendJson(["error" => "Sélectionne une entreprise pour cette offre."], 400);
+    }
+
+    $statement = $pdo->prepare(
+        "SELECT id FROM companies WHERE name = :name LIMIT 1"
+    );
+    $statement->execute([":name" => $companyName]);
+    $companyId = (int) $statement->fetchColumn();
+    if ($companyId < 1) {
+        sendJson(["error" => "Entreprise introuvable."], 404);
+    }
+
+    return $companyId;
+}
+
+// Accepte les deux formats envoyés par le front (snake_case et camelCase).
+function validateJobData(array $data): array
+{
+    $job = [
+        "title" => trim((string) ($data["title"] ?? "")),
+        "location" => trim((string) ($data["location"] ?? "")),
+        "contract_type" => trim(
+            (string) ($data["contract_type"] ?? $data["type"] ?? "")
+        ),
+        "salary" => trim((string) ($data["salary"] ?? "")),
+        "short_description" => trim(
+            (string) (
+                $data["short_description"]
+                ?? $data["shortDescription"]
+                ?? ""
+            )
+        ),
+        "description" => trim((string) ($data["description"] ?? "")),
         "cover_letter_required" => filter_var(
             $data["cover_letter_required"] ?? false,
             FILTER_VALIDATE_BOOLEAN
         ) ? 1 : 0
     ];
+
+    if (
+        $job["title"] === "" ||
+        $job["location"] === "" ||
+        $job["contract_type"] === "" ||
+        $job["short_description"] === "" ||
+        $job["description"] === ""
+    ) {
+        sendJson(
+            ["error" => "Veuillez remplir tous les champs obligatoires."],
+            400
+        );
+    }
+
+    return $job;
+}
+
+function findOwnedJob(PDO $pdo, int $jobId, int $companyId): array
+{
+    $statement = $pdo->prepare(
+        "SELECT id, company_id
+         FROM jobs
+         WHERE id = :id AND company_id = :company_id"
+    );
+    $statement->execute([
+        ":id" => $jobId,
+        ":company_id" => $companyId
+    ]);
+
+    $job = $statement->fetch(PDO::FETCH_ASSOC);
+
+    if (!$job) {
+        sendJson(
+            ["error" => "Offre introuvable ou non associée à votre entreprise."],
+            404
+        );
+    }
+
+    return $job;
 }
 
 try {
     $method = $_SERVER["REQUEST_METHOD"];
 
-    // Liste, filtre ou affiche une offre.
+    /*
+     * GET : consultation publique.
+     * GET ?mine=1 : publications de l'entreprise connectée.
+     * GET ?id=123 : détail d'une offre.
+     */
     if ($method === "GET") {
-        $sql = "
-            SELECT
-                jobs.id,
-                jobs.title,
-                jobs.location,
-                jobs.contract_type,
-                jobs.salary,
-                jobs.short_description,
-                jobs.description,
-                jobs.cover_letter_required,
-                jobs.company_id,
-                jobs.created_at,
-                companies.name AS company,
-                companies.description AS company_description
-            FROM jobs
-            INNER JOIN companies
-                ON jobs.company_id = companies.id
-        ";
-
         $conditions = [];
         $params = [];
 
-        // Recherche par mot-clé.
+        $isMine = ($_GET["mine"] ?? "") === "1";
+        if ($isMine) {
+            $account = requireCompany($pdo);
+            $conditions[] = "jobs.company_id = :mine_company_id";
+            $params[":mine_company_id"] = $account["company_id"];
+        } elseif (($_SESSION["user_role"] ?? "") !== "admin") {
+            // Le public ne voit que les offres des entreprises validées.
+            $conditions[] = "companies.status = 'approved'";
+        }
+
         $search = trim(
             (string) ($_GET["q"] ?? $_GET["search"] ?? "")
         );
@@ -185,116 +208,125 @@ try {
             )";
 
             $term = "%" . $search . "%";
-
             $params[":search_title"] = $term;
             $params[":search_short"] = $term;
             $params[":search_description"] = $term;
             $params[":search_company"] = $term;
         }
 
-        // Filtre par lieu.
         $location = trim((string) ($_GET["location"] ?? ""));
-
         if ($location !== "") {
             $conditions[] = "jobs.location LIKE :location";
             $params[":location"] = "%" . $location . "%";
         }
 
-        // Filtre par type de contrat.
         $contractType = trim(
             (string) ($_GET["contract_type"] ?? $_GET["type"] ?? "")
         );
-
         if ($contractType !== "") {
             $conditions[] = "jobs.contract_type = :contract_type";
             $params[":contract_type"] = $contractType;
         }
 
-        // Filtre par entreprise.
         $company = trim((string) ($_GET["company"] ?? ""));
-
         if ($company !== "") {
             $conditions[] = "companies.name LIKE :company";
             $params[":company"] = "%" . $company . "%";
         }
 
-        // Consultation par identifiant.
         if (isset($_GET["id"])) {
-            $id = filter_var(
-                $_GET["id"],
-                FILTER_VALIDATE_INT
-            );
-
+            $id = filter_var($_GET["id"], FILTER_VALIDATE_INT);
             if ($id === false || $id < 1) {
-                sendJson([
-                    "error" => "Identifiant d'offre invalide."
-                ], 400);
+                sendJson(["error" => "Identifiant d'offre invalide."], 400);
             }
 
             $conditions[] = "jobs.id = :id";
             $params[":id"] = $id;
         }
 
-        if (!empty($conditions)) {
-            $sql .= " WHERE " . implode(" AND ", $conditions);
-        }
+        $sql = "
+            SELECT
+                jobs.id,
+                jobs.title,
+                jobs.location,
+                jobs.contract_type,
+                jobs.salary,
+                jobs.short_description,
+                jobs.description,
+                jobs.cover_letter_required,
+                jobs.company_id,
+                jobs.created_at,
+                companies.name AS company,
+                companies.description AS company_description,
+                companies.logo_path AS logo_path,
+                companies.status AS company_status,
+                (SELECT COUNT(*) FROM applications
+                 WHERE applications.job_id = jobs.id) AS applications_count
+            FROM jobs
+            INNER JOIN companies ON jobs.company_id = companies.id
+        ";
 
-        $sql .= " ORDER BY jobs.created_at DESC";
+        $where = $conditions ? " WHERE " . implode(" AND ", $conditions) : "";
+        $sql .= $where . " ORDER BY jobs.created_at DESC, jobs.id DESC";
+
+        $pagination = isset($_GET["id"]) ? null : apiPagination();
+        if ($pagination) {
+            $count = $pdo->prepare(
+                "SELECT COUNT(*) FROM jobs
+                 INNER JOIN companies ON jobs.company_id = companies.id" . $where
+            );
+            $count->execute($params);
+            $sql .= " LIMIT {$pagination["limit"]} OFFSET {$pagination["offset"]}";
+        }
 
         $statement = $pdo->prepare($sql);
         $statement->execute($params);
-
         $jobs = $statement->fetchAll(PDO::FETCH_ASSOC);
 
-        if (isset($_GET["id"])) {
-            if (empty($jobs)) {
-                sendJson([
-                    "error" => "Offre introuvable."
-                ], 404);
-            }
+        if ($pagination) {
+            sendJson(apiPaginated($jobs, (int) $count->fetchColumn(), $pagination));
+        }
 
+        if (isset($_GET["id"])) {
+            if (!$jobs) {
+                sendJson(["error" => "Offre introuvable."], 404);
+            }
             sendJson($jobs[0]);
         }
 
         sendJson($jobs);
     }
 
-    // Crée une offre.
+    /*
+     * POST : création d'une offre par l'entreprise propriétaire ou l'admin.
+     */
     if ($method === "POST") {
         $data = getRequestData();
+        if (($_SESSION["user_role"] ?? "") === "admin") {
+            requireAdmin();
+            $companyId = resolveCompanyId($pdo, $data);
+        } else {
+            $account = requireCompany($pdo);
+            $companyId = apiRequireApprovedCompany($pdo, $account["user_id"]);
+        }
         $job = validateJobData($data);
-        $companyId = findCompanyId($pdo, $data);
 
-        $sql = "
-            INSERT INTO jobs (
-                company_id,
-                title,
-                location,
-                contract_type,
-                salary,
-                short_description,
-                description,
-                cover_letter_required
+        $statement = $pdo->prepare(
+            "INSERT INTO jobs (
+                company_id, title, location, contract_type, salary,
+                short_description, description, cover_letter_required
             ) VALUES (
-                :company_id,
-                :title,
-                :location,
-                :contract_type,
-                :salary,
-                :short_description,
-                :description,
-                :cover_letter_required
-            )
-        ";
-
-        $statement = $pdo->prepare($sql);
+                :company_id, :title, :location, :contract_type, :salary,
+                :short_description, :description, :cover_letter_required
+            )"
+        );
 
         $statement->execute([
             ":company_id" => $companyId,
             ":title" => $job["title"],
             ":location" => $job["location"],
             ":contract_type" => $job["contract_type"],
-            ":salary" => $job["salary"],
+            ":salary" => $job["salary"] !== "" ? $job["salary"] : null,
             ":short_description" => $job["short_description"],
             ":description" => $job["description"],
             ":cover_letter_required" => $job["cover_letter_required"]
@@ -307,37 +339,37 @@ try {
         ], 201);
     }
 
-    // Modifie une offre.
+    /*
+     * PUT : modification d'une offre par son propriétaire ou l'admin.
+     */
     if ($method === "PUT") {
         $data = getRequestData();
 
-        $id = filter_var(
-            $data["id"] ?? null,
-            FILTER_VALIDATE_INT
-        );
-
+        $id = filter_var($data["id"] ?? null, FILTER_VALIDATE_INT);
         if ($id === false || $id === null || $id < 1) {
-            sendJson([
-                "error" => "Identifiant d'offre invalide."
-            ], 400);
+            sendJson(["error" => "Identifiant d'offre invalide."], 400);
         }
 
-        $check = $pdo->prepare(
-            "SELECT id FROM jobs WHERE id = ?"
-        );
-        $check->execute([$id]);
-
-        if (!$check->fetch()) {
-            sendJson([
-                "error" => "Offre introuvable."
-            ], 404);
+        $isAdmin = ($_SESSION["user_role"] ?? "") === "admin";
+        $ownerCompanyId = null;
+        if ($isAdmin) {
+            requireAdmin();
+            $exists = $pdo->prepare("SELECT id FROM jobs WHERE id = :id");
+            $exists->execute([":id" => $id]);
+            if (!$exists->fetchColumn()) {
+                sendJson(["error" => "Offre introuvable."], 404);
+            }
+            $companyId = resolveCompanyId($pdo, $data);
+        } else {
+            $account = requireCompany($pdo);
+            apiRequireApprovedCompany($pdo, $account["user_id"]);
+            findOwnedJob($pdo, (int) $id, $account["company_id"]);
+            $companyId = $account["company_id"];
+            $ownerCompanyId = $account["company_id"];
         }
-
         $job = validateJobData($data);
-        $companyId = findCompanyId($pdo, $data);
 
-        $sql = "
-            UPDATE jobs SET
+        $updateSql = "UPDATE jobs SET
                 company_id = :company_id,
                 title = :title,
                 location = :location,
@@ -346,22 +378,26 @@ try {
                 short_description = :short_description,
                 description = :description,
                 cover_letter_required = :cover_letter_required
-            WHERE id = :id
-        ";
-
-        $statement = $pdo->prepare($sql);
-
-        $statement->execute([
+             WHERE id = :id";
+        $updateParameters = [
             ":company_id" => $companyId,
             ":title" => $job["title"],
             ":location" => $job["location"],
             ":contract_type" => $job["contract_type"],
-            ":salary" => $job["salary"],
+            ":salary" => $job["salary"] !== "" ? $job["salary"] : null,
             ":short_description" => $job["short_description"],
             ":description" => $job["description"],
             ":cover_letter_required" => $job["cover_letter_required"],
             ":id" => $id
-        ]);
+        ];
+
+        if ($ownerCompanyId !== null) {
+            $updateSql .= " AND company_id = :owner_company_id";
+            $updateParameters[":owner_company_id"] = $ownerCompanyId;
+        }
+
+        $statement = $pdo->prepare($updateSql);
+        $statement->execute($updateParameters);
 
         sendJson([
             "success" => true,
@@ -369,45 +405,54 @@ try {
         ]);
     }
 
-    // Supprime une offre sans candidature associée.
+    /*
+     * DELETE : suppression par le propriétaire ou l'admin.
+     * Une offre ayant des candidatures ne peut pas être supprimée.
+     */
     if ($method === "DELETE") {
-        $id = filter_var(
-            $_GET["id"] ?? null,
-            FILTER_VALIDATE_INT
-        );
-
+        $id = filter_var($_GET["id"] ?? null, FILTER_VALIDATE_INT);
         if ($id === false || $id === null || $id < 1) {
-            sendJson([
-                "error" => "Identifiant d'offre invalide."
-            ], 400);
+            sendJson(["error" => "Identifiant d'offre invalide."], 400);
+        }
+
+        $isAdmin = ($_SESSION["user_role"] ?? "") === "admin";
+        if ($isAdmin) {
+            requireAdmin();
+            $exists = $pdo->prepare("SELECT id FROM jobs WHERE id = :id");
+            $exists->execute([":id" => $id]);
+            if (!$exists->fetchColumn()) {
+                sendJson(["error" => "Offre introuvable."], 404);
+            }
+            $companyId = null;
+        } else {
+            $account = requireCompany($pdo);
+            findOwnedJob($pdo, (int) $id, $account["company_id"]);
+            $companyId = $account["company_id"];
         }
 
         $check = $pdo->prepare(
-            "SELECT id FROM jobs WHERE id = ?"
+            "SELECT COUNT(*) FROM applications WHERE job_id = :job_id"
         );
-        $check->execute([$id]);
+        $check->execute([":job_id" => $id]);
 
-        if (!$check->fetch()) {
-            sendJson([
-                "error" => "Offre introuvable."
-            ], 404);
-        }
-
-        $checkApplications = $pdo->prepare(
-            "SELECT COUNT(*) FROM applications WHERE job_id = ?"
-        );
-        $checkApplications->execute([$id]);
-
-        if ((int) $checkApplications->fetchColumn() > 0) {
+        if ((int) $check->fetchColumn() > 0) {
             sendJson([
                 "error" => "Cette offre possède des candidatures. Elle ne peut pas être supprimée."
             ], 409);
         }
 
-        $statement = $pdo->prepare(
-            "DELETE FROM jobs WHERE id = ?"
-        );
-        $statement->execute([$id]);
+        if ($isAdmin) {
+            $delete = $pdo->prepare("DELETE FROM jobs WHERE id = :id");
+            $delete->execute([":id" => $id]);
+        } else {
+            $delete = $pdo->prepare(
+                "DELETE FROM jobs WHERE id = :id AND company_id = :company_id"
+            );
+            $delete->execute([
+                ":id" => $id,
+                ":company_id" => $companyId
+            ]);
+        }
 
         sendJson([
             "success" => true,
@@ -416,15 +461,12 @@ try {
     }
 
     header("Allow: GET, POST, PUT, DELETE, OPTIONS");
-
-    sendJson([
-        "error" => "Méthode non autorisée."
-    ], 405);
+    sendJson(["error" => "Méthode non autorisée."], 405);
 
 } catch (PDOException $e) {
     error_log($e->getMessage());
-
-    sendJson([
-        "error" => "Erreur lors de l'opération en base de données."
-    ], 500);
+    sendJson(
+        ["error" => "Erreur lors de l'opération en base de données."],
+        500
+    );
 }

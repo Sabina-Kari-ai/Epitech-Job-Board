@@ -53,6 +53,14 @@
                         <input id="company-location" name="company_location" type="text"
                                autocomplete="address-level2">
                     </div>
+                    <div class="form-field">
+                        <label for="company-siret">Numéro SIRET</label>
+                        <input id="company-siret" name="company_siret" type="text"
+                               inputmode="numeric" autocomplete="off"
+                               pattern="[0-9 ]{14,17}" maxlength="17"
+                               placeholder="Ex : 732 829 320 00074">
+                        <small>14 chiffres. Votre inscription sera vérifiée par notre équipe avant la publication de vos offres.</small>
+                    </div>
                 </div>
                 <div class="form-field">
                     <label for="email">Adresse e-mail</label>

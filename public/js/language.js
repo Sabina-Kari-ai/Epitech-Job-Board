@@ -1,3 +1,7 @@
+// Traduction FR -> EN de l'interface. Les textes sont écrits en français dans
+// le HTML ; si l'utilisateur choisit l'anglais, on remplace les textes connus.
+// Un MutationObserver traduit aussi ce qui est ajouté plus tard par le JS.
+
 (() => {
     const STORAGE_KEY = "jobboard_language";
     const translations = {
@@ -11,6 +15,19 @@
         "Rechercher": "Search",
         "Réinitialiser": "Reset",
         "Voir l'offre": "View job",
+        "En savoir plus": "Learn more",
+        "Masquer les détails": "Hide details",
+        "Chargement des détails...": "Loading details...",
+        "Description du poste": "Job description",
+        "Entreprise": "Company",
+        "Contrat": "Contract",
+        "Obligatoire": "Required",
+        "Facultative": "Optional",
+        "Publiée le": "Posted on",
+        "Postuler à cette offre": "Apply for this job",
+        "Voir les offres": "View jobs",
+        "Administration": "Administration",
+        "Espace entreprise": "Company space",
         "Voir mes candidatures": "View my applications",
         "Enregistrer mon profil": "Save my profile",
         "Enregistrer les documents": "Save documents",
@@ -46,10 +63,20 @@
         "Détectée depuis la langue de votre navigateur. Votre choix sera mémorisé sur cet appareil.":
             "Detected from your browser language. Your choice will be saved on this device.",
         "VOS PIÈCES JOINTES": "YOUR DOCUMENTS",
-        "Mon CV et ma lettre de motivation": "My CV and cover letter",
+        "Mes documents de candidature": "My application documents",
         "Mon CV et ma lettre": "My CV and cover letter",
-        "Vos fichiers sont enregistrés de manière sécurisée sur JobBoard. Le CV doit être un PDF pour pouvoir être prévisualisé lors d'une candidature. La lettre accepte les formats PDF, DOC et DOCX. Taille maximale : 5 Mo par fichier.":
-            "Your files are securely stored on JobBoard. Your CV must be a PDF to preview it when applying. Cover letters can be PDF, DOC or DOCX. Maximum size: 5 MB per file.",
+        "Vous pouvez enregistrer votre CV et votre lettre sur JobBoard pour les retrouver lors d'une candidature. Le CV devra être fourni au moment de postuler. La lettre de motivation n'est requise que si le recruteur l'impose. Taille maximale : 5 Mo par fichier.":
+            "You can save your CV and cover letter on JobBoard to use when applying. A CV must be provided when you apply. A cover letter is required only when the recruiter requests it. Maximum size: 5 MB per file.",
+        "CV (PDF)": "CV (PDF)",
+        "Un CV PDF est obligatoire. Votre CV enregistré dans le profil est chargé automatiquement ; sinon, ajoutez-le ici. PDF de 5 Mo maximum.":
+            "A PDF CV is required. Your saved profile CV loads automatically; otherwise upload it here. PDF up to 5 MB.",
+        "Aucun CV enregistré. Ajoutez un PDF ici pour prévisualiser et postuler.":
+            "No saved CV found. Upload a PDF here to preview it and apply.",
+        "Un CV PDF est obligatoire pour envoyer votre candidature.":
+            "A PDF CV is required to submit your application.",
+        "Le CV et la lettre jointe doivent être des PDF valides de 5 Mo maximum.":
+            "The CV and attached cover letter must be valid PDFs no larger than 5 MB.",
+        "Mon CV et ma lettre de motivation": "My CV and cover letter",
         "Mon CV": "My CV",
         "Ma lettre de motivation": "My cover letter",
         "Documents sélectionnés": "Saved documents",
@@ -83,8 +110,6 @@
         "Supprimer définitivement mon compte": "Permanently delete my account",
         "Les documents sont stockés sur le serveur et associés à votre compte.":
             "Your documents are stored on the server and linked to your account.",
-        "Prévisualisation du CV": "CV preview",
-        "Prévisualiser": "Preview",
         "Supprimer": "Delete",
         "VOTRE PARCOURS": "YOUR JOURNEY",
         "Tous droits réservés.": "All rights reserved.",
@@ -128,6 +153,13 @@
         "6 caractères minimum.": "At least 6 characters.",
         "Déjà inscrit ?": "Already have an account?",
         "Se connecter": "Log in",
+        "Mot de passe oublié ?": "Forgot password?",
+        "Mot de passe oublié": "Forgot password",
+        "Indiquez votre adresse e-mail pour recevoir un lien de réinitialisation.":
+            "Enter your email address to receive a password reset link.",
+        "Envoyer le lien de réinitialisation": "Send reset link",
+        "Enregistrer le nouveau mot de passe": "Save new password",
+        "Retour à la connexion": "Back to log in",
         "DÉTAIL DE L'OFFRE": "JOB DETAILS",
         "Retour aux offres": "Back to jobs",
         "Chargement de l'offre...": "Loading job...",
@@ -260,9 +292,10 @@
         "Présente ta motivation pour ce poste...": "Tell us why you are interested in this role...",
         "Présente brièvement ta candidature...": "Briefly introduce your application...",
         "PDF uniquement, 5 Mo maximum.": "PDF only, up to 5 MB.",
-        "CV (PDF, facultatif)": "CV (PDF, optional)",
-        "Lettre de motivation (facultative)": "Cover letter (optional)",
-        "Lettre de motivation (obligatoire)": "Cover letter (required)",
+        "CV (PDF)": "CV (PDF)",
+        "Lettre de motivation": "Cover letter",
+        "Exiger une lettre de motivation pour cette offre":
+            "Require a cover letter for this job",
         "Texte de la lettre de motivation": "Cover letter text",
         "Le recruteur exige une lettre : joins un PDF ou saisis le texte.":
             "The recruiter requires a cover letter: upload a PDF or enter the text.",

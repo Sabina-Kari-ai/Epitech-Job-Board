@@ -1,5 +1,9 @@
 <?php
 
+// CV et lettre de motivation enregistrés dans le profil du candidat
+// (un document de chaque type). GET liste ou télécharge, POST remplace,
+// DELETE retire. Réservé au candidat connecté.
+
 require_once __DIR__ . "/../config/session.php";
 require_once __DIR__ . "/../config/database.php";
 

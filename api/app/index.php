@@ -1,9 +1,22 @@
-
 <?php
+
+// Candidatures : GET /api/app/ (liste, ?id=, ?attachment=cv), POST pour
+// postuler, PUT pour changer le statut, DELETE pour l'admin.
+// Chacun ne voit que ce qui le concerne : le candidat ses candidatures,
+// l'entreprise celles reçues sur ses offres, l'admin tout.
 
 require_once __DIR__ . "/../config/session.php";
 
 require_once __DIR__ . "/../config/database.php";
+require_once __DIR__ . "/../config/helpers.php";
+
+const APPLICATION_STATUS_LABELS = [
+    "pending" => "En attente",
+    "reviewing" => "En cours d'étude",
+    "interview" => "Entretien",
+    "accepted" => "Acceptée",
+    "rejected" => "Refusée"
+];
 
 function sendJson(int $status, array $data): void
 {
@@ -12,6 +25,7 @@ function sendJson(int $status, array $data): void
     exit;
 }
 
+// Le formulaire de candidature arrive en multipart (fichiers), le reste en JSON.
 function readJson(): array
 {
     $contentType = $_SERVER["CONTENT_TYPE"] ?? "";
@@ -31,6 +45,7 @@ function readJson(): array
     return $data;
 }
 
+// Vérifie un PDF envoyé (taille, extension et vrai type MIME) et renvoie son contenu.
 function readPdfUpload(string $field, string $label): ?array
 {
     $file = $_FILES[$field] ?? null;
@@ -107,9 +122,10 @@ try {
 
         // Vérifie l'offre et la lettre requise.
         $checkJob = $pdo->prepare(
-            "SELECT id, cover_letter_required
+            "SELECT jobs.id, jobs.title, jobs.cover_letter_required, jobs.company_id
              FROM jobs
-             WHERE id = :job_id"
+             INNER JOIN companies ON companies.id = jobs.company_id
+             WHERE jobs.id = :job_id AND companies.status = 'approved'"
         );
         $checkJob->execute([":job_id" => $jobId]);
         $job = $checkJob->fetch(PDO::FETCH_ASSOC);
@@ -123,6 +139,10 @@ try {
             "cover_letter_file",
             "La lettre de motivation"
         );
+
+        if ($cv === null) {
+            sendJson(400, ["error" => "Un CV au format PDF est obligatoire pour postuler."]);
+        }
 
         if (
             (bool) $job["cover_letter_required"] &&
@@ -194,26 +214,57 @@ try {
             $uploadedCoverLetter["content"] ?? null,
             $uploadedCoverLetter !== null ? PDO::PARAM_LOB : PDO::PARAM_NULL
         );
+
         $statement->execute();
+        $applicationId = (int) $pdo->lastInsertId();
+
+        // Notifie l'entreprise ; un échec ne doit pas annuler la candidature.
+        apiNotify($pdo, [
+            "company_id" => (int) $job["company_id"],
+            "application_id" => $applicationId,
+            "job_id" => $jobId,
+            "type" => "new_application",
+            "title" => "Nouvelle candidature",
+            "message" => $name . " a postulé à l'offre « " . $job["title"] . " »."
+        ]);
 
         sendJson(201, [
             "success" => true,
             "message" => "Votre candidature a bien été envoyée.",
-            "application_id" => $pdo->lastInsertId()
+            "application_id" => $applicationId
         ]);
     }
 
     // Liste les candidatures ou affiche un détail.
     if ($method === "GET") {
         $id = filter_var($_GET["id"] ?? null, FILTER_VALIDATE_INT);
-        $mine = isset($_GET["mine"]) && $_GET["mine"] === "1";
         $userId = (int) ($_SESSION["user_id"] ?? 0);
-        $isAdmin = ($_SESSION["user_role"] ?? "") === "admin";
+        $userRole = $_SESSION["user_role"] ?? "";
+        $isAdmin = $userRole === "admin";
+        $isCompany = $userRole === "company";
 
         if ($userId < 1) {
             sendJson(401, ["error" => "Connectez-vous pour consulter les candidatures."]);
         }
 
+        $companyId = 0;
+        if ($isCompany) {
+            $companyQuery = $pdo->prepare(
+                "SELECT company_id FROM users WHERE id = :user_id AND role = 'company'"
+            );
+            $companyQuery->execute([":user_id" => $userId]);
+            $companyId = (int) $companyQuery->fetchColumn();
+
+            if ($companyId < 1) {
+                sendJson(403, [
+                    "error" => "Aucune entreprise n'est associée à ce compte."
+                ]);
+            }
+        } elseif (!$isAdmin && $userRole !== "candidate") {
+            sendJson(403, ["error" => "Accès interdit aux candidatures."]);
+        }
+
+        // Téléchargement d'une pièce jointe : on vérifie que le demandeur y a droit.
         if (isset($_GET["attachment"])) {
             $attachment = $_GET["attachment"];
             $attachmentFields = [
@@ -226,9 +277,12 @@ try {
             [$nameColumn, $contentColumn] = $attachmentFields[$attachment];
 
             $statement = $pdo->prepare(
-                "SELECT user_id, $nameColumn AS file_name, $contentColumn AS file_content
+                "SELECT applications.user_id, jobs.company_id,
+                        applications.$nameColumn AS file_name,
+                        applications.$contentColumn AS file_content
                  FROM applications
-                 WHERE id = :id"
+                 INNER JOIN jobs ON jobs.id = applications.job_id
+                 WHERE applications.id = :id"
             );
             $statement->execute([":id" => $id]);
             $application = $statement->fetch(PDO::FETCH_ASSOC);
@@ -237,7 +291,11 @@ try {
                 sendJson(404, ["error" => "Document introuvable."]);
             }
 
-            if (!$isAdmin && (int) $application["user_id"] !== $userId) {
+            $ownsApplication = $isCompany
+                ? (int) $application["company_id"] === $companyId
+                : (int) $application["user_id"] === $userId;
+
+            if (!$isAdmin && !$ownsApplication) {
                 sendJson(403, ["error" => "Accès interdit à ce CV."]);
             }
 
@@ -273,32 +331,14 @@ try {
                 INNER JOIN jobs ON jobs.id = applications.job_id
                 INNER JOIN companies ON companies.id = jobs.company_id";
 
-        if ($mine || !$isAdmin) {
+        $where = "";
+        $parameters = [];
+        if ($isCompany) {
+            $where = " WHERE jobs.company_id = :company_id";
+            $parameters[":company_id"] = $companyId;
+        } elseif (!$isAdmin) {
             $where = " WHERE applications.user_id = :user_id";
-            $parameters = [":user_id" => $userId];
-
-            if (isset($_GET["id"])) {
-                if (!$id || $id < 1) {
-                    sendJson(400, ["error" => "Identifiant invalide."]);
-                }
-                $where .= " AND applications.id = :id";
-                $parameters[":id"] = $id;
-            }
-
-            $statement = $pdo->prepare(
-                $sql . $where . " ORDER BY applications.created_at DESC"
-            );
-            $statement->execute($parameters);
-
-            if (isset($_GET["id"])) {
-                $application = $statement->fetch(PDO::FETCH_ASSOC);
-                if (!$application) {
-                    sendJson(404, ["error" => "Candidature introuvable."]);
-                }
-                sendJson(200, $application);
-            }
-
-            sendJson(200, $statement->fetchAll(PDO::FETCH_ASSOC));
+            $parameters[":user_id"] = $userId;
         }
 
         if (isset($_GET["id"])) {
@@ -306,8 +346,12 @@ try {
                 sendJson(400, ["error" => "Identifiant invalide."]);
             }
 
-            $statement = $pdo->prepare($sql . " WHERE applications.id = :id");
-            $statement->execute([":id" => $id]);
+            $where .= $where === "" ? " WHERE " : " AND ";
+            $where .= "applications.id = :id";
+            $parameters[":id"] = $id;
+
+            $statement = $pdo->prepare($sql . $where);
+            $statement->execute($parameters);
             $application = $statement->fetch(PDO::FETCH_ASSOC);
 
             if (!$application) {
@@ -317,18 +361,56 @@ try {
             sendJson(200, $application);
         }
 
-        $statement = $pdo->query($sql . " ORDER BY applications.created_at DESC");
-        sendJson(200, $statement->fetchAll(PDO::FETCH_ASSOC));
+        // Filtres facultatifs : statut, offre et recherche texte.
+        $filters = [];
+        if (isset(APPLICATION_STATUS_LABELS[$_GET["status"] ?? ""])) {
+            $filters[] = "applications.status = :status";
+            $parameters[":status"] = $_GET["status"];
+        }
+        $jobFilter = filter_var($_GET["job_id"] ?? null, FILTER_VALIDATE_INT);
+        if ($jobFilter) {
+            $filters[] = "applications.job_id = :job_filter";
+            $parameters[":job_filter"] = $jobFilter;
+        }
+        $search = trim((string) ($_GET["q"] ?? ""));
+        if ($search !== "") {
+            $filters[] = "(applications.candidate_name LIKE :q_name
+                           OR applications.candidate_email LIKE :q_email
+                           OR jobs.title LIKE :q_job)";
+            $parameters[":q_name"] = $parameters[":q_email"] = $parameters[":q_job"] = "%" . $search . "%";
+        }
+        if ($filters) {
+            $where .= ($where === "" ? " WHERE " : " AND ") . implode(" AND ", $filters);
+        }
+
+        $sql .= $where . " ORDER BY applications.created_at DESC, applications.id DESC";
+        $pagination = apiPagination();
+        if ($pagination) {
+            $count = $pdo->prepare(
+                "SELECT COUNT(*) FROM applications
+                 INNER JOIN jobs ON jobs.id = applications.job_id" . $where
+            );
+            $count->execute($parameters);
+            $sql .= " LIMIT {$pagination["limit"]} OFFSET {$pagination["offset"]}";
+        }
+
+        $statement = $pdo->prepare($sql);
+        $statement->execute($parameters);
+        $applications = $statement->fetchAll(PDO::FETCH_ASSOC);
+
+        if ($pagination) {
+            sendJson(200, apiPaginated($applications, (int) $count->fetchColumn(), $pagination));
+        }
+
+        sendJson(200, $applications);
     }
 
-    // Met à jour le statut.
+    // Met à jour le statut : admin ou entreprise propriétaire de l'offre.
     if ($method === "PUT") {
-        if (
-            empty($_SESSION["user_id"]) ||
-            ($_SESSION["user_role"] ?? "") !== "admin"
-        ) {
-            sendJson(403, ["error" => "Accès réservé à l'administration."]);
-        }
+        $actorId = apiRequireRole("admin", "company");
+        $actorCompanyId = ($_SESSION["user_role"] ?? "") === "company"
+            ? apiCompanyOf($pdo, $actorId)["id"]
+            : null;
 
         $data = readJson();
 
@@ -359,11 +441,18 @@ try {
         }
 
         $check = $pdo->prepare(
-            "SELECT id FROM applications WHERE id = :id"
+            "SELECT applications.id, applications.user_id, applications.status,
+                    applications.job_id, jobs.title, jobs.company_id,
+                    companies.name AS company
+             FROM applications
+             INNER JOIN jobs ON jobs.id = applications.job_id
+             INNER JOIN companies ON companies.id = jobs.company_id
+             WHERE applications.id = :id"
         );
         $check->execute([":id" => $id]);
+        $current = $check->fetch(PDO::FETCH_ASSOC);
 
-        if (!$check->fetch()) {
+        if (!$current || ($actorCompanyId !== null && (int) $current["company_id"] !== $actorCompanyId)) {
             sendJson(404, ["error" => "Candidature introuvable."]);
         }
 
@@ -378,6 +467,20 @@ try {
             ":id" => $id
         ]);
 
+        // Prévient le candidat de la réponse du recruteur.
+        if ($current["user_id"] && $status !== $current["status"]) {
+            apiNotify($pdo, [
+                "user_id" => (int) $current["user_id"],
+                "application_id" => $id,
+                "job_id" => (int) $current["job_id"],
+                "type" => "application_" . $status,
+                "title" => "Candidature : " . APPLICATION_STATUS_LABELS[$status],
+                "message" => "Votre candidature « " . $current["title"] . " » chez " .
+                    $current["company"] . " est désormais : " .
+                    mb_strtolower(APPLICATION_STATUS_LABELS[$status]) . "."
+            ]);
+        }
+
         sendJson(200, [
             "success" => true,
             "message" => "Le statut de la candidature a été mis à jour.",
@@ -386,7 +489,34 @@ try {
         ]);
     }
 
-    header("Allow: GET, POST, PUT, OPTIONS");
+    // Supprime une candidature (administration).
+    if ($method === "DELETE") {
+        if (
+            empty($_SESSION["user_id"]) ||
+            ($_SESSION["user_role"] ?? "") !== "admin"
+        ) {
+            sendJson(403, ["error" => "Accès réservé à l'administration."]);
+        }
+
+        $id = filter_var($_GET["id"] ?? null, FILTER_VALIDATE_INT);
+        if (!$id || $id < 1) {
+            sendJson(400, ["error" => "Identifiant de candidature invalide."]);
+        }
+
+        $delete = $pdo->prepare("DELETE FROM applications WHERE id = :id");
+        $delete->execute([":id" => $id]);
+
+        if ($delete->rowCount() === 0) {
+            sendJson(404, ["error" => "Candidature introuvable."]);
+        }
+
+        sendJson(200, [
+            "success" => true,
+            "message" => "Candidature supprimée avec succès."
+        ]);
+    }
+
+    header("Allow: GET, POST, PUT, DELETE, OPTIONS");
     sendJson(405, ["error" => "Méthode non autorisée."]);
 
 } catch (PDOException $e) {

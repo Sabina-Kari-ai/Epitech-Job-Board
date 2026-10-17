@@ -1,3 +1,6 @@
+// Formulaires de connexion et d'inscription (login.html, register.html).
+// Après succès, chaque rôle est redirigé vers sa page d'accueil.
+
 document.addEventListener("DOMContentLoaded", () => {
     const form = document.getElementById("auth-form");
     const feedback = document.getElementById("auth-feedback");
@@ -9,10 +12,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const companyFields = document.getElementById("company-fields");
     const companyName = document.getElementById("company-name");
     const companyLocation = document.getElementById("company-location");
+    const companySiret = document.getElementById("company-siret");
     const returnTo = new URLSearchParams(window.location.search).get("return");
     const query = new URLSearchParams(window.location.search);
     const emailField = form.elements.namedItem("email");
-    const accountSwitch = document.querySelector(".auth-switch a");
+    const accountSwitch = document.querySelector(
+        '.auth-switch a[href^="register.html"], .auth-switch a[href^="login.html"]'
+    );
 
     if (action === "login" && emailField && query.has("email")) {
         emailField.value = query.get("email");
@@ -30,6 +36,17 @@ document.addEventListener("DOMContentLoaded", () => {
         companyFields.hidden = !isCompany;
         companyName.required = isCompany;
         companyLocation.required = isCompany;
+        if (companySiret) companySiret.required = isCompany;
+    }
+
+    // Affiche le SIRET par groupes (3 3 3 5) pendant la saisie.
+    if (companySiret) {
+        companySiret.addEventListener("input", () => {
+            const digits = companySiret.value.replace(/\D/g, "").slice(0, 14);
+            companySiret.value = [digits.slice(0, 3), digits.slice(3, 6), digits.slice(6, 9), digits.slice(9)]
+                .filter(Boolean)
+                .join(" ");
+        });
     }
 
     if (accountType) {
@@ -56,10 +73,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const requestedReturn = query.get("return");
             const userRole = result.user && result.user.role;
-            let destination = userRole === "company"
-                ? "company-dashboard.html"
-                : "index.html";
-            if (requestedReturn) {
+            let destination = window.JobBoardAuth.homeFor(userRole);
+            if (requestedReturn && userRole !== "admin") {
                 const requestedUrl = new URL(requestedReturn, window.location.href);
                 const requestedPage = requestedUrl.pathname.split("/").pop();
                 const allowedPages = userRole === "company"

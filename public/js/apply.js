@@ -1,6 +1,9 @@
-const API_URL = "http://127.0.0.1:8001/api/jobs/";
-const APPLICATIONS_API_URL = "http://127.0.0.1:8001/api/app/";
-const PROFILE_DOCUMENTS_API_URL = "http://127.0.0.1:8001/api/profile-documents/";
+// Formulaire de candidature (apply.html?id=…). Le candidat doit être connecté :
+// ses coordonnées sont pré-remplies et le CV de son profil est chargé automatiquement.
+
+const API_URL = `http://${window.location.hostname}:8001/api/jobs/`;
+const APPLICATIONS_API_URL = `http://${window.location.hostname}:8001/api/app/`;
+const PROFILE_DOCUMENTS_API_URL = `http://${window.location.hostname}:8001/api/profile-documents/`;
 
 const params = new URLSearchParams(window.location.search);
 const jobId = Number(params.get("id") || params.get("job"));
@@ -9,7 +12,7 @@ const form = document.getElementById("applicationForm");
 const formMessage = document.getElementById("formMessage");
 const coverLetterField = document.getElementById("coverLetterText");
 const coverLetterFile = document.getElementById("cover-letter-file");
-const coverLetterLabel = document.getElementById("cover-letter-label");
+const coverLetterSection = document.getElementById("cover-letter-section");
 const coverLetterRequiredMessage = document.getElementById("cover-letter-required");
 let selectedJob = null;
 let coverLetterRequired = false;
@@ -56,12 +59,13 @@ function showCvPreview(file) {
     preview.hidden = false;
 }
 
+// Récupère le CV du profil pour l'afficher et le joindre sans nouvel envoi.
 async function loadSavedCv() {
     const response = await fetch(`${PROFILE_DOCUMENTS_API_URL}?type=cv`, {
         credentials: "include"
     });
     if (response.status === 404) {
-        setCvStatus("Aucun CV enregistré dans votre profil. Ajoutez un PDF ici ou depuis votre profil.");
+        setCvStatus("Aucun CV enregistré. Ajoutez un PDF ici pour prévisualiser et postuler.");
         return;
     }
     if (!response.ok) {
@@ -82,6 +86,7 @@ async function loadSavedCv() {
     setCvStatus(`CV chargé automatiquement depuis votre profil : ${fileName}`);
 }
 
+// Un nouveau CV choisi ici remplace aussi celui du profil, pour la prochaine fois.
 async function saveCvToProfile(file) {
     const body = new FormData();
     body.append("type", "cv");
@@ -135,13 +140,11 @@ async function loadJob() {
         if (coverLetterField) {
             coverLetterRequired = Number(selectedJob.cover_letter_required) === 1 ||
                 selectedJob.cover_letter_required === true;
-            if (coverLetterRequiredMessage) {
-                coverLetterRequiredMessage.hidden = !coverLetterRequired;
+            if (coverLetterSection) {
+                coverLetterSection.hidden = !coverLetterRequired;
             }
-            if (coverLetterLabel) {
-                coverLetterLabel.textContent = coverLetterRequired
-                    ? "Lettre de motivation (obligatoire)"
-                    : "Lettre de motivation (facultative)";
+            if (coverLetterRequiredMessage) {
+                coverLetterRequiredMessage.hidden = true;
             }
         }
         form.style.display = "block";
@@ -194,6 +197,7 @@ function setApplicationAlertFeedback(message, isError = false) {
     feedback.classList.toggle("error", isError);
 }
 
+// Propose de créer une alerte sur ce type d'offre après l'envoi de la candidature.
 function updateApplicationAlert(enabled) {
     if (!currentUser || !selectedJob || !applicationAlertId) {
         throw new Error("Les informations de la candidature sont indisponibles.");
@@ -250,8 +254,13 @@ if (form) {
 
         const selectedCv = cvInput.files[0] || savedCvFile;
         const selectedCoverLetter = coverLetterFile.files[0];
+        if (!selectedCv) {
+            showMessage("Un CV PDF est obligatoire pour envoyer votre candidature.", true);
+            cvInput.focus();
+            return;
+        }
         if (!isAllowedPdf(selectedCv) || !isAllowedPdf(selectedCoverLetter)) {
-            showMessage("Les documents doivent être des PDF valides de 5 Mo maximum.", true);
+            showMessage("Le CV et la lettre jointe doivent être des PDF valides de 5 Mo maximum.", true);
             return;
         }
         if (

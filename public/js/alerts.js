@@ -1,3 +1,6 @@
+// Alertes emploi : enregistrées dans le localStorage du navigateur, par utilisateur.
+// La page affiche aussi les offres qui correspondent aux alertes actives.
+
 document.addEventListener("DOMContentLoaded", async () => {
     const alertForm = document.getElementById("alert-form");
     const alertsList = document.getElementById("alerts-list");
@@ -8,9 +11,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     const profileDropdown = document.querySelector(".profile-dropdown");
 
     let storageKey = "";
+    let user = null;
 
     try {
-        const user = await window.JobBoardAuth.requireUser();
+        user = await window.JobBoardAuth.requireUser();
         if (!user) return;
         storageKey = `jobboard_alerts_${user.id}`;
     } catch (error) {

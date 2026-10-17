@@ -3,46 +3,386 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Espace entreprise JobBoard.">
+    <meta name="description" content="Gérez votre entreprise et vos recrutements sur JobBoard.">
     <title>Espace entreprise | JobBoard</title>
     <link rel="stylesheet" href="css/style.css">
     <script src="js/language.js" defer></script>
     <script src="js/auth-client.js" defer></script>
-    <script src="js/alert-notifications.js" defer></script>
-    <script src="js/nav-auth.js" defer></script>
     <script src="js/company-dashboard.js" defer></script>
 </head>
-<body data-auth-required="true" data-auth-role="company">
-    <header class="navbar">
-        <div class="container navbar-content">
-            <a href="company-dashboard.html" class="logo">JobBoard</a>
-            <nav class="nav-links" aria-label="Navigation principale">
-                <a href="companies.html">Entreprises</a>
-                <a href="index.html#jobs">Offres</a>
-            </nav>
-            <div class="nav-actions authenticated-actions" id="authenticated-actions" hidden>
-                <span id="company-user-name"></span>
-                <button type="button" id="logout-button" class="btn btn-outline">Déconnexion</button>
+
+<body class="co-page" hidden>
+
+<header class="co-topbar">
+    <div class="co-topbar-inner">
+        <a href="company-dashboard.html" class="logo">JobBoard <span class="co-logo-tag">Recruteur</span></a>
+
+        <div class="co-topbar-actions">
+            <a href="index.html" class="co-topbar-link">Voir le site</a>
+
+            <div class="co-notif">
+                <button type="button" class="co-icon-button" id="notif-toggle"
+                        aria-label="Notifications" aria-expanded="false" aria-controls="notif-panel">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"></path>
+                        <path d="M10 21h4"></path>
+                    </svg>
+                    <span class="co-notif-count" id="notif-count" hidden>0</span>
+                </button>
+                <div class="co-notif-panel" id="notif-panel" hidden>
+                    <div class="co-notif-panel-header">
+                        <strong>Notifications</strong>
+                        <button type="button" class="co-link-button" id="notif-mark-all">Tout marquer comme lu</button>
+                    </div>
+                    <div class="co-notif-list" id="notif-dropdown-list"></div>
+                    <button type="button" class="co-notif-more" data-go="notifications-section">Voir toutes les notifications</button>
+                </div>
+            </div>
+
+            <div class="co-user">
+                <span class="co-avatar" id="co-avatar">?</span>
+                <span class="co-user-name" id="co-user-name"></span>
+            </div>
+            <button type="button" class="btn btn-outline" id="co-logout">Déconnexion</button>
+        </div>
+    </div>
+</header>
+
+<div class="co-layout">
+    <aside class="co-sidebar">
+        <div class="co-brand">
+            <img id="co-brand-logo" class="co-brand-logo" alt="" hidden>
+            <span id="co-brand-initials" class="co-brand-initials" aria-hidden="true">E</span>
+            <div>
+                <strong id="co-brand-name">Mon entreprise</strong>
+                <span class="co-status-pill" id="co-status-pill"></span>
             </div>
         </div>
-    </header>
 
-    <main class="profile-container">
-        <section class="profile-heading">
-            <p class="page-eyebrow">ESPACE ENTREPRISE</p>
-            <h1 id="company-welcome">Bienvenue</h1>
-            <p>Votre compte entreprise JobBoard est prêt.</p>
+        <nav class="co-menu" aria-label="Menu entreprise">
+            <button type="button" class="co-menu-item" data-go="dashboard-section">
+                <span aria-hidden="true">◧</span> Tableau de bord
+            </button>
+            <button type="button" class="co-menu-item" data-go="create-job-section">
+                <span aria-hidden="true">＋</span> Publier une offre
+            </button>
+            <button type="button" class="co-menu-item" data-go="jobs-section">
+                <span aria-hidden="true">▤</span> Mes offres
+                <span class="co-menu-count" id="menu-jobs-count"></span>
+            </button>
+            <button type="button" class="co-menu-item" data-go="applications-section">
+                <span aria-hidden="true">✉</span> Candidatures
+                <span class="co-menu-count co-menu-count-alert" id="menu-applications-count"></span>
+            </button>
+            <button type="button" class="co-menu-item" data-go="notifications-section">
+                <span aria-hidden="true">🔔</span> Notifications
+                <span class="co-menu-count co-menu-count-alert" id="menu-notif-count"></span>
+            </button>
+            <button type="button" class="co-menu-item" data-go="settings-section">
+                <span aria-hidden="true">⚙</span> Paramètres
+            </button>
+        </nav>
+    </aside>
+
+    <main class="co-content">
+        <!-- Statut de l'inscription -->
+        <div class="co-banner" id="co-status-banner" hidden>
+            <span class="co-banner-icon" aria-hidden="true">⏳</span>
+            <div>
+                <strong id="co-banner-title"></strong>
+                <p id="co-banner-text"></p>
+            </div>
+        </div>
+
+        <!-- TABLEAU DE BORD -->
+        <section id="dashboard-section" class="co-section" hidden>
+            <div class="co-heading">
+                <div>
+                    <p class="co-eyebrow">VOTRE ACTIVITÉ</p>
+                    <h1 id="co-welcome">Bienvenue</h1>
+                    <p>Suivez vos offres et vos recrutements en un coup d'œil.</p>
+                </div>
+                <button type="button" class="btn btn-primary" data-go="create-job-section" data-requires-approval>
+                    + Publier une offre
+                </button>
+            </div>
+
+            <div class="co-kpis">
+                <article class="co-kpi">
+                    <span class="co-kpi-icon" aria-hidden="true">▤</span>
+                    <div><strong id="kpi-jobs">—</strong><p>Offres publiées</p></div>
+                </article>
+                <article class="co-kpi">
+                    <span class="co-kpi-icon" aria-hidden="true">✉</span>
+                    <div><strong id="kpi-applications">—</strong><p>Candidatures reçues</p></div>
+                </article>
+                <article class="co-kpi co-kpi-warning">
+                    <span class="co-kpi-icon" aria-hidden="true">⏱</span>
+                    <div><strong id="kpi-pending">—</strong><p>À traiter</p></div>
+                </article>
+                <article class="co-kpi co-kpi-success">
+                    <span class="co-kpi-icon" aria-hidden="true">★</span>
+                    <div><strong id="kpi-interviews">—</strong><p>Entretiens en cours</p></div>
+                </article>
+            </div>
+
+            <div class="co-grid-2">
+                <section class="co-card">
+                    <div class="co-card-header">
+                        <h2>Candidatures récentes</h2>
+                        <button type="button" class="co-link-button" data-go="applications-section">Tout voir</button>
+                    </div>
+                    <div id="recent-applications" class="co-list"></div>
+                </section>
+                <section class="co-card">
+                    <div class="co-card-header">
+                        <h2>Dernières notifications</h2>
+                        <button type="button" class="co-link-button" data-go="notifications-section">Tout voir</button>
+                    </div>
+                    <div id="recent-notifications" class="co-list"></div>
+                </section>
+            </div>
+
+            <section class="co-card">
+                <div class="co-card-header">
+                    <h2>Vos offres</h2>
+                    <button type="button" class="co-link-button" data-go="jobs-section">Gérer mes offres</button>
+                </div>
+                <div id="recent-jobs" class="co-job-grid"></div>
+            </section>
         </section>
 
-        <section class="profile-panel">
-            <h2>Votre entreprise</h2>
-            <p id="company-name">Chargement...</p>
-            <p id="company-location"></p>
+        <!-- PUBLIER / MODIFIER UNE OFFRE -->
+        <section id="create-job-section" class="co-section" hidden>
+            <div class="co-heading">
+                <div>
+                    <p class="co-eyebrow">RECRUTEMENT</p>
+                    <h1 id="job-form-heading">Publier une offre</h1>
+                    <p>Décrivez le poste : l'offre apparaîtra immédiatement sur le site.</p>
+                </div>
+            </div>
+
+            <div class="co-card co-locked" id="job-form-locked" hidden>
+                <span class="co-locked-icon" aria-hidden="true">🔒</span>
+                <h2>Publication indisponible</h2>
+                <p id="job-form-locked-text"></p>
+            </div>
+
+            <form id="job-form" class="co-card co-form">
+                <input type="hidden" name="id">
+                <div class="co-form-grid">
+                    <div class="form-field co-form-wide">
+                        <label for="job-title">Intitulé du poste *</label>
+                        <input type="text" id="job-title" name="title" maxlength="150" required
+                               placeholder="Ex : Développeur·se web full stack">
+                    </div>
+                    <div class="form-field">
+                        <label for="job-location">Lieu de travail *</label>
+                        <input type="text" id="job-location" name="location" maxlength="150" required>
+                    </div>
+                    <div class="form-field">
+                        <label for="job-contract">Type de contrat *</label>
+                        <select id="job-contract" name="contract_type" required>
+                            <option value="">Choisir un contrat</option>
+                            <option value="CDI">CDI</option>
+                            <option value="CDD">CDD</option>
+                            <option value="Stage">Stage</option>
+                            <option value="Alternance">Alternance</option>
+                        </select>
+                    </div>
+                    <div class="form-field co-form-wide">
+                        <label for="job-salary">Rémunération</label>
+                        <input type="text" id="job-salary" name="salary" maxlength="100"
+                               placeholder="Ex : 35 000 - 42 000 € brut/an">
+                    </div>
+                    <div class="form-field co-form-wide">
+                        <label for="job-short-description">Résumé (affiché dans la liste) *</label>
+                        <textarea id="job-short-description" name="short_description" maxlength="255" rows="2" required
+                                  placeholder="Une ou deux phrases pour donner envie de cliquer."></textarea>
+                        <small><span id="short-description-count">0</span> / 255 caractères</small>
+                    </div>
+                    <div class="form-field co-form-wide">
+                        <label for="job-description">Description complète *</label>
+                        <textarea id="job-description" name="description" rows="8" required
+                                  placeholder="Missions, profil recherché, compétences, avantages..."></textarea>
+                    </div>
+                </div>
+                <label class="co-checkbox">
+                    <input type="checkbox" name="cover_letter_required">
+                    Exiger une lettre de motivation
+                </label>
+                <p class="co-feedback" id="job-form-feedback" role="status" aria-live="polite"></p>
+                <div class="co-form-actions">
+                    <button type="button" class="btn btn-outline" id="cancel-job-edit" hidden>Annuler la modification</button>
+                    <button type="submit" class="btn btn-primary" id="save-job-button">Publier l'offre</button>
+                </div>
+            </form>
+        </section>
+
+        <!-- MES OFFRES -->
+        <section id="jobs-section" class="co-section" hidden>
+            <div class="co-heading">
+                <div>
+                    <p class="co-eyebrow">RECRUTEMENT</p>
+                    <h1>Mes offres</h1>
+                    <p>Modifiez vos annonces et suivez les candidatures de chacune.</p>
+                </div>
+                <button type="button" class="btn btn-primary" data-go="create-job-section" data-requires-approval>
+                    + Publier une offre
+                </button>
+            </div>
+            <p class="co-feedback" id="jobs-feedback" role="status" aria-live="polite"></p>
+            <div id="jobs-list" class="co-job-grid"></div>
+        </section>
+
+        <!-- CANDIDATURES -->
+        <section id="applications-section" class="co-section" hidden>
+            <div class="co-heading">
+                <div>
+                    <p class="co-eyebrow">SUIVI DES RECRUTEMENTS</p>
+                    <h1>Candidatures reçues</h1>
+                    <p>Changez le statut d'une candidature : le candidat en est informé automatiquement.</p>
+                </div>
+            </div>
+            <div class="co-toolbar">
+                <input type="search" id="applications-search" placeholder="Rechercher un candidat..." aria-label="Rechercher un candidat">
+                <select id="applications-job-filter" aria-label="Filtrer par offre">
+                    <option value="">Toutes les offres</option>
+                </select>
+                <select id="applications-status-filter" aria-label="Filtrer par statut">
+                    <option value="">Tous les statuts</option>
+                    <option value="pending">En attente</option>
+                    <option value="reviewing">En cours d'étude</option>
+                    <option value="interview">Entretien</option>
+                    <option value="accepted">Acceptée</option>
+                    <option value="rejected">Refusée</option>
+                </select>
+            </div>
+            <div id="applications-list" class="co-applications"></div>
+        </section>
+
+        <!-- NOTIFICATIONS -->
+        <section id="notifications-section" class="co-section" hidden>
+            <div class="co-heading">
+                <div>
+                    <p class="co-eyebrow">ACTIVITÉ</p>
+                    <h1>Notifications</h1>
+                    <p>Nouvelles candidatures et informations sur votre compte.</p>
+                </div>
+                <button type="button" class="btn btn-outline" id="notif-mark-all-page">Tout marquer comme lu</button>
+            </div>
+            <div id="notifications-list" class="co-card co-list"></div>
+        </section>
+
+        <!-- PARAMÈTRES -->
+        <section id="settings-section" class="co-section" hidden>
+            <div class="co-heading">
+                <div>
+                    <p class="co-eyebrow">GESTION DU COMPTE</p>
+                    <h1>Paramètres</h1>
+                    <p>Fiche de votre entreprise, logo et sécurité du compte.</p>
+                </div>
+            </div>
+
+            <div class="co-grid-2 co-grid-settings">
+                <form id="company-profile-form" class="co-card co-form">
+                    <h2>Fiche entreprise</h2>
+                    <div class="co-form-grid">
+                        <div class="form-field">
+                            <label for="settings-company-name">Nom de l'entreprise</label>
+                            <input type="text" id="settings-company-name" name="company_name" maxlength="150" required>
+                        </div>
+                        <div class="form-field">
+                            <label for="settings-company-location">Ville</label>
+                            <input type="text" id="settings-company-location" name="company_location" maxlength="150" required>
+                        </div>
+                        <div class="form-field">
+                            <label for="settings-siret">SIRET</label>
+                            <input type="text" id="settings-siret" readonly>
+                            <small>Contactez l'administration pour le modifier.</small>
+                        </div>
+                        <div class="form-field">
+                            <label for="settings-status">Statut de l'inscription</label>
+                            <input type="text" id="settings-status" readonly>
+                        </div>
+                        <div class="form-field co-form-wide">
+                            <label for="settings-company-description">Présentation</label>
+                            <textarea id="settings-company-description" name="company_description" rows="4"
+                                      placeholder="Activité, valeurs, équipe... Affichée sur vos offres."></textarea>
+                        </div>
+                        <div class="form-field">
+                            <label for="settings-first-name">Prénom du responsable</label>
+                            <input type="text" id="settings-first-name" name="first_name" maxlength="100" required>
+                        </div>
+                        <div class="form-field">
+                            <label for="settings-last-name">Nom du responsable</label>
+                            <input type="text" id="settings-last-name" name="last_name" maxlength="100" required>
+                        </div>
+                    </div>
+                    <p class="co-feedback" role="status" aria-live="polite"></p>
+                    <button type="submit" class="btn btn-primary">Enregistrer</button>
+                </form>
+
+                <div class="co-settings-column">
+                    <form id="company-logo-form" class="co-card co-form">
+                        <h2>Logo</h2>
+                        <div class="co-logo-editor">
+                            <img id="logo-preview" alt="Aperçu du logo" hidden>
+                            <span id="logo-placeholder" class="co-brand-initials co-logo-large">E</span>
+                            <div class="form-field">
+                                <label for="company-logo">Fichier PNG, JPG ou WebP (2 Mo max)</label>
+                                <input type="file" id="company-logo" name="logo"
+                                       accept=".png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp" required>
+                            </div>
+                        </div>
+                        <p class="co-feedback" role="status" aria-live="polite"></p>
+                        <button type="submit" class="btn btn-primary">Enregistrer le logo</button>
+                    </form>
+
+                    <form id="company-email-form" class="co-card co-form">
+                        <h2>Adresse e-mail</h2>
+                        <div class="form-field">
+                            <label for="settings-email">Nouvelle adresse e-mail</label>
+                            <input type="email" id="settings-email" name="email" autocomplete="email" required>
+                        </div>
+                        <div class="form-field">
+                            <label for="email-current-password">Mot de passe actuel</label>
+                            <input type="password" id="email-current-password" name="current_password" autocomplete="current-password" required>
+                        </div>
+                        <p class="co-feedback" role="status" aria-live="polite"></p>
+                        <button type="submit" class="btn btn-primary">Modifier l'e-mail</button>
+                    </form>
+
+                    <form id="company-password-form" class="co-card co-form">
+                        <h2>Mot de passe</h2>
+                        <div class="form-field">
+                            <label for="current-password">Mot de passe actuel</label>
+                            <input type="password" id="current-password" name="current_password" autocomplete="current-password" required>
+                        </div>
+                        <div class="co-form-grid">
+                            <div class="form-field">
+                                <label for="new-password">Nouveau</label>
+                                <input type="password" id="new-password" name="new_password" minlength="6" autocomplete="new-password" required>
+                            </div>
+                            <div class="form-field">
+                                <label for="confirm-password">Confirmation</label>
+                                <input type="password" id="confirm-password" name="confirm_password" minlength="6" autocomplete="new-password" required>
+                            </div>
+                        </div>
+                        <p class="co-feedback" role="status" aria-live="polite"></p>
+                        <button type="submit" class="btn btn-primary">Modifier le mot de passe</button>
+                    </form>
+                </div>
+            </div>
         </section>
     </main>
+</div>
 
-    <footer class="footer">
-        <p>&copy; 2026 JobBoard. Tous droits réservés.</p>
-    </footer>
+<div class="admin-toast" id="co-toast" role="status" aria-live="polite" hidden></div>
+
+<footer class="footer company-footer">
+    <p>&copy; 2026 JobBoard. Tous droits réservés.</p>
+</footer>
+
 </body>
 </html>
