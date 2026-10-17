@@ -6,6 +6,12 @@ $port = getenv("DB_PORT") ?: "3306";
 $dbname = getenv("DB_NAME") ?: "job_board";
 $username = getenv("DB_USER") ?: "root";
 $password = getenv("DB_PASSWORD") ?: "";
+// Ignored local override is convenient for Windows; environment variables stay supported.
+$localFile=__DIR__.'/database.local.php';
+if (is_file($localFile)) {
+    $local=require $localFile;
+    if (is_array($local)) { $host=$local['host']??$host; $port=$local['port']??$port; $dbname=$local['database']??$dbname; $username=$local['username']??$username; $password=$local['password']??$password; }
+}
 
 try {
     $pdo = new PDO(

@@ -146,6 +146,16 @@ function validateJobData(array $data): array
         );
     }
 
+    foreach (['skills','missions','profile','benefits','working_time','application_deadline'] as $field) {
+        if (isset($data[$field]) && !is_string($data[$field])) sendJson(['error'=>'Champ d’offre invalide.'], 400);
+        $job[$field] = trim($data[$field] ?? '');
+        if (strlen($job[$field]) > 20000) sendJson(['error'=>'Champ d’offre trop long.'], 400);
+    }
+    if (!in_array($job['contract_type'], ['CDI','CDD','Alternance','Stage','Intérim'], true)) sendJson(['error'=>'Contrat invalide.'], 400);
+    if ($job['application_deadline'] !== '') {
+        $date=DateTimeImmutable::createFromFormat('!Y-m-d', $job['application_deadline']);
+        if (!$date || $date->format('Y-m-d') !== $job['application_deadline']) sendJson(['error'=>'Date limite invalide.'], 400);
+    }
     return $job;
 }
 
@@ -247,6 +257,12 @@ try {
         $sql = "
             SELECT
                 jobs.id,
+                jobs.skills,
+                jobs.missions,
+                jobs.profile,
+                jobs.benefits,
+                jobs.working_time,
+                jobs.application_deadline,
                 jobs.title,
                 jobs.location,
                 jobs.contract_type,
@@ -314,10 +330,10 @@ try {
         $statement = $pdo->prepare(
             "INSERT INTO jobs (
                 company_id, title, location, contract_type, salary,
-                short_description, description, cover_letter_required
+                short_description, description, cover_letter_required, skills, missions, profile, benefits, working_time, application_deadline
             ) VALUES (
                 :company_id, :title, :location, :contract_type, :salary,
-                :short_description, :description, :cover_letter_required
+                :short_description, :description, :cover_letter_required, :skills, :missions, :profile, :benefits, :working_time, :application_deadline
             )"
         );
 
@@ -329,7 +345,13 @@ try {
             ":salary" => $job["salary"] !== "" ? $job["salary"] : null,
             ":short_description" => $job["short_description"],
             ":description" => $job["description"],
-            ":cover_letter_required" => $job["cover_letter_required"]
+            ":cover_letter_required" => $job["cover_letter_required"],
+            ":skills" => $job["skills"],
+            ":missions" => $job["missions"],
+            ":profile" => $job["profile"],
+            ":benefits" => $job["benefits"],
+            ":working_time" => $job["working_time"],
+            ":application_deadline" => ($job["application_deadline"] !== "" ? $job["application_deadline"] : null)
         ]);
 
         sendJson([
@@ -367,6 +389,8 @@ try {
             $companyId = $account["company_id"];
             $ownerCompanyId = $account["company_id"];
         }
+        $previous = $pdo->prepare('SELECT * FROM jobs WHERE id = ?'); $previous->execute([$id]);
+        $data = array_replace($previous->fetch(PDO::FETCH_ASSOC) ?: [], $data);
         $job = validateJobData($data);
 
         $updateSql = "UPDATE jobs SET
@@ -377,7 +401,13 @@ try {
                 salary = :salary,
                 short_description = :short_description,
                 description = :description,
-                cover_letter_required = :cover_letter_required
+                cover_letter_required = :cover_letter_required,
+                skills = :skills,
+                missions = :missions,
+                profile = :profile,
+                benefits = :benefits,
+                working_time = :working_time,
+                application_deadline = :application_deadline
              WHERE id = :id";
         $updateParameters = [
             ":company_id" => $companyId,
@@ -388,6 +418,12 @@ try {
             ":short_description" => $job["short_description"],
             ":description" => $job["description"],
             ":cover_letter_required" => $job["cover_letter_required"],
+            ":skills" => $job["skills"],
+            ":missions" => $job["missions"],
+            ":profile" => $job["profile"],
+            ":benefits" => $job["benefits"],
+            ":working_time" => $job["working_time"],
+            ":application_deadline" => ($job["application_deadline"] !== "" ? $job["application_deadline"] : null),
             ":id" => $id
         ];
 

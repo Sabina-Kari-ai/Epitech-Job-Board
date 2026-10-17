@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mes candidatures - JobBoard</title>
     <link rel="stylesheet" href="css/style.css">
-    <script src="js/language.js" defer></script>
+    <script type="module" src="js/language.js" defer></script>
 </head>
 
 <body data-auth-required="true">
@@ -16,7 +16,6 @@
 
             <nav class="nav-links">
                 <a href="index.html#jobs">Offres</a>
-                <a href="app.html">Mes candidatures</a>
             </nav>
 
             <div class="nav-actions" id="guest-actions">
@@ -41,7 +40,6 @@
                     <div class="profile-dropdown">
                         <p class="profile-menu-name" id="user-first-name"></p>
                         <a href="profile.html">Mon profil</a>
-                        <a href="app.html">Mes candidatures</a>
                         <button type="button" id="logout-button">Déconnexion</button>
                     </div>
                 </details>
@@ -86,9 +84,9 @@
         </div>
     </footer>
 
-    <script src="js/auth-client.js" defer></script>
-    <script src="js/alert-notifications.js" defer></script>
-    <script src="js/nav-auth.js" defer></script>
-    <script src="js/app.js" defer></script>
+    <script type="module" src="js/auth-client.js" defer></script>
+    <script type="module" src="js/alert-notifications.js" defer></script>
+    <script type="module" src="js/nav-auth.js" defer></script>
+    <script type="module" src="js/app.js" defer></script>
 </body>
 </html>

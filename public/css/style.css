@@ -5154,3 +5154,6 @@ background-color: #e0eaff;
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
+
+.search-box { align-items: flex-end; }
+.search-field input, .search-box .search-button { min-height: 54px; }

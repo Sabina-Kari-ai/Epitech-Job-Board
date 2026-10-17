@@ -104,7 +104,7 @@ function apiNormalizeSiret(string $value): ?string
 {
     $siret = preg_replace('/\s+/', "", $value);
 
-    if (!preg_match('/^\d{14}$/', $siret)) {
+    if ($siret === str_repeat('0', 14) || !preg_match('/^\d{14}$/', $siret)) {
         return null;
     }
 
@@ -136,11 +136,17 @@ function apiNotify(PDO $pdo, array $notification): void
             ":user_id" => $notification["user_id"] ?? null,
             ":application_id" => $notification["application_id"] ?? null,
             ":job_id" => $notification["job_id"] ?? null,
-            ":title" => mb_substr($notification["title"], 0, 150),
-            ":message" => mb_substr($notification["message"], 0, 500),
+            ":title" => apiTextSlice($notification["title"], 150),
+            ":message" => apiTextSlice($notification["message"], 500),
             ":type" => $notification["type"] ?? "info"
         ]);
-    } catch (PDOException $e) {
+    } catch (Throwable $e) {
         error_log("Notification non créée : " . $e->getMessage());
     }
+}
+
+function apiTextSlice(string $value, int $length): string {
+    if (function_exists('mb_substr')) return mb_substr($value, 0, $length, 'UTF-8');
+    preg_match_all('/./us', $value, $characters);
+    return implode('', array_slice($characters[0] ?? [], 0, $length));
 }

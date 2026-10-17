@@ -1,19 +1,23 @@
 {
-"name": "epitech-job-board",
-"version": "1.0.0",
-"private": true,
-"description": "Job Board project for Epitech",
-"repository": {
-"type": "git",
-"url": "https://github.com/Sabina-Kari-ai/Epitech-Job-Board.git"
-},
-"scripts": {
-"dev": "vite --host 127.0.0.1",
-"build": "vite build",
-"preview": "vite preview --host 127.0.0.1",
-"api": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/start-api.ps1"
-},
-"devDependencies": {
-"vite": "^8.3.4"
-}
+  "name": "epitech-job-board",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Job Board project for Epitech",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Sabina-Kari-ai/Epitech-Job-Board.git"
+  },
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "vite build",
+    "preview": "vite preview --host 127.0.0.1",
+    "api": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/start-api.ps1",
+    "test:frontend": "node scripts/check-frontend.cjs",
+    "test:api": "node scripts/test-integration.cjs"
+  },
+  "devDependencies": {
+    "linkedom": "^0.18.13",
+    "vite": "^8.3.4"
+  },
+  "type": "module"
 }

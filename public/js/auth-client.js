@@ -4,7 +4,7 @@
 (() => {
     const isLocalFrontend = ["localhost", "127.0.0.1"].includes(window.location.hostname);
     const API_URL = isLocalFrontend
-        ? `http://${window.location.hostname}:8001/api/auth/`
+        ? "/api/auth/"
         : `${window.location.origin}/api/auth/`;
     const UNAUTHENTICATED_MESSAGES = [
         "Vous devez être connecté.",

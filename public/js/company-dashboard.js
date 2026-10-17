@@ -6,10 +6,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const $ = (selector, parent = document) => parent.querySelector(selector);
     const $$ = (selector, parent = document) => Array.from(parent.querySelectorAll(selector));
 
-    const isLocalFrontend = ["localhost", "127.0.0.1"].includes(window.location.hostname);
-    const API_BASE = isLocalFrontend
-        ? `http://${window.location.hostname}:8001`
-        : window.location.origin;
+    const API_BASE = window.location.origin;
     const API = {
         jobs: `${API_BASE}/api/jobs/`,
         applications: `${API_BASE}/api/app/`,
@@ -367,7 +364,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     function beginJobEdit(job) {
         resetJobForm();
-        ["id", "title", "location", "contract_type", "salary", "short_description", "description"].forEach((name) => {
+        ["id", "title", "location", "contract_type", "salary", "short_description", "description", "skills", "missions", "profile", "benefits", "working_time", "application_deadline"].forEach((name) => {
             jobForm.elements.namedItem(name).value = job[name] ?? "";
         });
         jobForm.elements.namedItem("cover_letter_required").checked = Number(job.cover_letter_required) === 1;
@@ -399,6 +396,12 @@ document.addEventListener("DOMContentLoaded", async () => {
             salary: values.salary.trim(),
             short_description: values.short_description.trim(),
             description: values.description.trim(),
+            skills: values.skills.trim(),
+            missions: values.missions.trim(),
+            profile: values.profile.trim(),
+            benefits: values.benefits.trim(),
+            working_time: values.working_time.trim(),
+            application_deadline: values.application_deadline.trim(),
             cover_letter_required: jobForm.elements.namedItem("cover_letter_required").checked
         };
         if (id) payload.id = Number(id);

@@ -1,9 +1,6 @@
 // Page de détail d'une offre (job.html?id=…), utilisée notamment depuis les alertes.
 
-const isLocalFrontend = ["localhost", "127.0.0.1"].includes(window.location.hostname);
-const API_BASE = isLocalFrontend
-    ? `http://${window.location.hostname}:8001`
-    : window.location.origin;
+const API_BASE = window.location.origin;
 const API_URL = `${API_BASE}/api/jobs/`;
 
 const jobDetail = document.getElementById("jobDetail");
@@ -68,6 +65,9 @@ function renderJob(job) {
     const applyLink = makeElement("a", "details-button", "Postuler à cette offre");
     applyLink.href = `apply.html?id=${encodeURIComponent(job.id)}`;
 
+    for (const [title, value] of Object.entries({ 'Compétences':job.skills, 'Missions':job.missions, 'Profil recherché':job.profile, 'Avantages':job.benefits, 'Temps de travail':job.working_time, 'Date limite':job.application_deadline })) {
+        if (!value) continue; const section=makeElement('section','job-requirements');section.append(makeElement('h2','',title),makeElement('p','',value));content.appendChild(section);
+    }
     const apply = makeElement("div", "job-apply");
     apply.append(applyText, applyLink);
 

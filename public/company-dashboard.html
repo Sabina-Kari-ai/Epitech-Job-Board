@@ -6,9 +6,9 @@
     <meta name="description" content="Gérez votre entreprise et vos recrutements sur JobBoard.">
     <title>Espace entreprise | JobBoard</title>
     <link rel="stylesheet" href="css/style.css">
-    <script src="js/language.js" defer></script>
-    <script src="js/auth-client.js" defer></script>
-    <script src="js/company-dashboard.js" defer></script>
+    <script type="module" src="js/language.js" defer></script>
+    <script type="module" src="js/auth-client.js" defer></script>
+    <script type="module" src="js/company-dashboard.js" defer></script>
 </head>
 
 <body class="co-page" hidden>
@@ -187,7 +187,7 @@
                             <option value="CDI">CDI</option>
                             <option value="CDD">CDD</option>
                             <option value="Stage">Stage</option>
-                            <option value="Alternance">Alternance</option>
+                            <option value="Alternance">Alternance</option><option value="Intérim">Intérim</option>
                         </select>
                     </div>
                     <div class="form-field co-form-wide">
@@ -205,6 +205,12 @@
                         <label for="job-description">Description complète *</label>
                         <textarea id="job-description" name="description" rows="8" required
                                   placeholder="Missions, profil recherché, compétences, avantages..."></textarea>
+<div class="form-group"><label for="extended-skills">Compétences</label><textarea id="extended-skills" name="skills" rows="3" maxlength="20000"></textarea></div>
+<div class="form-group"><label for="extended-missions">Missions</label><textarea id="extended-missions" name="missions" rows="3" maxlength="20000"></textarea></div>
+<div class="form-group"><label for="extended-profile">Profil recherché</label><textarea id="extended-profile" name="profile" rows="3" maxlength="20000"></textarea></div>
+<div class="form-group"><label for="extended-benefits">Avantages</label><textarea id="extended-benefits" name="benefits" rows="3" maxlength="20000"></textarea></div>
+<div class="form-group"><label for="extended-working_time">Temps de travail</label><textarea id="extended-working_time" name="working_time" rows="3" maxlength="20000"></textarea></div>
+<div class="form-group"><label for="extended-application_deadline">Date limite de candidature</label><input type="date" id="extended-application_deadline" name="application_deadline"></div>
                     </div>
                 </div>
                 <label class="co-checkbox">

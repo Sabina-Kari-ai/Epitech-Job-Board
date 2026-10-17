@@ -5,6 +5,15 @@
 (() => {
     const STORAGE_KEY = "jobboard_language";
     const translations = {
+        "Métier": "Job title",
+        "Compétence": "Skill",
+        "Intérim": "Temporary",
+        "Date limite de candidature": "Application deadline",
+        "Temps de travail": "Working hours",
+        "Compétences": "Skills",
+        "Missions": "Responsibilities",
+        "Profil recherché": "Desired profile",
+        "Avantages": "Benefits",
         "Offres": "Jobs",
         "Entreprises": "Companies",
         "Mon profil": "My profile",

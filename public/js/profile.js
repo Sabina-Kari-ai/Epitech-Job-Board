@@ -14,7 +14,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const phoneField = document.getElementById("profile-phone");
     const languageField = document.getElementById("profile-language");
 
-    const DOCUMENTS_API_URL = `http://${window.location.hostname}:8001/api/profile-documents/`;
+    const DOCUMENTS_API_URL = "/api/profile-documents/";
     const MAX_FILE_SIZE = 5 * 1024 * 1024;
     const ALLOWED_EXTENSIONS = ["pdf", "doc", "docx"];
     const callingCodes = {

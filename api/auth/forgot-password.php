@@ -86,6 +86,12 @@ try {
         "Ce lien expire dans 30 minutes et ne peut être utilisé qu'une fois.\n\n" .
         "Si vous n'avez pas demandé cette réinitialisation, ignorez cet e-mail.\n";
 
+    // Local demo remains the default until outbound email is explicitly configured.
+    if ((getenv('MAIL_DRIVER') ?: 'demo') === 'demo') {
+        $outbox=$pdo->prepare('INSERT INTO mail_outbox (user_id,recipient,subject,body) VALUES (?,?,?,?)');
+        $outbox->execute([$userId,$email,$subject,$body]);
+        sendForgotJson(200, ['success'=>true,'message'=>$genericMessage]);
+    }
     $headers = [
         "From" => $fromEmail,
         "Content-Type" => "text/plain; charset=UTF-8"

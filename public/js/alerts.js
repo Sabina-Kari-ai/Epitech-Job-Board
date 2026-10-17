@@ -1,4 +1,4 @@
-// Alertes emploi : enregistrées dans le localStorage du navigateur, par utilisateur.
+// Alertes emploi enregistrées en base, isolées par compte candidat.
 // La page affiche aussi les offres qui correspondent aux alertes actives.
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -10,45 +10,35 @@ document.addEventListener("DOMContentLoaded", async () => {
     const profileMenuButton = document.querySelector(".profile-menu-button");
     const profileDropdown = document.querySelector(".profile-dropdown");
 
-    let storageKey = "";
+    let cachedAlerts = [];
     let user = null;
 
     try {
         user = await window.JobBoardAuth.requireUser();
         if (!user) return;
-        storageKey = `jobboard_alerts_${user.id}`;
+        const response = await fetch('/api/alerts/');
+        if (!response.ok) throw new Error('Impossible de charger les alertes.');
+        cachedAlerts = (await response.json()).alerts;
+        // Preserve browser-only alerts from the previous version, once, for this owner.
+        if (!cachedAlerts.length) {
+            try { const legacy=JSON.parse(localStorage.getItem('jobboard_alerts_'+user.id)||'[]');
+                if (Array.isArray(legacy) && legacy.length && await saveAlerts(legacy)) localStorage.removeItem('jobboard_alerts_'+user.id);
+            } catch { /* Keep legacy data intact if storage is unavailable. */ }
+        }
     } catch (error) {
         console.error("Impossible de charger la session :", error);
         showFeedback("Impossible de charger vos alertes.", true);
         return;
     }
 
-    function getAlerts() {
+    function getAlerts() { return structuredClone(cachedAlerts); }
+    async function saveAlerts(alerts) {
         try {
-            const alerts = JSON.parse(localStorage.getItem(storageKey) || "[]");
-            if (!Array.isArray(alerts)) {
-                throw new Error("Le format des alertes enregistrées est invalide.");
-            }
-            return alerts;
-        } catch (error) {
-            console.error("Impossible de lire les alertes :", error);
-            showFeedback("Impossible de lire vos alertes enregistrées.", true);
-            return null;
-        }
+            const response = await fetch('/api/alerts/', {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify({alerts})});
+            const data=await response.json(); if(!response.ok) throw new Error(data.error || 'Impossible d’enregistrer les alertes.');
+            cachedAlerts=data.alerts; document.dispatchEvent(new CustomEvent('jobboard:alerts-changed')); return true;
+        } catch(error) { showFeedback(error.message, true); return false; }
     }
-
-    function saveAlerts(alerts) {
-        try {
-            localStorage.setItem(storageKey, JSON.stringify(alerts));
-            document.dispatchEvent(new CustomEvent("jobboard:alerts-changed"));
-            return true;
-        } catch (error) {
-            console.error("Impossible d'enregistrer les alertes :", error);
-            showFeedback("Impossible d'enregistrer vos alertes.", true);
-            return false;
-        }
-    }
-
     function showFeedback(message, isError = false) {
         if (!feedback) return;
 
@@ -211,7 +201,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             alert.id === id ? { ...alert, ...changes } : alert
         );
 
-        if (!saveAlerts(alerts)) return;
+        if (!await saveAlerts(alerts)) return;
         renderAlerts();
         await loadMatchingJobs(user.id);
     }
@@ -220,7 +210,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         const currentAlerts = getAlerts();
         if (!currentAlerts) return;
         const alerts = currentAlerts.filter((alert) => alert.id !== id);
-        if (!saveAlerts(alerts)) return;
+        if (!await saveAlerts(alerts)) return;
         renderAlerts();
         await loadMatchingJobs(user.id);
         showFeedback("Alerte supprimée.");
@@ -251,7 +241,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             const alerts = getAlerts();
             if (!alerts) return;
             alerts.unshift(newAlert);
-            if (!saveAlerts(alerts)) return;
+            if (!await saveAlerts(alerts)) return;
 
             alertForm.reset();
             showFeedback("Votre alerte a bien été créée.");

@@ -120,12 +120,15 @@ try {
             sendJson(400, ["error" => "L'adresse email est invalide."]);
         }
 
+        $pdo->beginTransaction();
+        // Serialize submissions for the same job across separate PHP workers.
+        // This preserves old records while preventing new duplicate applications.
         // Vérifie l'offre et la lettre requise.
         $checkJob = $pdo->prepare(
-            "SELECT jobs.id, jobs.title, jobs.cover_letter_required, jobs.company_id
+            "SELECT jobs.id, jobs.title, jobs.cover_letter_required, jobs.company_id, jobs.application_deadline
              FROM jobs
              INNER JOIN companies ON companies.id = jobs.company_id
-             WHERE jobs.id = :job_id AND companies.status = 'approved'"
+             WHERE jobs.id = :job_id AND companies.status = 'approved' FOR UPDATE"
         );
         $checkJob->execute([":job_id" => $jobId]);
         $job = $checkJob->fetch(PDO::FETCH_ASSOC);
@@ -134,6 +137,11 @@ try {
             sendJson(404, ["error" => "Cette offre n'existe pas."]);
         }
 
+        $duplicate = $pdo->prepare('SELECT id FROM applications WHERE user_id = ? AND job_id = ? LIMIT 1');
+        $duplicate->execute([$userId, $jobId]);
+        if ($duplicate->fetchColumn()) sendJson(409, ['error' => 'Vous avez déjà postulé à cette offre.']);
+        $today = (new DateTimeImmutable('now', new DateTimeZone('Europe/Paris')))->format('Y-m-d');
+        if (!empty($job['application_deadline']) && $job['application_deadline'] < $today) sendJson(410, ['error' => 'La date limite de candidature est dépassée.']);
         $cv = readPdfUpload("cv", "Le CV");
         $uploadedCoverLetter = readPdfUpload(
             "cover_letter_file",
@@ -217,6 +225,8 @@ try {
 
         $statement->execute();
         $applicationId = (int) $pdo->lastInsertId();
+
+        $pdo->commit();
 
         // Notifie l'entreprise ; un échec ne doit pas annuler la candidature.
         apiNotify($pdo, [
@@ -477,7 +487,7 @@ try {
                 "title" => "Candidature : " . APPLICATION_STATUS_LABELS[$status],
                 "message" => "Votre candidature « " . $current["title"] . " » chez " .
                     $current["company"] . " est désormais : " .
-                    mb_strtolower(APPLICATION_STATUS_LABELS[$status]) . "."
+                    APPLICATION_STATUS_LABELS[$status] . "."
             ]);
         }
 
@@ -520,6 +530,7 @@ try {
     sendJson(405, ["error" => "Méthode non autorisée."]);
 
 } catch (PDOException $e) {
+    if ($pdo->inTransaction()) $pdo->rollBack();
     error_log($e->getMessage());
 
     sendJson(500, [

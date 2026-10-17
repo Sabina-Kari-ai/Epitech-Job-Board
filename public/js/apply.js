@@ -1,9 +1,9 @@
 // Formulaire de candidature (apply.html?id=…). Le candidat doit être connecté :
 // ses coordonnées sont pré-remplies et le CV de son profil est chargé automatiquement.
 
-const API_URL = `http://${window.location.hostname}:8001/api/jobs/`;
-const APPLICATIONS_API_URL = `http://${window.location.hostname}:8001/api/app/`;
-const PROFILE_DOCUMENTS_API_URL = `http://${window.location.hostname}:8001/api/profile-documents/`;
+const API_URL = "/api/jobs/";
+const APPLICATIONS_API_URL = "/api/app/";
+const PROFILE_DOCUMENTS_API_URL = "/api/profile-documents/";
 
 const params = new URLSearchParams(window.location.search);
 const jobId = Number(params.get("id") || params.get("job"));
@@ -198,13 +198,14 @@ function setApplicationAlertFeedback(message, isError = false) {
 }
 
 // Propose de créer une alerte sur ce type d'offre après l'envoi de la candidature.
-function updateApplicationAlert(enabled) {
+async function updateApplicationAlert(enabled) {
     if (!currentUser || !selectedJob || !applicationAlertId) {
         throw new Error("Les informations de la candidature sont indisponibles.");
     }
 
-    const storageKey = `jobboard_alerts_${currentUser.id}`;
-    const storedAlerts = JSON.parse(localStorage.getItem(storageKey) || "[]");
+    const response=await fetch('/api/alerts/');
+    if(!response.ok) throw new Error('Impossible de charger les alertes.');
+    const storedAlerts=(await response.json()).alerts;
     if (!Array.isArray(storedAlerts)) {
         throw new Error("Le format des alertes enregistrées est invalide.");
     }
@@ -222,15 +223,16 @@ function updateApplicationAlert(enabled) {
         });
     }
 
-    localStorage.setItem(storageKey, JSON.stringify(alerts));
+    const saved=await fetch('/api/alerts/',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({alerts})});
+    if(!saved.ok) throw new Error('Impossible de sauvegarder cette alerte.');
     document.dispatchEvent(new CustomEvent("jobboard:alerts-changed"));
 }
 
 const applicationAlertCheckbox = document.getElementById("application-alert-checkbox");
 if (applicationAlertCheckbox) {
-    applicationAlertCheckbox.addEventListener("change", () => {
+    applicationAlertCheckbox.addEventListener("change", async () => {
         try {
-            updateApplicationAlert(applicationAlertCheckbox.checked);
+            await updateApplicationAlert(applicationAlertCheckbox.checked);
             setApplicationAlertFeedback(
                 applicationAlertCheckbox.checked
                     ? "Votre alerte a bien été créée et enregistrée."

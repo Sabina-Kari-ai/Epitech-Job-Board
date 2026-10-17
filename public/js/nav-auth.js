@@ -31,7 +31,7 @@ function setResponsesBadge(count) {
 async function updateResponsesBadge() {
     try {
         const base = ["localhost", "127.0.0.1"].includes(window.location.hostname)
-            ? `http://${window.location.hostname}:8001`
+            ? window.location.origin
             : window.location.origin;
         const response = await fetch(`${base}/api/notifications/?limit=1`, { credentials: "include" });
         if (!response.ok) return;
@@ -76,6 +76,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (user) {
             const name = `${user.first_name} ${user.last_name}`.trim();
             if (userName) userName.textContent = name;
+            const greeting=document.getElementById('hero-title');
+            if(greeting) greeting.textContent=user.role==='candidate' ? 'Bonjour '+user.first_name+', trouvez votre prochain emploi' : 'Bonjour '+user.first_name+', bienvenue sur JobBoard';
 
             // Les liens candidat sont remplacés par l'espace du rôle connecté.
             const dropdown = document.querySelector(".profile-dropdown");

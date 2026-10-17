@@ -1,6 +1,6 @@
 // « Mes candidatures » : historique du candidat et réponses des recruteurs.
 
-const APPLICATIONS_API_URL = `http://${window.location.hostname}:8001/api/app/?mine=1`;
+const APPLICATIONS_API_URL = "/api/app/?mine=1";
 const applicationsList = document.getElementById("applications-list");
 
 const statusLabels = {
@@ -60,14 +60,14 @@ function renderApplications(applications) {
             if (application.cv_file_name) {
                 const cvLink = document.createElement("a");
                 cvLink.href =
-                    `http://${window.location.hostname}:8001/api/app/?id=${encodeURIComponent(application.id)}&attachment=cv`;
+                    "/api/app/?id=${encodeURIComponent(application.id)}&attachment=cv";
                 cvLink.textContent = "Télécharger mon CV";
                 info.appendChild(cvLink);
             }
             if (application.cover_letter_file_name) {
                 const coverLetterLink = document.createElement("a");
                 coverLetterLink.href =
-                    `http://${window.location.hostname}:8001/api/app/?id=${encodeURIComponent(application.id)}&attachment=cover-letter`;
+                    "/api/app/?id=${encodeURIComponent(application.id)}&attachment=cover-letter";
                 coverLetterLink.textContent = "Télécharger ma lettre";
                 info.appendChild(coverLetterLink);
             }
@@ -120,7 +120,7 @@ async function loadApplications() {
 }
 
 // Réponses des recruteurs : notifications créées à chaque changement de statut.
-const NOTIFICATIONS_API_URL = `http://${window.location.hostname}:8001/api/notifications/`;
+const NOTIFICATIONS_API_URL = "/api/notifications/";
 
 async function loadCandidateNotifications() {
     const section = document.getElementById("candidate-notifications");

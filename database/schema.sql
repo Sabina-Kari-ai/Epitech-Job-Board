@@ -11,6 +11,8 @@
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
 
+DROP TABLE IF EXISTS candidate_alerts;
+DROP TABLE IF EXISTS mail_outbox;
 DROP TABLE IF EXISTS `notifications`;
 DROP TABLE IF EXISTS `password_resets`;
 DROP TABLE IF EXISTS `user_documents`;
@@ -81,6 +83,12 @@ CREATE TABLE `jobs` (
   `salary`                varchar(100) DEFAULT NULL,
   `short_description`     varchar(255) NOT NULL,   -- affichée dans la liste des offres
   `description`           text         NOT NULL,   -- affichée par « En savoir plus »
+  `skills` TEXT NULL,
+  `missions` TEXT NULL,
+  `profile` TEXT NULL,
+  `benefits` TEXT NULL,
+  `working_time` TEXT NULL,
+  `application_deadline` DATE NULL,
   `cover_letter_required` tinyint(1)   NOT NULL DEFAULT 0,
   `created_at`            timestamp    NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at`            timestamp    NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -191,3 +199,6 @@ CREATE TABLE `notifications` (
   CONSTRAINT `fk_notifications_user` FOREIGN KEY (`user_id`)
     REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS candidate_alerts (user_id INT UNSIGNED PRIMARY KEY, alerts_json LONGTEXT NOT NULL, updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, CONSTRAINT fk_candidate_alerts_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE TABLE IF NOT EXISTS mail_outbox (id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, user_id INT UNSIGNED NULL, recipient VARCHAR(255) NOT NULL, subject VARCHAR(255) NOT NULL, body TEXT NOT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, CONSTRAINT fk_mail_outbox_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

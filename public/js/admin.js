@@ -2,10 +2,7 @@
 // utilisateurs et candidatures. Les quatre listes partagent le même
 // fonctionnement (recherche, filtres, pagination), décrit dans `lists`.
 
-const isLocalFrontend = ["localhost", "127.0.0.1"].includes(window.location.hostname);
-const API_BASE = isLocalFrontend
-    ? `http://${window.location.hostname}:8001`
-    : window.location.origin;
+const API_BASE = window.location.origin;
 const PAGE_SIZE = 10;
 
 const ENDPOINTS = {

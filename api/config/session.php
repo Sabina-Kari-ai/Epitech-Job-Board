@@ -4,6 +4,8 @@
 $allowedOrigins = [
     "http://127.0.0.1:5173",
     "http://localhost:5173",
+    "http://127.0.0.1:5174",
+    "http://localhost:5174",
     "http://127.0.0.1:4173",
     "http://localhost:4173"
 ];
@@ -75,3 +77,14 @@ function jobBoardStartSession(string $scope): void
 }
 
 jobBoardStartSession(jobBoardRequestScope());
+
+// Refresh authorization on every request: revoked roles and deleted users must
+// take effect without requiring the owner of the session to log out.
+if (!empty($_SESSION['user_id'])) {
+    require_once __DIR__ . '/database.php';
+    $sessionUser = $pdo->prepare('SELECT role FROM users WHERE id = ?');
+    $sessionUser->execute([(int) $_SESSION['user_id']]);
+    $currentRole = $sessionUser->fetchColumn();
+    if ($currentRole === false) { $_SESSION = []; }
+    else { $_SESSION['user_role'] = $currentRole; }
+}

@@ -2,7 +2,7 @@
 
 const API_BASE_URL = ["localhost:5173", "127.0.0.1:5173", "localhost:4173", "127.0.0.1:4173"]
     .includes(window.location.host)
-    ? "http://127.0.0.1:8001"
+    ? window.location.origin
     : window.location.origin;
 const API_URL = `${API_BASE_URL}/api/auth/reset-password.php`;
 const form = document.getElementById("resetForm");

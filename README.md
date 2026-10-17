@@ -41,7 +41,7 @@ Les autres comptes de test sont détaillés dans [Comptes de démonstration](#co
 ## Prérequis
 
 - **Node.js** et **npm** (pour Vite) ;
-- **PHP 8.1 ou plus**, avec les extensions `pdo_mysql`, `fileinfo` et `mbstring` ;
+- **PHP 8.1 ou plus**, avec les extensions `pdo_mysql`, `fileinfo` (`mbstring` est facultatif) ;
 - **MySQL 8** ou MariaDB.
 
 Sous Windows, le plus simple est d'installer [WampServer](https://www.wampserver.com/), qui fournit PHP, MySQL et phpMyAdmin. Le script `npm run api` sait retrouver le PHP de WAMP tout seul.
@@ -314,3 +314,29 @@ scripts/         démarrage de l'API sous Windows
 - Les alertes emploi sont enregistrées dans le navigateur (localStorage), pas en base.
 - Les CV et lettres sont stockés directement en base (colonnes BLOB), 5 Mo maximum par fichier ; les logos sont enregistrés dans `uploads/company-logos/`.
 - Le CORS de l'API n'autorise que le front local (ports 5173 et 4173). Pour un autre domaine, ajoute-le avec la variable `FRONTEND_ORIGIN`.
+
+## Mise à jour du 17 octobre — intégration vérifiée
+
+Les fonctions du binôme sont conservées : SIRET et validation des entreprises, tableau de bord recruteur, administration paginée, notifications de candidature, profils et documents, FR/EN et sessions admin/site séparées. Les appels frontend utilisent désormais des URLs relatives `/api/...` ; Vite transmet `/api` et `/uploads` à PHP, y compris lorsque Vite choisit le port 5174. Les scripts sont inclus dans le build de production.
+
+Les rôles sont relus en base à chaque requête. Les doublons de candidature sont bloqués, y compris sur deux processus PHP simultanés. Une offre dont la date limite est passée refuse les candidatures. Les champs compétences, missions, profil, avantages, temps de travail et date limite sont conservés et éditables. Le filtre Compétence, Intérim et le prénom dans le message Bonjour sont rétablis.
+
+### Installation et mise à jour de la base
+
+- **Installation vide** : créer la base `job_board`, importer `database/schema.sql`, puis `database/seed.sql`. Le seed actuel du binôme contient huit offres ; les offres existantes ne sont pas supprimées lors d’une mise à jour.
+- **Base existante du binôme** : définir les variables DB_HOST/DB_PORT/DB_NAME/DB_USER/DB_PASSWORD décrites plus haut, puis exécuter `php scripts/migrate.php`. Cette migration ajoute les colonnes et tables manquantes sans supprimer les comptes, offres ou candidatures. Elle peut être relancée et fonctionne sur MariaDB et MySQL 8. Ne pas réimporter schema.sql/seed.sql sur une base remplie.
+- `database/migrate-20261017.sql` est également fourni pour MariaDB ; utiliser le script PHP pour une mise à jour portable.
+- Une configuration Windows locale peut aussi être placée dans `api/config/database.local.php` (tableau PHP avec host, port, database, username, password). Ce fichier est ignoré par Git. Les variables d’environnement restent prises en charge.
+- Les alertes sont maintenant stockées en base. Lors de la première visite de la page Alertes, les anciennes alertes du navigateur sont importées si le compte n’a pas déjà d’alertes en base ; la copie locale n’est retirée qu’après sauvegarde réussie.
+
+### Email local
+
+Sans configuration SMTP, `MAIL_DRIVER=demo` est le comportement par défaut : le lien de réinitialisation est conservé dans une boîte locale protégée, jamais renvoyé dans la réponse publique. Après connexion admin, ouvrir `mail.html` pour lire les messages ; aucun bouton Emails n’est réintroduit dans le menu. Pour un envoi réel, configurer PHP mail et définir `MAIL_DRIVER=php`. `FRONTEND_URL` doit correspondre au port réellement utilisé par Vite.
+
+### Vérifications reproductibles
+
+`npm ci`, puis `npm run build` et `npm run test:frontend`. Le test frontend vérifie les assets produits, les identifiants HTML, les filtres, les cartes dépliables, la navigation et les langues (259 vérifications).
+
+Sous Windows, `npm run test:api` crée une instance MariaDB temporaire indépendante, importe uniquement son propre jeu de démonstration et démarre deux serveurs PHP de test. MariaDB doit être installé ; sa localisation peut être précisée par MARIADB_BIN. Les ports 33319, 18119 et 18120 doivent être libres. Le test ne modifie aucune base existante et arrête ses propres processus. Il couvre 100 vérifications : rôles, sessions, SIRET, validation, ownership, PDF, alertes, concurrence, champs des offres, réinitialisation et migrations répétables. Les résultats sont conservés dans un dossier temporaire jobboard-integration-*.
+
+La syntaxe de tous les fichiers PHP a également été validée avec php -l.

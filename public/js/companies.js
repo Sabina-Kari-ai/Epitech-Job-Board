@@ -1,9 +1,6 @@
 // Liste des entreprises validées, avec un lien vers leurs offres.
 
-const isLocalFrontend = ["localhost", "127.0.0.1"].includes(window.location.hostname);
-const API_BASE = isLocalFrontend
-    ? `http://${window.location.hostname}:8001`
-    : window.location.origin;
+const API_BASE = window.location.origin;
 const COMPANIES_API_URL = `${API_BASE}/api/companies/`;
 
 const companiesList = document.getElementById("companies-list");

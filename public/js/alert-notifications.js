@@ -2,7 +2,7 @@
 // de la page des alertes et qui correspondent à au moins une alerte.
 
 (() => {
-    const JOBS_API_URL = `http://${window.location.hostname}:8001/api/jobs/`;
+    const JOBS_API_URL = "/api/jobs/";
 
     function normalize(value) {
         return String(value || "")
@@ -12,16 +12,11 @@
             .trim();
     }
 
-    function getAlerts(userId) {
-        const alerts = JSON.parse(
-            localStorage.getItem(`jobboard_alerts_${userId}`) || "[]"
-        );
-        if (!Array.isArray(alerts)) {
-            throw new Error("Le format des alertes enregistrées est invalide.");
-        }
-        return alerts;
+    async function getAlerts(userId) {
+        const response=await fetch('/api/alerts/');
+        if(!response.ok) throw new Error('Impossible de charger les alertes.');
+        return (await response.json()).alerts;
     }
-
     async function getJobs() {
         const response = await fetch(JOBS_API_URL);
         if (!response.ok) throw new Error(`Erreur HTTP ${response.status}`);
@@ -41,6 +36,8 @@
             job.title,
             job.short_description,
             job.description,
+            job.skills,
+            job.missions,
             job.company
         ].join(" "));
 

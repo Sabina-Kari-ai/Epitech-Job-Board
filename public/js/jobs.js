@@ -1,16 +1,14 @@
 // Page d'accueil : charge les offres depuis l'API, gère la recherche et les
 // filtres côté navigateur, et affiche le détail d'une offre dans sa carte.
 
-const isLocalFrontend = ["localhost", "127.0.0.1"].includes(window.location.hostname);
-const API_BASE = isLocalFrontend
-    ? `http://${window.location.hostname}:8001`
-    : window.location.origin;
+const API_BASE = window.location.origin;
 const API_URL = `${API_BASE}/api/jobs/`;
 
 let jobs = [];
 
 const jobsList = document.getElementById("jobs-list");
 const searchInput = document.getElementById("search");
+const competenceInput = document.getElementById('competence');
 const locationInput = document.getElementById("location");
 const searchButton = document.getElementById("search-button");
 const jobsCount = document.getElementById("jobs-count");
@@ -121,10 +119,13 @@ async function toggleDetails(job, panel, button) {
             );
         }
 
+        for(const [label,value] of Object.entries({'Compétences':detail.skills,'Missions':detail.missions,'Profil recherché':detail.profile,'Avantages':detail.benefits})) {if(value)main.append(makeElement('h4','',label),makeElement('p','job-details-text',value));}
         const facts = makeElement("ul", "job-details-facts");
         addFact(facts, "Salaire", detail.salary || "Non précisé");
         addFact(facts, "Contrat", detail.contract_type);
         addFact(facts, "Lieu", detail.location);
+        addFact(facts, "Temps de travail", detail.working_time);
+        addFact(facts, "Date limite", detail.application_deadline);
         addFact(
             facts,
             "Lettre de motivation",
@@ -232,11 +233,14 @@ function filterJobs() {
         const location = String(job.location || "").toLowerCase();
         const contract = String(job.contract_type || "");
 
+        const skills=String(job.skills || '').toLowerCase();
+        const competence=competenceInput?.value.toLowerCase().trim() || '';
+        const matchesCompetence=competence==='' || [skills,String(job.description||'').toLowerCase(),shortDescription].some(text=>text.includes(competence));
         const matchesSearch =
             search === "" ||
             title.includes(search) ||
             company.includes(search) ||
-            shortDescription.includes(search);
+            shortDescription.includes(search) || skills.includes(search);
 
         const matchesLocationSearch =
             locationSearch === "" || location.includes(locationSearch);
@@ -249,7 +253,7 @@ function filterJobs() {
             selectedLocation.value === "all" ||
             location === selectedLocation.value.toLowerCase();
 
-        return matchesSearch && matchesLocationSearch && matchesContract && matchesLocation;
+        return matchesCompetence && matchesSearch && matchesLocationSearch && matchesContract && matchesLocation;
     });
 
     displayJobs(filteredJobs);
@@ -311,6 +315,7 @@ if (searchInput) {
     });
 }
 
+if (competenceInput) competenceInput.addEventListener('input',filterJobs);
 if (locationInput) {
     locationInput.addEventListener("input", filterJobs);
 }
@@ -329,6 +334,7 @@ if (resetButton) {
     resetButton.addEventListener("click", () => {
         if (searchInput) searchInput.value = "";
         if (locationInput) locationInput.value = "";
+        if (competenceInput) competenceInput.value = "";
         contractFilters.forEach((filter) => {
             filter.checked = false;
         });
