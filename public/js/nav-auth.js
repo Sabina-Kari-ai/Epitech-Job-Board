@@ -48,11 +48,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     const logoutButton = document.getElementById("logout-button");
     const userName = document.getElementById("user-first-name");
 
+    let adminNavigation = false;
     try {
-        const user = await window.JobBoardAuth.getUser();
-        const homeGreeting = document.getElementById('hero-title') || document.querySelector('.hero-text h1');
-        // Admin and site cookies remain independent; use admin only for the home greeting.
-        if (!user && homeGreeting) {
+        let user = await window.JobBoardAuth.getUser();
+        // Public navigation can use the admin session; protected candidate pages cannot.
+        if (!user && document.body.dataset.authRequired !== "true") {
             try {
                 const response = await fetch('/api/auth/', {
                     credentials: 'include',
@@ -62,7 +62,8 @@ document.addEventListener("DOMContentLoaded", async () => {
                 if (response.ok) {
                     const data = await response.json();
                     if (data.user?.role === 'admin') {
-                        homeGreeting.textContent = 'Bonjour ' + data.user.first_name + ', bienvenue sur JobBoard';
+                        user = data.user;
+                        adminNavigation = true;
                     }
                 }
             } catch { /* Keep the guest heading when no admin session is available. */ }
@@ -91,6 +92,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (authenticatedActions) authenticatedActions.hidden = !user;
 
         if (user) {
+            if (user.role !== 'candidate') {
+                document.querySelectorAll('a[href="alerts.html"]').forEach(link => { link.hidden = true; });
+            }
             if (user.role === 'candidate') document.querySelectorAll('.nav-links a[href="app.html"], .profile-dropdown a[href="app.html"]').forEach(link => link.remove());
             const name = `${user.first_name} ${user.last_name}`.trim();
             if (userName) userName.textContent = name;
@@ -138,10 +142,20 @@ document.addEventListener("DOMContentLoaded", async () => {
         logoutButton.addEventListener("click", async () => {
             logoutButton.disabled = true;
             try {
-                await window.JobBoardAuth.request({
-                    method: "POST",
-                    body: JSON.stringify({ action: "logout" })
-                });
+                if (adminNavigation) {
+                    const response = await fetch('/api/auth/', {
+                        method: 'POST', credentials: 'include',
+                        headers: { 'Content-Type': 'application/json', 'X-Session-Scope': 'admin' },
+                        body: JSON.stringify({ action: 'logout' }),
+                        signal: AbortSignal.timeout(10000)
+                    });
+                    if (!response.ok) throw new Error('Déconnexion impossible.');
+                } else {
+                    await window.JobBoardAuth.request({
+                        method: "POST",
+                        body: JSON.stringify({ action: "logout" })
+                    });
+                }
                 window.location.href = "index.html";
             } catch (error) {
                 console.error("Déconnexion impossible :", error);
