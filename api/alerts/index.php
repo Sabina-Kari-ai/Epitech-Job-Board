@@ -19,7 +19,7 @@ try {
         foreach (['id'=>80, 'title'=>150, 'keyword'=>255, 'location'=>150, 'contract'=>30] as $field=>$max) {
             if (!isset($alert[$field]) || !is_string($alert[$field]) || strlen($alert[$field]) > $max) apiJson(400, ['error'=>'Champ d’alerte invalide.']);
         }
-        if ($alert['id']==='' || trim($alert['title'])==='' || isset($ids[$alert['id']]) || !is_bool($alert['enabled'] ?? null) || !in_array($alert['contract'], ['', 'CDI','CDD','Alternance','Stage','Intérim'], true)) apiJson(400, ['error'=>'Alerte invalide.']);
+        if ($alert['id']==='' || trim($alert['title'])==='' || isset($ids[$alert['id']]) || !is_bool($alert['enabled'] ?? null) || !in_array($alert['contract'], ['', 'CDI','CDD','Alternance','Stage','Intérim','Freelance'], true)) apiJson(400, ['error'=>'Alerte invalide.']);
         $ids[$alert['id']] = true;
         $timestamp = isset($alert['createdAt']) && is_string($alert['createdAt']) ? strtotime($alert['createdAt']) : false;
         $clean[] = ['id'=>$alert['id'], 'title'=>trim($alert['title']), 'keyword'=>trim($alert['keyword']), 'location'=>trim($alert['location']), 'contract'=>$alert['contract'], 'enabled'=>$alert['enabled'], 'createdAt'=>gmdate('c', $timestamp ?: time())];

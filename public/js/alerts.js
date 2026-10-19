@@ -20,9 +20,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (!response.ok) throw new Error('Impossible de charger les alertes.');
         cachedAlerts = (await response.json()).alerts;
         // Preserve browser-only alerts from the previous version, once, for this owner.
-        if (!cachedAlerts.length) {
+        {
             try { const legacy=JSON.parse(localStorage.getItem('jobboard_alerts_'+user.id)||'[]');
-                if (Array.isArray(legacy) && legacy.length && await saveAlerts(legacy)) localStorage.removeItem('jobboard_alerts_'+user.id);
+                if (Array.isArray(legacy) && legacy.length && await saveAlerts([...cachedAlerts, ...legacy.filter(item => !cachedAlerts.some(saved => saved.id === item.id))])) localStorage.removeItem('jobboard_alerts_'+user.id);
             } catch { /* Keep legacy data intact if storage is unavailable. */ }
         }
     } catch (error) {

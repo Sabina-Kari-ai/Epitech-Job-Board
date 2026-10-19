@@ -268,7 +268,7 @@ async function loadJobs() {
     displayMessage("Chargement des offres...", "");
 
     try {
-        const response = await fetch(API_URL);
+        const response = await fetch(API_URL, { signal: AbortSignal.timeout(10000) });
 
         if (!response.ok) {
             throw new Error("Erreur HTTP " + response.status);

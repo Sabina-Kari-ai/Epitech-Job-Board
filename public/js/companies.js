@@ -72,7 +72,7 @@ async function loadCompanies() {
     companiesList.textContent = "Chargement des entreprises...";
 
     try {
-        const response = await fetch(COMPANIES_API_URL);
+        const response = await fetch(COMPANIES_API_URL, { signal: AbortSignal.timeout(10000) });
         const data = await response.json();
         if (!response.ok) {
             throw new Error(data.error || `Erreur HTTP ${response.status}`);

@@ -50,6 +50,23 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     try {
         const user = await window.JobBoardAuth.getUser();
+        const homeGreeting = document.getElementById('hero-title') || document.querySelector('.hero-text h1');
+        // Admin and site cookies remain independent; use admin only for the home greeting.
+        if (!user && homeGreeting) {
+            try {
+                const response = await fetch('/api/auth/', {
+                    credentials: 'include',
+                    headers: { 'X-Session-Scope': 'admin' },
+                    signal: AbortSignal.timeout(10000)
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.user?.role === 'admin') {
+                        homeGreeting.textContent = 'Bonjour ' + data.user.first_name + ', bienvenue sur JobBoard';
+                    }
+                }
+            } catch { /* Keep the guest heading when no admin session is available. */ }
+        }
         const requiresAuth = document.body.dataset.authRequired === "true";
         const requiredRole = document.body.dataset.authRole;
 
@@ -74,9 +91,10 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (authenticatedActions) authenticatedActions.hidden = !user;
 
         if (user) {
+            if (user.role === 'candidate') document.querySelectorAll('.nav-links a[href="app.html"], .profile-dropdown a[href="app.html"]').forEach(link => link.remove());
             const name = `${user.first_name} ${user.last_name}`.trim();
             if (userName) userName.textContent = name;
-            const greeting=document.getElementById('hero-title');
+            const greeting=document.getElementById('hero-title') || document.querySelector('.hero-text h1');
             if(greeting) greeting.textContent=user.role==='candidate' ? 'Bonjour '+user.first_name+', trouvez votre prochain emploi' : 'Bonjour '+user.first_name+', bienvenue sur JobBoard';
 
             // Les liens candidat sont remplacés par l'espace du rôle connecté.

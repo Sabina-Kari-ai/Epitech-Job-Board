@@ -340,3 +340,6 @@ Sans configuration SMTP, `MAIL_DRIVER=demo` est le comportement par défaut : le
 Sous Windows, `npm run test:api` crée une instance MariaDB temporaire indépendante, importe uniquement son propre jeu de démonstration et démarre deux serveurs PHP de test. MariaDB doit être installé ; sa localisation peut être précisée par MARIADB_BIN. Les ports 33319, 18119 et 18120 doivent être libres. Le test ne modifie aucune base existante et arrête ses propres processus. Il couvre 100 vérifications : rôles, sessions, SIRET, validation, ownership, PDF, alertes, concurrence, champs des offres, réinitialisation et migrations répétables. Les résultats sont conservés dans un dossier temporaire jobboard-integration-*.
 
 La syntaxe de tous les fichiers PHP a également été validée avec php -l.
+
+## Navigation locale (19 octobre)
+Utiliser une seule copie du projet pour les deux serveurs : npm run api et npm run dev -- --port 5174 --strictPort. Les requêtes API et les logos utilisent la même origine ; le proxy est aussi disponible pour Vite preview. La liste des entreprises et des offres a une limite de chargement de 10 secondes. Le message Bonjour retrouve le titre de l’accueil et peut afficher le prénom admin via sa session séparée. Les anciennes alertes locales sont fusionnées par identifiant et le contrat Freelance reste accepté.
